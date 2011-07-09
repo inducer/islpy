@@ -115,11 +115,25 @@ def parse_arg(arg):
 
 
 class FunctionData:
-    def __init__(self):
+    def __init__(self, include_dirs):
         self.classes_to_methods = {}
+        self.include_dirs = include_dirs
 
     def read_header(self, fname):
-        inf = open(fname, "rt")
+        from os.path import join
+        success = False
+        for inc_dir in self.include_dirs:
+            try:
+                inf = open(join(inc_dir, fname), "rt")
+            except IOError:
+                pass
+            else:
+                success = True
+                break
+
+        if not success:
+            raise RuntimeError("header '%s' not found" % fname)
+
         try:
             lines = inf.readlines()
         finally:
@@ -215,18 +229,22 @@ class FunctionData:
 
 
 def write_exposer(outf, meth):
-    extra_stuff = ""
-    if meth.return_type.endswith("*") and not meth.return_type.endswith("char *"):
-        extra_stuff = ", py::return_value_policy<py::manage_new_object>()"
-
+    func_name = "isl::%s_%s" % (meth.cls, meth.name)
     py_name = meth.name
+
     if meth.name == "size":
         py_name = "__len__"
-    elif meth.name == "alloc":
+    elif "alloc" in meth.name:
         py_name = "__init__"
+        func_name = "py::make_constructor(%s)" % func_name
 
-    outf.write("wrap_%s.def(\"%s\", isl::%s_%s%s);\n" % (
-        meth.cls, py_name, meth.cls, meth.name, extra_stuff))
+    extra_stuff = ""
+    if (py_name != "__init__" and
+            meth.return_type.endswith("*") and not meth.return_type.endswith("char *")):
+        extra_stuff = ", py::return_value_policy<py::manage_new_object>()"
+
+    outf.write("wrap_%s.def(\"%s\", %s%s);\n" % (
+        meth.cls, py_name, func_name, extra_stuff))
 
 
 
@@ -364,27 +382,27 @@ def write_wrappers(expf, wrapf, methods):
         except OddSignature:
             print "SKIP (odd sig):", meth
         else:
-            print "WRAPPED:", meth
+            #print "WRAPPED:", meth
+            pass
 
 
 
 
-def gen_wrapper():
-    fdata = FunctionData()
-    from os.path import expanduser
-    fdata.read_header(expanduser("~/pool/include/isl/dim.h"))
-    fdata.read_header(expanduser("~/pool/include/isl/set.h"))
-    fdata.read_header(expanduser("~/pool/include/isl/map.h"))
-    fdata.read_header(expanduser("~/pool/include/isl/vec.h"))
-    fdata.read_header(expanduser("~/pool/include/isl/mat.h"))
-    fdata.read_header(expanduser("~/pool/include/isl/local_space.h"))
-    fdata.read_header(expanduser("~/pool/include/isl/aff.h"))
-    #fdata.read_header(expanduser("~/pool/include/isl/polynomial.h"))
-    fdata.read_header(expanduser("~/pool/include/isl/union_map.h"))
-    fdata.read_header(expanduser("~/pool/include/isl/union_set.h"))
-    fdata.read_header(expanduser("~/pool/include/isl/printer.h"))
-    fdata.read_header(expanduser("~/pool/include/isl/vertices.h"))
-    #fdata.read_header(expanduser("~/pool/include/isl/constraint.h"))
+def gen_wrapper(include_dirs):
+    fdata = FunctionData(include_dirs)
+    fdata.read_header("isl/dim.h")
+    fdata.read_header("isl/set.h")
+    fdata.read_header("isl/map.h")
+    fdata.read_header("isl/vec.h")
+    fdata.read_header("isl/mat.h")
+    fdata.read_header("isl/local_space.h")
+    fdata.read_header("isl/aff.h")
+    #fdata.read_header("isl/polynomial.h")
+    fdata.read_header("isl/union_map.h")
+    fdata.read_header("isl/union_set.h")
+    fdata.read_header("isl/printer.h")
+    fdata.read_header("isl/vertices.h")
+    #fdata.read_header("isl/constraint.h")
 
     expf = open("src/wrapper/gen-expose.inc", "wt")
     wrapf = open("src/wrapper/gen-wrap.inc", "wt")

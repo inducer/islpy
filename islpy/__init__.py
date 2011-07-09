@@ -1,2 +1,2 @@
-version = (2011, 1)
-version_text = ".".join(str(i) for i in version)
+from islpy._isl import *
+from islpy.version import *

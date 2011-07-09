@@ -34,8 +34,25 @@ namespace isl
       { if (m_valid) isl_##name##_free(m_data); } \
   };
 
+  struct ctx \
+  {
+    public:
+      isl_ctx           *m_data;
+      bool              m_valid;
 
-  WRAP_CLASS(ctx);
+      ctx(isl_ctx *data)
+      : m_data(data), m_valid(true)
+      { }
+
+      ~ctx()
+      { 
+        if (m_valid) 
+        {
+          isl_ctx_deref(m_data); 
+          isl_ctx_free(m_data); 
+        }
+      }
+  };
 
   WRAP_CLASS(printer);
   WRAP_CLASS(mat);
@@ -153,34 +170,34 @@ BOOST_PYTHON_MODULE(_isl)
 #define MAKE_WRAP(name, py_name) \
   py::class_<isl::name, boost::noncopyable> wrap_##name(#py_name, py::no_init);
 
-  MAKE_WRAP(printer, "Printer");
-  MAKE_WRAP(mat, "Mat");
-  MAKE_WRAP(vec, "Vec");
+  MAKE_WRAP(printer, Printer);
+  MAKE_WRAP(mat, Mat);
+  MAKE_WRAP(vec, Vec);
 
-  MAKE_WRAP(aff, "Aff");
-  MAKE_WRAP(pw_aff, "PwAff");
+  MAKE_WRAP(aff, Aff);
+  MAKE_WRAP(pw_aff, PwAff);
 
-  MAKE_WRAP(div, "Div");
-  MAKE_WRAP(dim, "Dim");
-  MAKE_WRAP(local_space, "LocalSpace");
+  MAKE_WRAP(div, Div);
+  MAKE_WRAP(dim, Dim);
+  MAKE_WRAP(local_space, LocalSpace);
 
-  MAKE_WRAP(basic_set, "BasicSet");
-  MAKE_WRAP(basic_map, "BasicMap");
-  MAKE_WRAP(set, "Set");
-  MAKE_WRAP(map, "Map");
-  MAKE_WRAP(union_set, "UnionSet");
-  MAKE_WRAP(union_map, "UnionMap");
+  MAKE_WRAP(basic_set, BasicSet);
+  MAKE_WRAP(basic_map, BasicMap);
+  MAKE_WRAP(set, Set);
+  MAKE_WRAP(map, Map);
+  MAKE_WRAP(union_set, UnionSet);
+  MAKE_WRAP(union_map, UnionMap);
 
-  MAKE_WRAP(point, "Point");
-  MAKE_WRAP(vertex, "Vertex");
-  MAKE_WRAP(cell, "Cell");
-  MAKE_WRAP(vertices, "Vertices");
-  MAKE_WRAP(qpolynomial, "QPolynomial");
+  MAKE_WRAP(point, Point);
+  MAKE_WRAP(vertex, Vertex);
+  MAKE_WRAP(cell, Cell);
+  MAKE_WRAP(vertices, Vertices);
+  MAKE_WRAP(qpolynomial, QPolynomial);
 
-  MAKE_WRAP(basic_set_list, "BasicSetList");
-  MAKE_WRAP(set_list, "SetList");
-  MAKE_WRAP(aff_list, "AffList");
-  MAKE_WRAP(band_list, "BandList");
+  MAKE_WRAP(basic_set_list, BasicSetList);
+  MAKE_WRAP(set_list, SetList);
+  MAKE_WRAP(aff_list, AffList);
+  MAKE_WRAP(band_list, BandList);
 
   #include "gen-expose.inc"
 }

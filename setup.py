@@ -32,7 +32,7 @@ def main():
     LIBRARY_DIRS = conf["BOOST_LIB_DIR"]
     LIBRARIES = conf["BOOST_PYTHON_LIBNAME"]
 
-    init_filename = "islpy/__init__.py"
+    init_filename = "islpy/version.py"
     exec(compile(open(init_filename, "r").read(), init_filename, "exec"), conf)
 
     try:
@@ -40,6 +40,9 @@ def main():
     except ImportError:
         # 2.x
         from distutils.command.build_py import build_py
+
+    from gen_wrap import gen_wrapper
+    gen_wrapper(conf["ISL_INC_DIR"])
 
     setup(name="islpy",
           version=conf["version_text"],
@@ -68,6 +71,11 @@ def main():
             ],
 
           packages = [ "islpy" ],
+
+          install_requires=[
+              "pytest>=2",
+              # "Mako>=0.3.6",
+              ],
           ext_modules = [
             Extension(
               "islpy._isl", 
