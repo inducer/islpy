@@ -26,6 +26,7 @@ namespace isl
     public: \
       isl_##name        *m_data; \
       bool              m_valid; \
+      boost::shared_ptr<ctx> m_ctx; \
       \
       name(isl_##name *data) \
       : m_data(data), m_valid(true) \
@@ -38,20 +39,13 @@ namespace isl
   {
     public:
       isl_ctx           *m_data;
-      bool              m_valid;
 
       ctx(isl_ctx *data)
-      : m_data(data), m_valid(true)
+      : m_data(data)
       { }
 
       ~ctx()
-      { 
-        if (m_valid) 
-        {
-          isl_ctx_deref(m_data); 
-          isl_ctx_free(m_data); 
-        }
-      }
+      { isl_ctx_free(m_data); }
   };
 
   WRAP_CLASS(printer);
@@ -162,7 +156,7 @@ BOOST_PYTHON_MODULE(_isl)
 
   {
     typedef isl::ctx cls;
-    py::class_<cls, boost::noncopyable>("Context", py::no_init)
+    py::class_<cls, boost::shared_ptr<cls>, boost::noncopyable>("Context", py::no_init)
       .def("__init__", py::make_constructor(isl::alloc_ctx))
       ;
   }
