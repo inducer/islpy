@@ -31,13 +31,19 @@ class Method:
 
 
 
-CLASSES = [ "set", "printer", "basic_set", "mat", "vec",
-        "map", "basic_map", "local_space", 
+CLASSES = [
+        "printer",  "mat", "vec",
+        "aff", "pw_aff",
+        "dim",
+        "local_space", 
+        "basic_set", "basic_map",
+        "set", "map", 
+        "basic_set_list", "set_list", "aff_list", "band_list",
         "union_map", "union_set",
-        "vertex", "cell", "vertices", "dim_set", "dim",
-        "qpolynomial_fold",
-        "qpolynomial", "pw_qpolynomial",
-        "union_pw_qpolynomial", "term", 
+        "vertex", "cell", "vertices", "dim_set", 
+        #"qpolynomial_fold",
+        #"qpolynomial", "pw_qpolynomial",
+        #"union_pw_qpolynomial", "term", 
         ]
 
 ENUMS = ["isl_dim_type", "isl_fold"]
@@ -94,8 +100,10 @@ def parse_arg(arg):
 
     words = [w for w in words if w not in ["struct", "enum"]]
 
-    arg_match = ARG_RE.match(" ".join(words))
-    assert arg_match is not None, " ".join(words)
+    rebuilt_arg = " ".join(words)
+    arg_match = ARG_RE.match(rebuilt_arg)
+
+    assert arg_match is not None, rebuilt_arg
     return Argument(
             name=arg_match.group(3),
             semantics=semantics,
@@ -232,8 +240,8 @@ def write_wrapper(outf, meth):
     input_args = []
     for arg in meth.args:
         if arg.ctype in SAFE_IN_TYPES:
-            passed_args.append(arg.name)
-            input_args.append("%s %s" % (arg.ctype, arg.name))
+            passed_args.append("arg_"+arg.name)
+            input_args.append("%s arg_%s" % (arg.ctype, arg.name))
 
         elif arg.ctype == "char *" or arg.ctype == "const char *":
             if arg.semantics is SEM_KEEP:
@@ -242,7 +250,13 @@ def write_wrapper(outf, meth):
                 passed_args.append(arg.name)
             input_args.append("%s %s" % (arg.ctype, arg.name))
 
-        elif arg.ctype.startswith("isl_int"):
+        elif arg.ctype == "int *":
+            raise OddSignature("int * in "+str(meth))
+
+        elif arg.ctype == "isl_int *":
+            raise OddSignature("isl_int * in "+str(meth))
+
+        elif arg.ctype == "isl_int":
             input_args.append("py::object %s" % ("arg_"+arg.name))
             checks.append("""
                 if (!Pympz_Check(arg_%(name)s.ptr()))
@@ -267,9 +281,6 @@ def write_wrapper(outf, meth):
         elif arg.ctype == "FILE *":
             passed_args.append("PyFile_AsFile(arg_%s.ptr())" % arg.name)
             input_args.append("py::object %s" % ("arg_"+arg.name))
-
-        elif arg.ctype == "int *":
-            raise OddSignature("int * in "+str(meth))
 
         else:
             raise NotImplementedError("arg type %s" % arg.ctype)
@@ -352,8 +363,8 @@ def write_wrappers(expf, wrapf, methods):
             write_exposer(expf, meth)
         except OddSignature:
             print "SKIP (odd sig):", meth
-
-        print "WRAPPED:", meth
+        else:
+            print "WRAPPED:", meth
 
 
 
@@ -367,7 +378,8 @@ def gen_wrapper():
     fdata.read_header(expanduser("~/pool/include/isl/vec.h"))
     fdata.read_header(expanduser("~/pool/include/isl/mat.h"))
     fdata.read_header(expanduser("~/pool/include/isl/local_space.h"))
-    fdata.read_header(expanduser("~/pool/include/isl/polynomial.h"))
+    fdata.read_header(expanduser("~/pool/include/isl/aff.h"))
+    #fdata.read_header(expanduser("~/pool/include/isl/polynomial.h"))
     fdata.read_header(expanduser("~/pool/include/isl/union_map.h"))
     fdata.read_header(expanduser("~/pool/include/isl/union_set.h"))
     fdata.read_header(expanduser("~/pool/include/isl/printer.h"))
@@ -378,7 +390,7 @@ def gen_wrapper():
     wrapf = open("src/wrapper/gen-wrap.inc", "wt")
 
     for cls in CLASSES:
-        write_wrappers(expf, wrapf, fdata.classes_to_methods[cls])
+        write_wrappers(expf, wrapf, fdata.classes_to_methods.get(cls, []))
 
     expf.close()
     wrapf.close()

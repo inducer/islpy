@@ -3,11 +3,16 @@
 #include <isl/dim.h>
 #include <isl/set.h>
 #include <isl/map.h>
+#include <isl/union_set.h>
+#include <isl/union_map.h>
 #include <isl/point.h>
 #include <isl/printer.h>
 #include <isl/local_space.h>
 #include <isl/vec.h>
+#include <isl/mat.h>
 #include <isl/polynomial.h>
+#include <isl/aff.h>
+#include <isl/vertices.h>
 #include "gmpy.h"
 #include "wrap_helpers.hpp"
 
@@ -29,17 +34,37 @@ namespace isl
       { if (m_valid) isl_##name##_free(m_data); } \
   };
 
+
   WRAP_CLASS(ctx);
+
+  WRAP_CLASS(printer);
+  WRAP_CLASS(mat);
+  WRAP_CLASS(vec);
+
+  WRAP_CLASS(aff);
+  WRAP_CLASS(pw_aff);
+
+  WRAP_CLASS(div);
   WRAP_CLASS(dim);
+  WRAP_CLASS(local_space);
+
   WRAP_CLASS(basic_set);
   WRAP_CLASS(basic_map);
   WRAP_CLASS(set);
   WRAP_CLASS(map);
-  WRAP_CLASS(printer);
-  WRAP_CLASS(local_space);
-  WRAP_CLASS(vec);
+  WRAP_CLASS(union_set);
+  WRAP_CLASS(union_map);
+
   WRAP_CLASS(point);
+  WRAP_CLASS(vertex);
+  WRAP_CLASS(cell);
+  WRAP_CLASS(vertices);
   WRAP_CLASS(qpolynomial);
+
+  WRAP_CLASS(basic_set_list);
+  WRAP_CLASS(set_list);
+  WRAP_CLASS(aff_list);
+  WRAP_CLASS(band_list);
 
   ctx *alloc_ctx()
   {
@@ -112,7 +137,7 @@ BOOST_PYTHON_MODULE(_isl)
     .ENUM_VALUE(isl_dim_, all)
     ;
 
-  py::enum_<isl_dim_type>("fold")
+  py::enum_<isl_fold>("fold")
     .ENUM_VALUE(isl_fold_, min)
     .ENUM_VALUE(isl_fold_, max)
     .ENUM_VALUE(isl_fold_, list)
@@ -125,16 +150,37 @@ BOOST_PYTHON_MODULE(_isl)
       ;
   }
 
-  py::class_<isl::dim, boost::noncopyable> wrap_dim("Dim", py::no_init);
-  py::class_<isl::basic_set, boost::noncopyable> wrap_basic_set("BasicSet", py::no_init);
-  py::class_<isl::basic_map, boost::noncopyable> wrap_basic_map("BasicMap", py::no_init);
-  py::class_<isl::set, boost::noncopyable> wrap_set("Set", py::no_init);
-  py::class_<isl::map, boost::noncopyable> wrap_map("Map", py::no_init);
-  py::class_<isl::printer, boost::noncopyable> wrap_printer("Printer", py::no_init);
-  py::class_<isl::local_space, boost::noncopyable> wrap_local_space("LocalSpace", py::no_init);
-  py::class_<isl::vec, boost::noncopyable> wrap_vec("Vec", py::no_init);
-  py::class_<isl::point, boost::noncopyable> wrap_point("Point", py::no_init);
-  py::class_<isl::qpolynomial, boost::noncopyable> wrap_qpolynomial("QPolynomial", py::no_init);
+#define MAKE_WRAP(name, py_name) \
+  py::class_<isl::name, boost::noncopyable> wrap_##name(#py_name, py::no_init);
+
+  MAKE_WRAP(printer, "Printer");
+  MAKE_WRAP(mat, "Mat");
+  MAKE_WRAP(vec, "Vec");
+
+  MAKE_WRAP(aff, "Aff");
+  MAKE_WRAP(pw_aff, "PwAff");
+
+  MAKE_WRAP(div, "Div");
+  MAKE_WRAP(dim, "Dim");
+  MAKE_WRAP(local_space, "LocalSpace");
+
+  MAKE_WRAP(basic_set, "BasicSet");
+  MAKE_WRAP(basic_map, "BasicMap");
+  MAKE_WRAP(set, "Set");
+  MAKE_WRAP(map, "Map");
+  MAKE_WRAP(union_set, "UnionSet");
+  MAKE_WRAP(union_map, "UnionMap");
+
+  MAKE_WRAP(point, "Point");
+  MAKE_WRAP(vertex, "Vertex");
+  MAKE_WRAP(cell, "Cell");
+  MAKE_WRAP(vertices, "Vertices");
+  MAKE_WRAP(qpolynomial, "QPolynomial");
+
+  MAKE_WRAP(basic_set_list, "BasicSetList");
+  MAKE_WRAP(set_list, "SetList");
+  MAKE_WRAP(aff_list, "AffList");
+  MAKE_WRAP(band_list, "BandList");
 
   #include "gen-expose.inc"
 }
