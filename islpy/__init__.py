@@ -2,6 +2,22 @@ from islpy._isl import *
 from islpy.version import *
 
 def _add_functionality():
+    import islpy._isl as _isl
+
+    PRINTABLE_CLASSES = [getattr(_isl, cls) for cls in dir(_isl) if cls[0].isupper()
+            and cls not in ["Context", "Printer"]]
+
+    # {{{ printing
+
+    def generic_str(self):
+        prn = Printer.to_str(self.get_ctx())
+        getattr(prn, "print_"+self._base_name)(self)
+        return prn.get_str()
+
+    for cls in PRINTABLE_CLASSES:
+        cls.__str__ = generic_str
+
+    # }}}
 
     # {{{ Dim
 
@@ -91,12 +107,12 @@ def create_dim(ctx, set=None, in_=None, out=None, params=[]):
 
     return result
 
-def create_equality_by_names(dim, const=0, coefficients={}):
+def create_eq_by_names(dim, const=0, coefficients={}):
     c = Constraint.equality_alloc(dim.copy())
     c.set_constant(const)
     return c.set_coefficients_by_name(coefficients)
 
-def create_inequality_by_names(dim, const=0, coefficients={}):
+def create_ineq_by_names(dim, const=0, coefficients={}):
     c = Constraint.inequality_alloc(dim.copy())
     c.set_constant(const)
     return c.set_coefficients_by_name(coefficients)

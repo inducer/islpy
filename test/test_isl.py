@@ -14,17 +14,18 @@ def test_basics():
     dt = isl.dim_type
 
     ctx = isl.Context()
-    dim = isl.create_dim(ctx, set="ab")
+    dim = isl.create_dim(ctx, set=["a", "b"])
 
     bset = isl.BasicSet.universe(dim.copy())
-    bset.add_constraint(
-            isl.create_equality_by_names(dim, 0, dict(a=-1, b=2)))
-    bset.add_constraint(
-            isl.create_inequality_by_names(dim, -10, dict(a=1)))
-    bset.add_constraint(
-            isl.create_inequality_by_names(dim, 42, dict(a=-1)))
+    bset.add_constraint(isl.create_eq_by_names(dim, 0, dict(a=-1, b=2)))
+    bset.add_constraint(isl.create_ineq_by_names(dim, -10, dict(a=1)))
+    bset.add_constraint(isl.create_ineq_by_names(dim, 42, dict(a=-1)))
     bset.project_out(dt.set, 1, 1)
-    bset.dump()
+    print bset
+
+    bset2 = isl.BasicSet.read_from_str(ctx,
+            "{[i] : exists (a : i = 2a and i >= 10 and i <= 42)}", nparam=-1)
+
 
 
 

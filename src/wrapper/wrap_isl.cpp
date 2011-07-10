@@ -14,6 +14,7 @@
 #include <isl/aff.h>
 #include <isl/vertices.h>
 #include <isl/band.h>
+#include <isl/schedule.h>
 #include <boost/unordered_map.hpp>
 #include "gmpy.h"
 #include "wrap_helpers.hpp"
@@ -83,7 +84,11 @@ namespace isl
       ctx(isl_ctx *data)
       : m_data(data)
       {
-        ctx_use_map[data] = 1; \
+        ctx_use_map_t::iterator it(ctx_use_map.find(m_data));
+        if (it == ctx_use_map.end())
+          ctx_use_map[data] = 1;
+        else
+          ctx_use_map[m_data] += 1;
       }
 
       bool is_valid()
@@ -105,7 +110,6 @@ namespace isl
 
   WRAP_CLASS(div);
   WRAP_CLASS(dim);
-  WRAP_CLASS(band);
   WRAP_CLASS(constraint);
   WRAP_CLASS(local_space);
 
@@ -133,6 +137,9 @@ namespace isl
   WRAP_CLASS(set_list);
   WRAP_CLASS(aff_list);
   WRAP_CLASS(band_list);
+
+  WRAP_CLASS(band);
+  WRAP_CLASS(schedule);
 
   ctx *alloc_ctx()
   {
@@ -220,7 +227,9 @@ BOOST_PYTHON_MODULE(_isl)
 
 #define MAKE_WRAP(name, py_name) \
   py::class_<isl::name, boost::noncopyable> wrap_##name(#py_name, py::no_init); \
-  wrap_##name.def("is_valid", &isl::name::is_valid);
+  wrap_##name.def("is_valid", &isl::name::is_valid); \
+  wrap_##name.attr("_base_name") = #name; \
+  wrap_##name.attr("_isl_name") = #name;
 
   MAKE_WRAP(printer, Printer);
   MAKE_WRAP(mat, Mat);
@@ -231,7 +240,6 @@ BOOST_PYTHON_MODULE(_isl)
 
   MAKE_WRAP(div, Div);
   MAKE_WRAP(dim, Dim);
-  MAKE_WRAP(band, Band);
   MAKE_WRAP(constraint, Constraint);
   MAKE_WRAP(local_space, LocalSpace);
 
@@ -254,6 +262,9 @@ BOOST_PYTHON_MODULE(_isl)
   MAKE_WRAP(union_pw_qpolynomial, UnionPwQPolynomial);
   MAKE_WRAP(union_pw_qpolynomial_fold, UnionPwQPolynomialFold);
   MAKE_WRAP(term, Term);
+
+  MAKE_WRAP(band, Band);
+  MAKE_WRAP(schedule, Schedule);
 
   MAKE_WRAP(basic_set_list, BasicSetList);
   MAKE_WRAP(set_list, SetList);

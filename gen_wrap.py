@@ -56,7 +56,7 @@ CLASSES = [
         "printer",  "mat", "vec",
         "aff", "pw_aff",
 
-        "dim", "band", "constraint", "local_space",
+        "dim",  "constraint", "local_space",
 
         "basic_set", "basic_map",
         "set", "map",
@@ -68,6 +68,8 @@ CLASSES = [
         "union_pw_qpolynomial_fold",
         "union_pw_qpolynomial", "term",
         "qpolynomial", "pw_qpolynomial",
+
+        "band", "schedule"
         ]
 
 CLASS_MAP = {
@@ -296,7 +298,7 @@ class FunctionData:
 
         assert found_class, name
 
-        if name in ["get_ctx", "free", "cow"]:
+        if name in ["free", "cow"]:
             return
 
         try:
@@ -573,10 +575,10 @@ def write_wrapper(outf, meth):
             else:
                 ret_descr = ret_cls
 
-            if meth.return_semantics is None:
+            if meth.return_semantics is None and ret_cls != "ctx":
                 raise Undocumented(meth)
 
-            if meth.return_semantics is not SEM_GIVE:
+            if meth.return_semantics is not SEM_GIVE and ret_cls != "ctx":
                 raise OddSignature("non-give return")
 
             body.append("""
@@ -731,6 +733,7 @@ def gen_wrapper(include_dirs):
     fdata.read_header("isl/vec.h")
     fdata.read_header("isl/mat.h")
     fdata.read_header("isl/band.h")
+    fdata.read_header("isl/schedule.h")
 
     expf = open("src/wrapper/gen-expose.inc", "wt")
     wrapf = open("src/wrapper/gen-wrap.inc", "wt")
