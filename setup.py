@@ -45,7 +45,7 @@ def main():
     gen_wrapper(conf["ISL_INC_DIR"])
 
     setup(name="islpy",
-          version=conf["version_text"],
+          version=conf["VERSION_TEXT"],
           description="Wrapper around isl, an integer set library",
           author="Andreas Kloeckner",
           author_email="inform@tiker.net",

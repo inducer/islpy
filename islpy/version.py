@@ -1,3 +1,3 @@
-version = (2011, 1)
-version_text = ".".join(str(i) for i in version)
+VERSION = (2011, 1)
+VERSION_TEXT = ".".join(str(i) for i in VERSION)
 
