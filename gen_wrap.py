@@ -17,6 +17,20 @@ class Argument:
         self.semantics = semantics
         self.ctype = ctype
 
+class CallbackArgument:
+    def __init__(self, name, return_type, args):
+        self.name = name
+        self.return_type = return_type
+        self.args = args
+
+    @property
+    def is_constructor(self):
+        return not (self.args and self.args[0].ctype.startswith("isl_"+self.cls))
+
+    def __repr__(self):
+        return "<method %s_%s>" % (self.cls, self.name)
+
+
 class Method:
     def __init__(self, cls, name, return_semantics, return_type, args):
         self.cls = cls
@@ -75,6 +89,14 @@ DECL_RE = re.compile(r"""
     \)
     """,
     re.VERBOSE)
+FUNC_PTR_RE = re.compile(r"""
+    ((?:\w+\s+)* \*?) (?# return type)
+    \(\*(\w+)\) (?# func name)
+    \(
+    (.*) (?# args)
+    \)
+    """,
+    re.VERBOSE)
 STRUCT_DECL_RE = re.compile(r"struct\s+([a-z_A-Z0-9]+)\s*;")
 ARG_RE = re.compile(r"^((?:\w+)\s+)+(\*?)\s*(\w+)$")
 INLINE_SEMICOLON_RE = re.compile(r"\;[ \t]*(?=\w)")
@@ -97,6 +119,27 @@ def filter_semantics(words):
 
 
 
+def split_at_unparenthesized_commas(s):
+    paren_level = 0
+    i = 0
+    last_start = 0
+
+    while i < len(s):
+        c = s[i]
+        if c == "(":
+            paren_level += 1
+        elif c == ")":
+            paren_level -= 1
+        elif c == "," and paren_level == 0:
+            yield s[last_start:i]
+            last_start = i+1
+
+        i += 1
+
+    yield s[last_start:i]
+
+
+
 class BadArg(ValueError):
     pass
 
@@ -113,7 +156,15 @@ def parse_arg(arg):
         raise BadArg
 
     if "(*" in arg:
-        raise BadArg
+        arg_match = FUNC_PTR_RE.match(arg)
+        assert arg_match is not None, "fptr: %s" % arg
+
+        return_type = arg_match.group(1)
+        name = arg_match.group(2)
+        args = [parse_arg(i.strip()) 
+                for i in split_at_unparenthesized_commas(arg_match.group(3))]
+
+        return CallbackArgument(name.strip(), return_type.strip(), args)
 
     words = arg.split()
     semantics, words = filter_semantics(words)
@@ -221,7 +272,8 @@ class FunctionData:
 
         return_type = decl_match.group(1)
         name = decl_match.group(2)
-        args = [i.strip() for i in decl_match.group(3).split(",")]
+        args = [i.strip() 
+                for i in split_at_unparenthesized_commas(decl_match.group(3))]
 
         assert name.startswith("isl_")
         name = name[4:]
@@ -260,9 +312,6 @@ def write_exposer(outf, meth, arg_names):
     func_name = "isl::%s_%s" % (meth.cls, meth.name)
     py_name = meth.name
 
-    if not meth.is_constructor:
-        arg_names[0] = "self"
-
     args_str = (", py::args(%s)"
             % ", ".join('"%s"' % arg_name for arg_name in arg_names))
 
@@ -284,25 +333,110 @@ def write_exposer(outf, meth, arg_names):
 
 
 
+def get_callback(cb_name, cb):
+    input_args = []
+    body = []
+    passed_args = []
+
+    assert cb.args[-1].name == "user"
+
+    for arg in cb.args[:-1]:
+        if arg.ctype.startswith("isl_"):
+            assert arg.ctype.endswith("*")
+            arg_cls = arg.ctype[4:-1].strip()
+
+            if arg.semantics is not SEM_TAKE:
+                raise OddSignature("non-take callback arg")
+
+            passed_args.append("arg_%s" % arg.name)
+
+            body.append("""
+                std::auto_ptr<%(arg_cls)s> wrapped_arg_%(name)s(
+                    new %(arg_cls)s(c_arg_%(name)s));
+                py::object arg_%(name)s(handle_from_new_ptr(wrapped_arg_%(name)s.get()));
+                wrapped_arg_%(name)s.release();
+                """ % dict(
+                    arg_cls=arg_cls,
+                    name=arg.name,
+                    ))
+        else:
+            raise OddSignature("unsupported callback arg: %s" % arg.ctype)
+
+    return """
+        static %(ret_type)s %(cb_name)s(%(input_args)s)
+        {
+            py::object &py_cb = *reinterpret_cast<py::object *>(c_arg_user);
+            try
+            {
+              %(body)s
+              return py::extract<%(ret_type)s>(py_cb(%(passed_args)s));
+            }
+            catch (py::error_already_set)
+            {
+              std::cout << "[islpy warning] A Python exception occurred in "
+                "a call back function, ignoring:" << std::endl;
+              PyErr_Print();
+              return -1;
+            }
+            catch (std::exception &e)
+            {
+              std::cerr << "[islpy] An exception occurred in "
+                "a Python callback query:" << std::endl
+                << e.what() << std::endl;
+              std::cout << "[islpy] Aborting now." << std::endl;
+              return -1;
+            }
+        }
+        """ % dict(
+                ret_type=cb.return_type,
+                cb_name=cb_name,
+                input_args= 
+                ", ".join("%s c_arg_%s" % (arg.ctype, arg.name) for arg in cb.args),
+                body="\n".join(body),
+                passed_args=", ".join(passed_args))
+
+
+
+
 def write_wrapper(outf, meth):
     body = []
     checks = []
-
 
     passed_args = []
     input_args = []
     post_call = []
     extra_ret_vals = []
+    preamble = []
 
     #if meth.cls == "aff" and meth.name == "copy":
         #from pudb import set_trace; set_trace()
 
     arg_names = []
 
-    for arg in meth.args:
+    arg_idx = 0
+    while arg_idx < len(meth.args):
+        arg = meth.args[arg_idx]
         arg_names.append(arg.name)
+        arg_idx += 1
 
-        if arg.ctype in SAFE_IN_TYPES:
+        if isinstance(arg, CallbackArgument):
+            if not arg.return_type in SAFE_IN_TYPES:
+                raise OddSignature("non-int callback")
+
+            arg_names.pop()
+            assert meth.args[arg_idx].name == "user"
+            arg_idx += 1
+
+            cb_name = "cb_%s_%s_%s" % (meth.cls, meth.name, arg.name)
+            py_cb_name = "py_"+arg.name
+
+            input_args.append("py::object py_%s" % arg.name)
+            passed_args.append(cb_name)
+            passed_args.append("&py_%s" % arg.name)
+
+            preamble.append(get_callback(cb_name, arg))
+
+        elif arg.ctype in SAFE_IN_TYPES:
             passed_args.append("arg_"+arg.name)
             input_args.append("%s arg_%s" % (arg.ctype, arg.name))
 
@@ -418,7 +552,6 @@ def write_wrapper(outf, meth):
             if meth.is_constructor:
                 raise NotImplementedError("extra ret val on constructor")
 
-
         if meth.return_semantics is None:
             raise Undocumented(meth)
 
@@ -473,11 +606,13 @@ def write_wrapper(outf, meth):
         raise NotImplementedError("ret type: %s in %s" % (meth.return_type, meth))
 
     outf.write("""
+        %s
         %s %s_%s(%s)
         {
           %s
         }
         """ % (
+            "\n".join(preamble),
             processed_return_type, meth.cls, meth.name,
             ", ".join(input_args),
             "\n".join(body)))

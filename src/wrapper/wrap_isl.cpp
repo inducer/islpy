@@ -19,7 +19,6 @@
 #include "wrap_helpers.hpp"
 
 // TODO: flow.h
-// TODO: callbacks
 // TODO: better error reporting
 // TODO: doc generation
 
