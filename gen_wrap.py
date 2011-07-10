@@ -36,10 +36,12 @@ class Method:
 
 
 CLASSES = [
+        "basic_set_list", "set_list", "aff_list", "band_list",
         "printer",  "mat", "vec",
         "aff", "pw_aff",
-        "dim", "constraint",
-        "local_space",
+
+        "dim", "band", "constraint", "local_space",
+
         "basic_set", "basic_map",
         "set", "map",
         "basic_set_list", "set_list", "aff_list", "band_list",
@@ -75,6 +77,7 @@ DECL_RE = re.compile(r"""
     re.VERBOSE)
 STRUCT_DECL_RE = re.compile(r"struct\s+([a-z_A-Z0-9]+)\s*;")
 ARG_RE = re.compile(r"^((?:\w+)\s+)+(\*?)\s*(\w+)$")
+INLINE_SEMICOLON_RE = re.compile(r"\;[ \t]*(?=\w)")
 
 def filter_semantics(words):
     semantics = []
@@ -155,6 +158,14 @@ class FunctionData:
             lines = inf.readlines()
         finally:
             inf.close()
+
+        # split at semicolons
+        new_lines = []
+        for l in lines:
+            l = INLINE_SEMICOLON_RE.sub(";\n", l)
+            new_lines.extend(l.split("\n"))
+
+        lines = new_lines
 
         i = 0
 
@@ -303,7 +314,7 @@ def write_wrapper(outf, meth):
             input_args.append("%s %s" % (arg.ctype, arg.name))
 
         elif arg.ctype == "int *":
-            if arg.name == "exact":
+            if arg.name in ["exact", "tight"]:
                 body.append("int arg_%s;" % arg.name)
                 passed_args.append("&arg_%s" % arg.name)
                 extra_ret_vals.append("arg_%s" % arg.name)
@@ -481,7 +492,6 @@ def write_wrappers(expf, wrapf, methods):
 
     for meth in methods:
         try:
-            print meth
             arg_names = write_wrapper(wrapf, meth)
             write_exposer(expf, meth, arg_names)
         except Undocumented:
@@ -497,8 +507,10 @@ def write_wrappers(expf, wrapf, methods):
 
 
 def gen_wrapper(include_dirs):
-    fdata = FunctionData(include_dirs)
+    fdata = FunctionData(["."] + include_dirs)
+    fdata.read_header("isl_list.h")
     fdata.read_header("isl/dim.h")
+    fdata.read_header("isl/band.h")
     fdata.read_header("isl/set.h")
     fdata.read_header("isl/map.h")
     fdata.read_header("isl/vec.h")

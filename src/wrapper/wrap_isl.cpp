@@ -13,13 +13,15 @@
 #include <isl/polynomial.h>
 #include <isl/aff.h>
 #include <isl/vertices.h>
+#include <isl/band.h>
 #include <boost/unordered_map.hpp>
 #include "gmpy.h"
 #include "wrap_helpers.hpp"
 
 // TODO: flow.h
 // TODO: callbacks
-// TODO: lists
+// TODO: better error reporting
+// TODO: doc generation
 
 namespace py = boost::python;
 
@@ -105,6 +107,7 @@ namespace isl
 
   WRAP_CLASS(div);
   WRAP_CLASS(dim);
+  WRAP_CLASS(band);
   WRAP_CLASS(constraint);
   WRAP_CLASS(local_space);
 
@@ -229,6 +232,7 @@ BOOST_PYTHON_MODULE(_isl)
 
   MAKE_WRAP(div, Div);
   MAKE_WRAP(dim, Dim);
+  MAKE_WRAP(band, Band);
   MAKE_WRAP(constraint, Constraint);
   MAKE_WRAP(local_space, LocalSpace);
 
