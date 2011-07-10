@@ -17,6 +17,11 @@
 #include "gmpy.h"
 #include "wrap_helpers.hpp"
 
+// TODO: flow.h
+// TODO: polynomial.h
+// TODO: callbacks
+// TODO: lists
+
 namespace py = boost::python;
 
 namespace isl
@@ -101,6 +106,7 @@ namespace isl
 
   WRAP_CLASS(div);
   WRAP_CLASS(dim);
+  WRAP_CLASS(constraint);
   WRAP_CLASS(local_space);
 
   WRAP_CLASS(basic_set);
@@ -217,6 +223,7 @@ BOOST_PYTHON_MODULE(_isl)
 
   MAKE_WRAP(div, Div);
   MAKE_WRAP(dim, Dim);
+  MAKE_WRAP(constraint, Constraint);
   MAKE_WRAP(local_space, LocalSpace);
 
   MAKE_WRAP(basic_set, BasicSet);

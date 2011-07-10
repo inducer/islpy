@@ -64,4 +64,14 @@ namespace py = boost::python;
       boost::python::stl_input_iterator<TYPE>(), \
       std::back_inserter(NAME));
 
+namespace
+{
+  template <typename T>
+  inline boost::python::handle<> handle_from_new_ptr(T *ptr)
+  {
+    return boost::python::handle<>(
+        typename boost::python::manage_new_object::apply<T *>::type()(ptr));
+  }
+}
+
 #endif
