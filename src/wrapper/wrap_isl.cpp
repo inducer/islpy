@@ -198,7 +198,7 @@ BOOST_PYTHON_MODULE(_isl)
   py::enum_<isl_dim_type>("dim_type")
     .ENUM_VALUE(isl_dim_, cst)
     .ENUM_VALUE(isl_dim_, param)
-    .ENUM_VALUE(isl_dim_, in)
+    .value("in_", isl_dim_in)
     .ENUM_VALUE(isl_dim_, out)
     .ENUM_VALUE(isl_dim_, set)
     .ENUM_VALUE(isl_dim_, div)
@@ -219,7 +219,8 @@ BOOST_PYTHON_MODULE(_isl)
   }
 
 #define MAKE_WRAP(name, py_name) \
-  py::class_<isl::name, boost::noncopyable> wrap_##name(#py_name, py::no_init);
+  py::class_<isl::name, boost::noncopyable> wrap_##name(#py_name, py::no_init); \
+  wrap_##name.def("is_valid", &isl::name::is_valid);
 
   MAKE_WRAP(printer, Printer);
   MAKE_WRAP(mat, Mat);
