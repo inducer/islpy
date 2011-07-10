@@ -308,7 +308,7 @@ class FunctionData:
 
         assert found_class, name
 
-        if name in ["free", "cow"]:
+        if name in ["free", "cow", "dump"]:
             return
 
         try:
@@ -409,9 +409,6 @@ def write_wrapper(outf, meth):
     extra_ret_vals = []
     extra_ret_descrs = []
     preamble = []
-
-    #if meth.cls == "aff" and meth.name == "copy":
-        #from pudb import set_trace; set_trace()
 
     arg_names = []
 

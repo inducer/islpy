@@ -158,6 +158,8 @@ namespace isl
       PYTHON_ERROR(RuntimeError, "failed to create context");
   }
 
+  class format { };
+
   #include "gen-wrap.inc"
 }
 
@@ -270,6 +272,16 @@ BOOST_PYTHON_MODULE(_isl)
   MAKE_WRAP(set_list, SetList);
   MAKE_WRAP(aff_list, AffList);
   MAKE_WRAP(band_list, BandList);
+
+#define FORMAT_ATTR(name) cls_format.attr(#name) = ISL_FORMAT_##name
+  py::class_<isl::format> cls_format("format", py::no_init);
+  FORMAT_ATTR(ISL);
+  FORMAT_ATTR(POLYLIB);
+  FORMAT_ATTR(POLYLIB_CONSTRAINTS);
+  FORMAT_ATTR(OMEGA);
+  FORMAT_ATTR(C);
+  FORMAT_ATTR(LATEX);
+  FORMAT_ATTR(EXT_POLYLIB);
 
   #include "gen-expose.inc"
 }
