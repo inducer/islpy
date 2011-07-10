@@ -20,7 +20,6 @@
 
 // TODO: flow.h
 // TODO: better error reporting
-// TODO: doc generation
 
 namespace py = boost::python;
 
@@ -152,9 +151,7 @@ namespace isl
       PYTHON_ERROR(RuntimeError, "failed to create context");
   }
 
-
   #include "gen-wrap.inc"
-
 }
 
 
@@ -162,6 +159,8 @@ namespace isl
 
 BOOST_PYTHON_MODULE(_isl)
 {
+  py::docstring_options doc_opt(true, false, false);
+
   import_gmpy();
 
   /*

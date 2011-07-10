@@ -83,6 +83,7 @@ def main():
               include_dirs=INCLUDE_DIRS + conf["ISL_INC_DIR"],
               library_dirs=LIBRARY_DIRS + conf["ISL_LIB_DIR"],
               libraries=LIBRARIES + conf["ISL_LIBNAME"],
+              #define_macros=[('BOOST_PYTHON_NO_PY_SIGNATURES', '1')],
               extra_compile_args=conf["CXXFLAGS"],
               extra_link_args=conf["LDFLAGS"],
               ),
