@@ -1,6 +1,4 @@
 from __future__ import division
-import sys
-import pytools.test
 
 
 
@@ -25,6 +23,18 @@ def test_basics():
 
     bset2 = isl.BasicSet.read_from_str(ctx,
             "{[i] : exists (a : i = 2a and i >= 10 and i <= 42)}", nparam=-1)
+
+    mset = isl.Set.from_basic_set(bset2.copy())
+    points = []
+
+    def do_append(pt):
+        points.append(pt)
+        return 0
+
+    mset.foreach_point(do_append)
+    for pt in points:
+        print pt
+
 
 
 

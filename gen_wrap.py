@@ -68,14 +68,16 @@ CLASSES = [
         "set", "map",
         "basic_set_list", "set_list", "aff_list", "band_list",
         "union_map", "union_set",
-        "vertex", "cell", "vertices", "dim_set",
+        "point", "vertex", "cell", "vertices", "dim_set",
 
         "qpolynomial_fold", "pw_qpolynomial_fold",
         "union_pw_qpolynomial_fold",
         "union_pw_qpolynomial", "term",
         "qpolynomial", "pw_qpolynomial",
 
-        "band", "schedule"
+        "band", "schedule",
+
+        "access_info", "flow",
         ]
 
 CLASS_MAP = {
@@ -147,23 +149,48 @@ def split_at_unparenthesized_commas(s):
 
 
 
+def to_py_class(cls):
+    if cls.startswith("isl_"):
+        cls = cls[4:]
+
+    if cls == "ctx":
+        return "Context"
+
+    upper_next = True
+    result = ""
+
+    for c in cls:
+        if c == "_":
+            upper_next = True
+        else:
+            if upper_next:
+                result += c.upper()
+                upper_next = False
+            else:
+                result += c
+
+    result = result.replace("Qpoly", "QPoly")
+
+    return result
+
+
+
+
 class Retry(RuntimeError):
     pass
+
 class BadArg(ValueError):
     pass
 
 class Undocumented(ValueError):
     pass
 
-class OddSignature(ValueError):
+class SignatureNotSupported(ValueError):
     pass
 
 
 
 def parse_arg(arg):
-    if "**" in arg and not arg.startswith("isl_"):
-        raise BadArg
-
     if "(*" in arg:
         arg_match = FUNC_PTR_RE.match(arg)
         assert arg_match is not None, "fptr: %s" % arg
@@ -344,7 +371,7 @@ def get_callback(cb_name, cb):
             arg_cls = arg.base_type[4:]
 
             if arg.semantics is not SEM_TAKE:
-                raise OddSignature("non-take callback arg")
+                raise SignatureNotSupported("non-take callback arg")
 
             passed_args.append("arg_%s" % arg.name)
 
@@ -358,7 +385,7 @@ def get_callback(cb_name, cb):
                     name=arg.name,
                     ))
         else:
-            raise OddSignature("unsupported callback arg: %s %s" % (
+            raise SignatureNotSupported("unsupported callback arg: %s %s" % (
                 arg.base_type, arg.ptr))
 
     return """
@@ -368,7 +395,11 @@ def get_callback(cb_name, cb):
             try
             {
               %(body)s
-              return py::extract<%(ret_type)s>(py_cb(%(passed_args)s));
+              py::object retval = py_cb(%(passed_args)s);
+              if (retval.ptr() == Py_None)
+                return 0;
+              else
+                return py::extract<%(ret_type)s>(retval);
             }
             catch (py::error_already_set)
             {
@@ -419,7 +450,7 @@ def write_wrapper(outf, meth):
 
         if isinstance(arg, CallbackArgument):
             if not (arg.return_base_type in SAFE_IN_TYPES and not arg.return_ptr):
-                raise OddSignature("non-int callback")
+                raise SignatureNotSupported("non-int callback")
 
             arg_names.pop()
             arg_idx += 1
@@ -434,14 +465,14 @@ def write_wrapper(outf, meth):
 
             preamble.append(get_callback(cb_name, arg))
 
-            docs.append("arg %s: callback(%s)" 
+            docs.append(":arg %s: callback(%s)" 
                     % (arg.name, ", ".join(sub_arg.name for sub_arg in arg.args if sub_arg.name != "user")))
 
         elif arg.base_type in SAFE_IN_TYPES and not arg.ptr:
             passed_args.append("arg_"+arg.name)
             input_args.append("%s arg_%s" % (arg.base_type, arg.name))
 
-            docs.append("arg %s: %s" % (arg.name, arg.base_type))
+            docs.append(":arg %s: %s" % (arg.name, arg.base_type))
 
         elif arg.base_type in ["char", "const char"] and arg.ptr == "*":
             if arg.semantics is SEM_KEEP:
@@ -458,7 +489,7 @@ def write_wrapper(outf, meth):
                 extra_ret_descrs.append("%s (integer)" % arg.name)
                 arg_names.pop()
             else:
-                raise OddSignature("int *")
+                raise SignatureNotSupported("int *")
 
         elif arg.base_type == "isl_int" and arg.ptr == "*":
             # assume it's meant as a return value
@@ -484,7 +515,7 @@ def write_wrapper(outf, meth):
                 """ % dict(name=arg.name, meth="%s_%s" % (meth.cls, meth.name)))
             passed_args.append("Pympz_AS_MPZ(converted_arg_%s.get())" % arg.name)
 
-            docs.append("arg %s: integer" % arg.name)
+            docs.append(":arg %s: integer" % arg.name)
 
         elif arg.base_type.startswith("isl_") and arg.ptr == "*":
             arg_cls = arg.base_type[4:]
@@ -504,18 +535,44 @@ def write_wrapper(outf, meth):
             passed_args.append("arg_%s->m_data" % arg.name)
             input_args.append("%s *%s" % (arg_cls, "arg_"+arg.name))
 
-            arg_descr = "arg %s: %s" % (arg.name, arg_cls)
-            if arg.semantics is SEM_TAKE and not meth.is_mutator:
-                arg_descr += "(becomes invalid)"
+            arg_descr = ":arg %s: :class:`%s`" % (arg.name, to_py_class(arg_cls))
+            if arg.semantics is SEM_TAKE:
+                if arg_idx == 0 and meth.is_mutator:
+                    arg_descr += " (mutated in-place)"
+                else:
+                    arg_descr += " (becomes invalid)"
             docs.append(arg_descr)
+
+        elif arg.base_type.startswith("isl_") and arg.ptr == "**":
+            if arg.semantics is not SEM_GIVE:
+                raise SignatureNotSupported("non-give secondary ptr return value")
+
+            ret_cls = arg.base_type[4:]
+
+            arg_names.pop()
+            body.append("%s *ret_%s;" % (arg.base_type, arg.name))
+            passed_args.append("&ret_%s" % arg.name)
+
+            post_call.append("""
+                py::object py_ret_%(name)s;
+                if (ret_%(name)s)
+                {
+                  std::auto_ptr<%(ret_cls)s> auto_ret_%(name)s(new %(ret_cls)s(ret_%(name)s));
+                  py_ret_%(name)s = py::object(handle_from_new_ptr(auto_ret_%(name)s.get()));
+                  auto_ret_%(name)s.release();
+                }
+                """ % dict(name=arg.name, ret_cls=ret_cls))
+
+            extra_ret_vals.append("py_ret_%s" % arg.name)
+            extra_ret_descrs.append("%s (:class:`%s`)" % (arg.name, to_py_class(ret_cls)))
 
         elif arg.base_type == "FILE" and arg.ptr == "*":
             passed_args.append("PyFile_AsFile(arg_%s.ptr())" % arg.name)
             input_args.append("py::object %s" % ("arg_"+arg.name))
-            docs.append("arg %s: file-like" % arg.name)
+            docs.append(":arg %s: :class:`file`-like" % arg.name)
 
         else:
-            raise NotImplementedError("arg type %s %s" % (arg.base_type, arg.ptr))
+            raise SignatureNotSupported("arg type %s %s" % (arg.base_type, arg.ptr))
 
         arg_idx += 1
 
@@ -573,7 +630,7 @@ def write_wrapper(outf, meth):
             body.append("arg_%s->m_data = result;" % meth.args[0].name)
             body.append("return arg_%s;" % meth.args[0].name)
 
-            ret_descr = ret_cls
+            ret_descr = ":class:`%s`" % to_py_class(ret_cls)
         else:
             processed_return_type = "py::object"
             isl_obj_ret_val = "py::object(handle_from_new_ptr(new %s(result)))" % ret_cls
@@ -581,15 +638,16 @@ def write_wrapper(outf, meth):
             if extra_ret_vals:
                 isl_obj_ret_val = "py::make_tuple(%s, %s)" % (
                         isl_obj_ret_val, ", ".join(extra_ret_vals))
-                ret_descr = "tuple: (%s, %s)" % (ret_cls, ", ".join(extra_ret_descrs))
+                ret_descr = "tuple: (:class:`%s`, %s)" % (
+                        to_py_class(ret_cls), ", ".join(extra_ret_descrs))
             else:
-                ret_descr = ret_cls
+                ret_descr = ":class:`%s`" % to_py_class(ret_cls)
 
             if meth.return_semantics is None and ret_cls != "ctx":
                 raise Undocumented(meth)
 
             if meth.return_semantics is not SEM_GIVE and ret_cls != "ctx":
-                raise OddSignature("non-give return")
+                raise SignatureNotSupported("non-give return")
 
             body.append("""
                 if (result)
@@ -660,7 +718,7 @@ def write_wrapper(outf, meth):
 
     docs = (["%s(%s)" % (meth.name, ", ".join(arg_names)), ""] 
             + docs 
-            + ["", "return: %s" % ret_descr])
+            + ["", ":return: %s" % ret_descr])
 
     return arg_names, "\n".join(docs)
 
@@ -677,10 +735,8 @@ def write_exposer(outf, meth, arg_names, doc_str, static_decls):
     if meth.name == "size" and len(meth.args) == 1:
         py_name = "__len__"
 
-    if meth.is_static:
-        doc_str = "(static method)\n" + doc_str
-    if meth.is_mutator:
-        doc_str = "(mutates self)\n" + doc_str
+    #if meth.is_static:
+        #doc_str = "(static method)\n" + doc_str
 
     doc_str_arg = ", \"%s\"" % doc_str.replace("\n", "\\n")
 
@@ -711,8 +767,8 @@ def write_wrappers(expf, wrapf, methods):
         except Retry:
             arg_names, doc_str = write_wrapper(wrapf, meth)
             write_exposer(expf, meth, arg_names, doc_str, static_decls)
-        except OddSignature, e:
-            print "SKIP (odd sig: %s): %s" % (e, meth)
+        except SignatureNotSupported, e:
+            print "SKIP (sig not supported: %s): %s" % (e, meth)
         else:
             #print "WRAPPED:", meth
             pass
@@ -737,11 +793,13 @@ def gen_wrapper(include_dirs):
     fdata.read_header("isl/union_set.h")
     fdata.read_header("isl/printer.h")
     fdata.read_header("isl/vertices.h")
+    fdata.read_header("isl/point.h")
     fdata.read_header("isl/constraint.h")
     fdata.read_header("isl/vec.h")
     fdata.read_header("isl/mat.h")
     fdata.read_header("isl/band.h")
     fdata.read_header("isl/schedule.h")
+    fdata.read_header("isl/flow.h")
 
     expf = open("src/wrapper/gen-expose.inc", "wt")
     wrapf = open("src/wrapper/gen-wrap.inc", "wt")

@@ -170,7 +170,7 @@ def get_config(schema=None, warn_about_no_config=True):
 
 
 
-def hack_distutils(debug=False, fast_link=True):
+def hack_distutils(debug=False, fast_link=True, what_opt=3):
     # hack distutils.sysconfig to eliminate debug flags
     # stolen from mpi4py
 
@@ -194,8 +194,12 @@ def hack_distutils(debug=False, fast_link=True):
             if debug:
                 cflags.append("-g")
             else:
-                cflags.append("-O3")
-                cflags.append("-DNDEBUG")
+                if what_opt is None:
+                    pass
+                else:
+                    cflags.append("-O%s" % what_opt)
+                    cflags.append("-DNDEBUG")
+
             cvars['OPT'] = str.join(' ', cflags)
             cvars["CFLAGS"] = cvars["BASECFLAGS"] + " " + cvars["OPT"]
 

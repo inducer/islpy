@@ -15,6 +15,7 @@
 #include <isl/vertices.h>
 #include <isl/band.h>
 #include <isl/schedule.h>
+#include <isl/flow.h>
 #include <boost/unordered_map.hpp>
 #include "gmpy.h"
 #include "wrap_helpers.hpp"
@@ -140,6 +141,9 @@ namespace isl
 
   WRAP_CLASS(band);
   WRAP_CLASS(schedule);
+
+  WRAP_CLASS(access_info);
+  WRAP_CLASS(flow);
 
   ctx *alloc_ctx()
   {
@@ -272,6 +276,9 @@ BOOST_PYTHON_MODULE(_isl)
   MAKE_WRAP(set_list, SetList);
   MAKE_WRAP(aff_list, AffList);
   MAKE_WRAP(band_list, BandList);
+
+  MAKE_WRAP(access_info, AccessInfo);
+  MAKE_WRAP(flow, Flow);
 
 #define FORMAT_ATTR(name) cls_format.attr(#name) = ISL_FORMAT_##name
   py::class_<isl::format> cls_format("format", py::no_init);

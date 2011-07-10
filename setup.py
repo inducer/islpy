@@ -25,7 +25,7 @@ def main():
     from aksetup_helper import hack_distutils, \
             get_config, setup, Extension
 
-    hack_distutils()
+    hack_distutils(what_opt="s")
     conf = get_config(get_config_schema())
 
     INCLUDE_DIRS = conf["BOOST_INC_DIR"] + ["src/wrapper"]
