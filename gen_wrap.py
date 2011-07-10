@@ -256,6 +256,8 @@ def write_wrapper(outf, meth):
 
     passed_args = []
     input_args = []
+    post_call = []
+
     for arg in meth.args:
         if arg.ctype in SAFE_IN_TYPES:
             passed_args.append("arg_"+arg.name)
@@ -287,12 +289,12 @@ def write_wrapper(outf, meth):
             arg_cls = arg.ctype[4:-1]
 
             checks.append("""
-                if (!arg_%(name)s || !arg_%(name)s->m_valid)
+                if (!arg_%(name)s || !arg_%(name)s->is_valid())
                   PYTHON_ERROR(ValueError, "passed invalid arg to isl_%(meth)s for %(name)s");
                 """ % dict(name=arg.name, meth="%s_%s" % (meth.cls, meth.name)))
 
             if arg.semantics is SEM_TAKE:
-                body.append("arg_%s->m_valid = false;" % arg.name)
+                post_call.append("arg_%s->invalidate();" % arg.name)
             passed_args.append("arg_%s->m_data" % arg.name)
             input_args.append("%s *%s" % (arg_cls, "arg_"+arg.name))
 
@@ -314,6 +316,8 @@ def write_wrapper(outf, meth):
 
     body.append("%sisl_%s_%s(%s);" % (
         result_capture, meth.cls, meth.name, ", ".join(passed_args)))
+
+    body += post_call
 
     if meth.return_type in SAFE_TYPES:
         body.append("return result;")

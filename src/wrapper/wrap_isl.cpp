@@ -13,6 +13,7 @@
 #include <isl/polynomial.h>
 #include <isl/aff.h>
 #include <isl/vertices.h>
+#include <boost/unordered_map.hpp>
 #include "gmpy.h"
 #include "wrap_helpers.hpp"
 
@@ -20,19 +21,54 @@ namespace py = boost::python;
 
 namespace isl
 {
+  struct ctx;
+
+
+  typedef boost::unordered_map<isl_ctx *, unsigned> ctx_use_map_t;
+  ctx_use_map_t ctx_use_map;
+
+  void deref_ctx(isl_ctx *ctx)
+  {
+    ctx_use_map[ctx] -= 1;
+    if (ctx_use_map[ctx] == 0)
+      isl_ctx_free(ctx);
+  }
+
 #define WRAP_CLASS(name) \
   struct name \
   { \
+    private: \
+      bool              m_valid; \
+      isl_ctx           *m_ctx; \
     public: \
       isl_##name        *m_data; \
-      bool              m_valid; \
-      boost::shared_ptr<ctx> m_ctx; \
       \
       name(isl_##name *data) \
-      : m_data(data), m_valid(true) \
-      { } \
+      : m_valid(true), m_data(data) \
+      { \
+        m_ctx = isl_##name##_get_ctx(data); \
+        ctx_use_map[m_ctx] += 1; \
+      } \
+      \
+      void invalidate() \
+      { \
+        deref_ctx(m_ctx); \
+        m_valid = false; \
+      } \
+      \
+      bool is_valid() const \
+      { \
+        return m_valid; \
+      } \
+      \
       ~name() \
-      { if (m_valid) isl_##name##_free(m_data); } \
+      { \
+        if (m_valid) \
+        { \
+          isl_##name##_free(m_data); \
+          deref_ctx(m_ctx); \
+        } \
+      } \
   };
 
   struct ctx \
@@ -42,10 +78,18 @@ namespace isl
 
       ctx(isl_ctx *data)
       : m_data(data)
-      { }
+      {
+        ctx_use_map[data] = 1; \
+      }
 
+      bool is_valid()
+      {
+        return true;
+      }
       ~ctx()
-      { isl_ctx_free(m_data); }
+      {
+        deref_ctx(m_data);
+      }
   };
 
   WRAP_CLASS(printer);
