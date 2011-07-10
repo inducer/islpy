@@ -26,12 +26,8 @@ def test_basics():
 
     mset = isl.Set.from_basic_set(bset2.copy())
     points = []
+    mset.foreach_point(points.append)
 
-    def do_append(pt):
-        points.append(pt)
-        return 0
-
-    mset.foreach_point(do_append)
     for pt in points:
         print pt
 

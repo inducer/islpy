@@ -226,16 +226,18 @@ BOOST_PYTHON_MODULE(_isl)
 
   {
     typedef isl::ctx cls;
-    py::class_<cls, boost::shared_ptr<cls>, boost::noncopyable>("Context", py::no_init)
-      .def("__init__", py::make_constructor(isl::alloc_ctx))
-      ;
+    py::class_<cls, boost::shared_ptr<cls>, boost::noncopyable> 
+      wrap_ctx("Context", py::no_init);
+    wrap_ctx.def("__init__", py::make_constructor(isl::alloc_ctx));
+    wrap_ctx.attr("_base_name") = "ctx";
+    wrap_ctx.attr("_isl_name") = "isl_ctx";
   }
 
 #define MAKE_WRAP(name, py_name) \
   py::class_<isl::name, boost::noncopyable> wrap_##name(#py_name, py::no_init); \
   wrap_##name.def("is_valid", &isl::name::is_valid); \
   wrap_##name.attr("_base_name") = #name; \
-  wrap_##name.attr("_isl_name") = #name;
+  wrap_##name.attr("_isl_name") = "isl_"#name;
 
   MAKE_WRAP(printer, Printer);
   MAKE_WRAP(mat, Mat);

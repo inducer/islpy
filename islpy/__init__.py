@@ -4,8 +4,7 @@ from islpy.version import *
 def _add_functionality():
     import islpy._isl as _isl
 
-    PRINTABLE_CLASSES = [getattr(_isl, cls) for cls in dir(_isl) if cls[0].isupper()
-            and cls not in ["Context", "Printer"]]
+    ALL_CLASSES = [getattr(_isl, cls) for cls in dir(_isl) if cls[0].isupper()]
 
     # {{{ printing
 
@@ -14,8 +13,9 @@ def _add_functionality():
         getattr(prn, "print_"+self._base_name)(self)
         return prn.get_str()
 
-    for cls in PRINTABLE_CLASSES:
-        cls.__str__ = generic_str
+    for cls in ALL_CLASSES:
+        if hasattr(Printer, "print_"+cls._base_name):
+            cls.__str__ = generic_str
 
     # }}}
 
