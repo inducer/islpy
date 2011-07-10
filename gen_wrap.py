@@ -46,6 +46,8 @@ CLASSES = [
         #"union_pw_qpolynomial", "term", 
         ]
 
+SKIP = ["isl_mat_get_element"]
+
 ENUMS = ["isl_dim_type", "isl_fold"]
 
 SAFE_TYPES = ENUMS + ["int", "unsigned", "uint32_t", "size_t"]
@@ -81,6 +83,9 @@ def filter_semantics(words):
 
 
 class BadArg(ValueError):
+    pass
+
+class Undocumented(ValueError):
     pass
 
 class OddSignature(ValueError):
@@ -232,16 +237,32 @@ def write_exposer(outf, meth):
     func_name = "isl::%s_%s" % (meth.cls, meth.name)
     py_name = meth.name
 
+    is_constructor = not (
+            meth.args and meth.args[0].ctype.startswith("isl_"+meth.cls))
+
+    arg_names = [arg.name for arg in meth.args]
+    if not is_constructor:
+        arg_names[0] = "self"
+
+    args_str = (", py::args(%s)" 
+            % ", ".join('"%s"' % arg_name for arg_name in arg_names))
+
     if meth.name == "size":
         py_name = "__len__"
-    elif "alloc" in meth.name:
-        py_name = "__init__"
-        func_name = "py::make_constructor(%s)" % func_name
 
-    extra_stuff = ""
-    if (py_name != "__init__" and
+    if is_constructor:
+        # must be constructor (?)
+        if meth.name == "alloc":
+            py_name = "__init__"
+
+        func_name = "py::make_constructor(%s, py::default_call_policies()%s)" % (func_name, args_str)
+        args_str = ""
+
+    extra_stuff = args_str
+
+    if (not is_constructor and
             meth.return_type.endswith("*") and not meth.return_type.endswith("char *")):
-        extra_stuff = ", py::return_value_policy<py::manage_new_object>()"
+        extra_stuff = extra_stuff + ", py::return_value_policy<py::manage_new_object>()"
 
     outf.write("wrap_%s.def(\"%s\", %s%s);\n" % (
         meth.cls, py_name, func_name, extra_stuff))
@@ -258,7 +279,11 @@ def write_wrapper(outf, meth):
     input_args = []
     post_call = []
 
+    #if meth.cls == "aff" and meth.name == "copy":
+        #from pudb import set_trace; set_trace()
+
     for arg in meth.args:
+
         if arg.ctype in SAFE_IN_TYPES:
             passed_args.append("arg_"+arg.name)
             input_args.append("%s arg_%s" % (arg.ctype, arg.name))
@@ -271,10 +296,10 @@ def write_wrapper(outf, meth):
             input_args.append("%s %s" % (arg.ctype, arg.name))
 
         elif arg.ctype == "int *":
-            raise OddSignature("int * in "+str(meth))
+            raise OddSignature("int *")
 
         elif arg.ctype == "isl_int *":
-            raise OddSignature("isl_int * in "+str(meth))
+            raise OddSignature("isl_int *")
 
         elif arg.ctype == "isl_int":
             input_args.append("py::object %s" % ("arg_"+arg.name))
@@ -287,6 +312,9 @@ def write_wrapper(outf, meth):
         elif arg.ctype.startswith("isl_"):
             assert arg.ctype.endswith("*"), meth
             arg_cls = arg.ctype[4:-1]
+
+            if arg.semantics is None and arg.ctype != "isl_ctx *":
+                raise Undocumented(meth)
 
             checks.append("""
                 if (!arg_%(name)s || !arg_%(name)s->is_valid())
@@ -319,15 +347,28 @@ def write_wrapper(outf, meth):
 
     body += post_call
 
-    if meth.return_type in SAFE_TYPES:
+    if meth.return_type == "int":
+        body.append("""
+            if (result == -1)
+            {
+              PYTHON_ERROR(RuntimeError, "call to isl_%(cls)s_%(name)s failed");
+            }
+            else
+              return result;
+            """ % { "cls": meth.cls, "name": meth.name })
+
+    elif meth.return_type in SAFE_TYPES:
         body.append("return result;")
 
     elif meth.return_type.startswith("isl_"):
         assert meth.return_type.endswith("*"), meth
         ret_cls = meth.return_type[4:-1].strip()
 
-        if not meth.return_semantics is SEM_GIVE:
-            raise OddSignature(meth)
+        if meth.return_semantics is None:
+            raise Undocumented(meth)
+
+        if meth.return_semantics is not SEM_GIVE:
+            raise OddSignature("non-give return")
 
         body.append("""
             if (result)
@@ -360,7 +401,7 @@ def write_wrapper(outf, meth):
         pass
 
     elif meth.return_type == "void *":
-        raise OddSignature(meth)
+        raise OddSignature("void *")
 
     else:
         raise NotImplementedError, "ret type: %s in %s" % (meth.return_type, meth)
@@ -379,16 +420,21 @@ def write_wrapper(outf, meth):
 
 
 def write_wrappers(expf, wrapf, methods):
+    undoc = []
+
     for meth in methods:
         try:
             write_wrapper(wrapf, meth)
             write_exposer(expf, meth)
-        except OddSignature:
-            print "SKIP (odd sig):", meth
+        except Undocumented:
+            undoc.append(str(meth))
+        except OddSignature, e:
+            print "SKIP (odd sig: %s): %s" % (e, meth)
         else:
             #print "WRAPPED:", meth
             pass
 
+    print "SKIP (%d undocumented methods): %s" % (len(undoc), ", ".join(undoc))
 
 
 
@@ -411,8 +457,10 @@ def gen_wrapper(include_dirs):
     expf = open("src/wrapper/gen-expose.inc", "wt")
     wrapf = open("src/wrapper/gen-wrap.inc", "wt")
 
-    for cls in CLASSES:
-        write_wrappers(expf, wrapf, fdata.classes_to_methods.get(cls, []))
+    write_wrappers(expf, wrapf, [
+        meth
+        for methods in fdata.classes_to_methods.itervalues()
+        for meth in methods])
 
     expf.close()
     wrapf.close()
@@ -422,4 +470,5 @@ def gen_wrapper(include_dirs):
 
 
 if __name__ == "__main__":
-    gen_wrapper()
+    from os.path import expanduser
+    gen_wrapper([expanduser("~/pool/include")])
