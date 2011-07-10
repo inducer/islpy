@@ -18,7 +18,6 @@
 #include "wrap_helpers.hpp"
 
 // TODO: flow.h
-// TODO: polynomial.h
 // TODO: callbacks
 // TODO: lists
 
@@ -120,7 +119,14 @@ namespace isl
   WRAP_CLASS(vertex);
   WRAP_CLASS(cell);
   WRAP_CLASS(vertices);
+
   WRAP_CLASS(qpolynomial);
+  WRAP_CLASS(pw_qpolynomial);
+  WRAP_CLASS(qpolynomial_fold);
+  WRAP_CLASS(pw_qpolynomial_fold);
+  WRAP_CLASS(union_pw_qpolynomial);
+  WRAP_CLASS(union_pw_qpolynomial_fold);
+  WRAP_CLASS(term);
 
   WRAP_CLASS(basic_set_list);
   WRAP_CLASS(set_list);
@@ -237,7 +243,14 @@ BOOST_PYTHON_MODULE(_isl)
   MAKE_WRAP(vertex, Vertex);
   MAKE_WRAP(cell, Cell);
   MAKE_WRAP(vertices, Vertices);
+
   MAKE_WRAP(qpolynomial, QPolynomial);
+  MAKE_WRAP(pw_qpolynomial, PwQPolynomial);
+  MAKE_WRAP(qpolynomial_fold, QPolynomialFold);
+  MAKE_WRAP(pw_qpolynomial_fold, PwQPolynomialFold);
+  MAKE_WRAP(union_pw_qpolynomial, UnionPwQPolynomial);
+  MAKE_WRAP(union_pw_qpolynomial_fold, UnionPwQPolynomialFold);
+  MAKE_WRAP(term, Term);
 
   MAKE_WRAP(basic_set_list, BasicSetList);
   MAKE_WRAP(set_list, SetList);

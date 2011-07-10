@@ -39,15 +39,17 @@ CLASSES = [
         "printer",  "mat", "vec",
         "aff", "pw_aff",
         "dim", "constraint",
-        "local_space", 
+        "local_space",
         "basic_set", "basic_map",
-        "set", "map", 
+        "set", "map",
         "basic_set_list", "set_list", "aff_list", "band_list",
         "union_map", "union_set",
-        "vertex", "cell", "vertices", "dim_set", 
-        #"qpolynomial_fold",
-        #"qpolynomial", "pw_qpolynomial",
-        #"union_pw_qpolynomial", "term", 
+        "vertex", "cell", "vertices", "dim_set",
+
+        "qpolynomial_fold", "pw_qpolynomial_fold",
+        "union_pw_qpolynomial_fold",
+        "union_pw_qpolynomial", "term",
+        "qpolynomial", "pw_qpolynomial",
 
         # fake:
         "equality", "inequality",
@@ -69,7 +71,7 @@ DECL_RE = re.compile(r"""
     \(
     (.*) (?# args)
     \)
-    """, 
+    """,
     re.VERBOSE)
 STRUCT_DECL_RE = re.compile(r"struct\s+([a-z_A-Z0-9]+)\s*;")
 ARG_RE = re.compile(r"^((?:\w+)\s+)+(\*?)\s*(\w+)$")
@@ -160,8 +162,8 @@ class FunctionData:
         while i < len(lines):
             l = lines[i].strip()
 
-            if (not l 
-                    or l.startswith("#") 
+            if (not l
+                    or l.startswith("#")
                     or l.startswith("extern")
                     or STRUCT_DECL_RE.search(l)
                     or l.startswith("typedef")
@@ -250,7 +252,7 @@ def write_exposer(outf, meth, arg_names):
     if not meth.is_constructor:
         arg_names[0] = "self"
 
-    args_str = (", py::args(%s)" 
+    args_str = (", py::args(%s)"
             % ", ".join('"%s"' % arg_name for arg_name in arg_names))
 
     if meth.name == "size":
@@ -279,7 +281,7 @@ def write_wrapper(outf, meth):
     passed_args = []
     input_args = []
     post_call = []
-    extra_ret_val = []
+    extra_ret_vals = []
 
     #if meth.cls == "aff" and meth.name == "copy":
         #from pudb import set_trace; set_trace()
@@ -304,7 +306,7 @@ def write_wrapper(outf, meth):
             if arg.name == "exact":
                 body.append("int arg_%s;" % arg.name)
                 passed_args.append("&arg_%s" % arg.name)
-                extra_ret_val.append("arg_%s" % arg.name)
+                extra_ret_vals.append("arg_%s" % arg.name)
                 arg_names.pop()
             else:
                 raise OddSignature("int *")
@@ -315,7 +317,7 @@ def write_wrapper(outf, meth):
                 py::object arg_%s(py::handle<>((PyObject *) Pympz_new()));
                 """ % arg.name)
             passed_args.append("&(Pympz_AS_MPZ(arg_%s.ptr()))" % arg.name)
-            extra_ret_val.append("arg_%s" % arg.name)
+            extra_ret_vals.append("arg_%s" % arg.name)
 
             arg_names.pop()
 
@@ -375,15 +377,14 @@ def write_wrapper(outf, meth):
         if meth.name.startswith("is_") or meth.name.startswith("has_"):
             processed_return_type = "bool"
 
-        if extra_ret_val:
-            assert len(extra_ret_val) == 1
+        if extra_ret_vals:
             processed_return_type = "py::object"
-            body.append("return py::make_tuple(result, %s);" % extra_ret_val[0])
+            body.append("return py::make_tuple(result, %s);" % ", ".join(extra_ret_vals))
         else:
             body.append("return result;")
 
     elif meth.return_type in SAFE_TYPES:
-        if extra_ret_val:
+        if extra_ret_vals:
             raise NotImplementedError("extra ret val with safe type")
 
         body.append("return result;")
@@ -400,10 +401,9 @@ def write_wrapper(outf, meth):
             processed_return_type = "py::object"
             isl_obj_ret_val = "py::object(handle_from_new_ptr(new %s(result)))" % ret_cls
 
-        if extra_ret_val:
-            assert len(extra_ret_val) == 1
+        if extra_ret_vals:
             isl_obj_ret_val = "py::make_tuple(%s, %s)" % (
-                    isl_obj_ret_val, extra_ret_val[0])
+                    isl_obj_ret_val, ", ".join(extra_ret_vals))
             if meth.is_constructor:
                 raise NotImplementedError("extra ret val on constructor")
 
@@ -429,7 +429,7 @@ def write_wrapper(outf, meth):
             {
               PYTHON_ERROR(RuntimeError, "call to isl_%(cls)s_%(name)s failed");
             }
-            """ % { 
+            """ % {
                 "ret_cls": ret_cls,
                 "ret_val": isl_obj_ret_val,
                 "cls": meth.cls,
@@ -437,7 +437,7 @@ def write_wrapper(outf, meth):
                 })
 
     elif meth.return_type in ["const char *", "char *"]:
-        if extra_ret_val:
+        if extra_ret_vals:
             raise NotImplementedError("extra ret val with string")
 
         processed_return_type = "std::string"
@@ -447,10 +447,13 @@ def write_wrapper(outf, meth):
         body.append("return str_result;")
 
     elif meth.return_type == "void":
-        if extra_ret_val:
-            assert len(extra_ret_val) == 1
+        if extra_ret_vals:
             processed_return_type = "py::object"
-            body.append("return %s;" % extra_ret_val[0])
+            if len(extra_ret_vals) == 1:
+                body.append("return %s;" % extra_ret_vals[0])
+            else:
+                body.append("return py::make_tuple(%s);"
+                        % ", ".join(extra_ret_vals))
 
     elif meth.return_type == "void *":
         raise OddSignature("void *")
@@ -464,7 +467,7 @@ def write_wrapper(outf, meth):
           %s
         }
         """ % (
-            processed_return_type, meth.cls, meth.name, 
+            processed_return_type, meth.cls, meth.name,
             ", ".join(input_args),
             "\n".join(body)))
 
@@ -478,6 +481,7 @@ def write_wrappers(expf, wrapf, methods):
 
     for meth in methods:
         try:
+            print meth
             arg_names = write_wrapper(wrapf, meth)
             write_exposer(expf, meth, arg_names)
         except Undocumented:
@@ -501,7 +505,7 @@ def gen_wrapper(include_dirs):
     fdata.read_header("isl/mat.h")
     fdata.read_header("isl/local_space.h")
     fdata.read_header("isl/aff.h")
-    #fdata.read_header("isl/polynomial.h")
+    fdata.read_header("isl/polynomial.h")
     fdata.read_header("isl/union_map.h")
     fdata.read_header("isl/union_set.h")
     fdata.read_header("isl/printer.h")
