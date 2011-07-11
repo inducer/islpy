@@ -1,3 +1,14 @@
+Obtaining :mod:`islpy`
+======================
+
+islpy may be downloaded from the page for `islpy at the Python package index
+<http://pypi.python.org/pypi/islpy>`_.
+
+You may also clone its git repository::
+
+    git clone http://git.tiker.net/trees/islpy.git
+    git clone git://github.com/inducer/islpy
+
 Licensing
 =========
 

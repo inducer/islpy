@@ -78,8 +78,8 @@ To get information on how to use the isl, see the real `isl manual
 .. toctree::
     :maxdepth: 3
 
-    reference
     misc
+    reference
 
 Indices and tables
 ------------------
