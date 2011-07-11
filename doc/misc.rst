@@ -67,6 +67,8 @@ rules:
 * A method `isl_printer_print_set` would thus become
   :meth:`islpy.Printer.print_set`.
 
+See also :ref:`gen-remarks`.
+
 User-visible Changes
 ====================
 

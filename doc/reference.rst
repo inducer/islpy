@@ -4,8 +4,27 @@ Reference guide
 .. module:: islpy
 .. moduleauthor:: Andreas Kloeckner <inform@tiker.net>
 
+.. _gen-remarks:
+
 General Remarks
 ^^^^^^^^^^^^^^^
+
+Creation via Static Methods
+---------------------------
+
+To map more directly to the isl's C interface, object creation in :mod:`islpy`
+is done through static methods instead of through constructors. These are
+marked '(static)' in each class's overview section.
+
+Documented vs. Non-documented Functionality
+-------------------------------------------
+
+Since :mod:`islpy` is automatically generated from the isl C headers, some of
+the functionality it exposes might be undocumented. Undocumented functionality
+might change or vanish without notice. 'Documented' functionality is defined as
+whatever is mentioned in the `isl manual
+<http://www.kotnet.org/~skimo/isl/user.html>`_. :mod:`islpy` will let you call
+undocumented functions, but you are doing so at your own risk.
 
 .. _auto-invalidation:
 
