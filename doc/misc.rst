@@ -9,6 +9,16 @@ You may also clone its git repository::
     git clone http://git.tiker.net/trees/islpy.git
     git clone git://github.com/inducer/islpy
 
+Wiki, FAQ, Installation Instructions
+====================================
+
+A `wiki page <http://wiki.tiker.net/IslPy>`_ is also available, where install
+instructions and an FAQ will grow over time.
+
+For a mailing list, please consider using the `isl list
+<http://groups.google.com/group/isl-development>`_ until they tell us to get
+lost.
+
 Licensing
 =========
 

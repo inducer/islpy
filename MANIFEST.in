@@ -1,0 +1,23 @@
+include isl_list.h
+include src/wrapper/*.h
+include src/wrapper/*.hpp
+include src/wrapper/*.cpp
+
+include gen_wrapper.py
+
+include test/*.py
+include examples/*.py
+
+include doc/*.rst
+include doc/images/*png
+include doc/Makefile
+include doc/conf.py
+
+include distribute_setup.py
+include configure.py
+include Makefile.in
+include aksetup_helper.py
+include README_SETUP.txt
+
+recursive-include bpl-subset/bpl_subset/boost *.h *.hpp *.cpp *.html *.inl *.ipp *.pl *.txt
+recursive-include bpl-subset/bpl_subset/libs *.h *.hpp *.cpp *.html *.inl *.ipp *.pl *.txt
