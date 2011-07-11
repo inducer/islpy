@@ -18,7 +18,7 @@ for efficiency. Such arguments will be deleted (by isl) upon entry to the
 called function. If you would like to retain access to that object, simply
 append a `.copy()` to that argument. (Note that you will notice if an object
 got deleted for you accidentally, as the next operation on it will simply fail
-with an exception.
+with an exception.)
 
 Symbolic Constants
 ^^^^^^^^^^^^^^^^^^
