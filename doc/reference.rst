@@ -1,5 +1,5 @@
-Reference guide to the :mod:`isply` interface
-=============================================
+Reference guide
+===============
 
 .. module:: islpy
 .. moduleauthor:: Andreas Kloeckner <inform@tiker.net>
