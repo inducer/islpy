@@ -237,13 +237,20 @@ def autodoc_process_signature(app, what, name, obj, options, signature,
     return (signature, return_annotation)
 
 def autodoc_process_docstring(app, what, name, obj, options, lines):
-    from inspect import isclass, ismethod
+    from inspect import isclass, isroutine, ismethod
     if isclass(obj):
         methods = [name for name in dir(obj)
-                if ismethod(getattr(obj, name)) and not name.startswith("_")]
+                if isroutine(getattr(obj, name)) and not name.startswith("_")]
+        def gen_method_string(meth):
+            result = ":meth:`%s`" % meth
+            if not ismethod(getattr(obj, meth)):
+                result += " (static)"
+
+            return result
+
         if methods:
             lines[:] = [".. hlist::", "  :columns: 3", ""] + [
-                    "  * :meth:`%s`" % meth for meth in methods] + lines
+                    "  * "+gen_method_string(meth)  for meth in methods] + lines
 
 def setup(app):
     app.connect("autodoc-process-docstring", autodoc_process_docstring)

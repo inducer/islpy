@@ -1,13 +1,13 @@
 import islpy as isl
 
 ctx = isl.Context()
-dim = isl.create_dim(ctx, set=["x", "y"])
+dim = isl.Dim.create_from_names(ctx, set=["x", "y"])
 
 bset = isl.BasicSet.universe(dim.copy())
-bset.add_constraint(isl.create_ineq_by_names(dim, -1, dict(x=1)))
-bset.add_constraint(isl.create_ineq_by_names(dim, 5, dict(x=-1)))
-bset.add_constraint(isl.create_ineq_by_names(dim, -1, dict(y=1)))
-bset.add_constraint(isl.create_ineq_by_names(dim, 5, dict(y=-1)))
+bset.add_constraint(isl.Constraint.ineq_from_names(dim, -1, dict(x=1)))
+bset.add_constraint(isl.Constraint.ineq_from_names(dim, 5, dict(x=-1)))
+bset.add_constraint(isl.Constraint.ineq_from_names(dim, -1, dict(y=1)))
+bset.add_constraint(isl.Constraint.ineq_from_names(dim, 5, dict(y=-1)))
 print "set 1:", bset
 
 bset2 = isl.BasicSet.read_from_str(ctx,

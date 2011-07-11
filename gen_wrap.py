@@ -11,6 +11,16 @@ ISL_SEM_TO_SEM = {
     "__isl_keep": SEM_KEEP,
     }
 
+PYTHON_RESERVED_WORDS = """
+and       del       from      not       while
+as        elif      global    or        with
+assert    else      if        pass      yield
+break     except    import    print
+class     exec      in        raise
+continue  finally   is        return
+def       for       lambda    try
+""".split()
+
 class Argument:
     def __init__(self, name, semantics, base_type, ptr):
         self.name = name
@@ -345,6 +355,9 @@ class FunctionData:
         except BadArg:
             print "SKIP:", cls, name
             return
+
+        if name in PYTHON_RESERVED_WORDS:
+            name = name + "_"
 
         words = return_base_type.split()
         return_semantics, words = filter_semantics(words)
