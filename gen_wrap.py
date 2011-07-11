@@ -38,6 +38,9 @@ class Method:
         self.args = args
         self.mutator_veto = False
 
+        if not self.is_static:
+            self.args[0].name = "self"
+
     @property
     def is_static(self):
         return not (self.args and self.args[0].base_type.startswith("isl_"+self.cls))
@@ -62,11 +65,10 @@ CLASSES = [
         "printer",  "mat", "vec",
         "aff", "pw_aff",
 
-        "dim",  "constraint", "local_space",
+         "div", "dim",  "constraint", "local_space",
 
         "basic_set", "basic_map",
         "set", "map",
-        "basic_set_list", "set_list", "aff_list", "band_list",
         "union_map", "union_set",
         "point", "vertex", "cell", "vertices", "dim_set",
 
@@ -198,7 +200,7 @@ def parse_arg(arg):
         return_base_type = arg_match.group(1)
         return_ptr = arg_match.group(2)
         name = arg_match.group(3)
-        args = [parse_arg(i.strip()) 
+        args = [parse_arg(i.strip())
                 for i in split_at_unparenthesized_commas(arg_match.group(4))]
 
         return CallbackArgument(name.strip(),
@@ -312,7 +314,7 @@ class FunctionData:
         return_base_type = decl_match.group(1)
         return_ptr = decl_match.group(2)
         c_name = decl_match.group(3)
-        args = [i.strip() 
+        args = [i.strip()
                 for i in split_at_unparenthesized_commas(decl_match.group(4))]
 
         assert c_name.startswith("isl_")
@@ -351,7 +353,7 @@ class FunctionData:
 
         cls_meth_list = self.classes_to_methods.setdefault(cls, [])
         cls_meth_list.append(Method(
-                cls, name, c_name, 
+                cls, name, c_name,
                 return_semantics, return_base_type, return_ptr,
                 args))
 
@@ -420,7 +422,7 @@ def get_callback(cb_name, cb):
         """ % dict(
                 ret_type="%s %s" % (cb.return_base_type, cb.return_ptr),
                 cb_name=cb_name,
-                input_args= 
+                input_args=
                 ", ".join("%s %sc_arg_%s" % (arg.base_type, arg.ptr, arg.name)
                     for arg in cb.args),
                 body="\n".join(body),
@@ -465,14 +467,18 @@ def write_wrapper(outf, meth):
 
             preamble.append(get_callback(cb_name, arg))
 
-            docs.append(":arg %s: callback(%s)" 
+            docs.append(":param %s: callback(%s)"
                     % (arg.name, ", ".join(sub_arg.name for sub_arg in arg.args if sub_arg.name != "user")))
 
         elif arg.base_type in SAFE_IN_TYPES and not arg.ptr:
             passed_args.append("arg_"+arg.name)
             input_args.append("%s arg_%s" % (arg.base_type, arg.name))
 
-            docs.append(":arg %s: %s" % (arg.name, arg.base_type))
+            doc_cls = arg.base_type
+            if doc_cls.startswith("isl_"):
+                doc_cls = doc_cls[4:]
+
+            docs.append(":param %s: :class:`%s`" % (arg.name, doc_cls))
 
         elif arg.base_type in ["char", "const char"] and arg.ptr == "*":
             if arg.semantics is SEM_KEEP:
@@ -515,7 +521,7 @@ def write_wrapper(outf, meth):
                 """ % dict(name=arg.name, meth="%s_%s" % (meth.cls, meth.name)))
             passed_args.append("Pympz_AS_MPZ(converted_arg_%s.get())" % arg.name)
 
-            docs.append(":arg %s: integer" % arg.name)
+            docs.append(":param %s: integer" % arg.name)
 
         elif arg.base_type.startswith("isl_") and arg.ptr == "*":
             arg_cls = arg.base_type[4:]
@@ -535,12 +541,12 @@ def write_wrapper(outf, meth):
             passed_args.append("arg_%s->m_data" % arg.name)
             input_args.append("%s *%s" % (arg_cls, "arg_"+arg.name))
 
-            arg_descr = ":arg %s: :class:`%s`" % (arg.name, to_py_class(arg_cls))
+            arg_descr = ":param %s: :class:`%s`" % (arg.name, to_py_class(arg_cls))
             if arg.semantics is SEM_TAKE:
                 if arg_idx == 0 and meth.is_mutator:
                     arg_descr += " (mutated in-place)"
                 else:
-                    arg_descr += " (becomes invalid)"
+                    arg_descr += " (:ref:`becomes invalid <auto-invalidation>`)"
             docs.append(arg_descr)
 
         elif arg.base_type.startswith("isl_") and arg.ptr == "**":
@@ -569,7 +575,7 @@ def write_wrapper(outf, meth):
         elif arg.base_type == "FILE" and arg.ptr == "*":
             passed_args.append("PyFile_AsFile(arg_%s.ptr())" % arg.name)
             input_args.append("py::object %s" % ("arg_"+arg.name))
-            docs.append(":arg %s: :class:`file`-like" % arg.name)
+            docs.append(":param %s: :class:`file`-like" % arg.name)
 
         else:
             raise SignatureNotSupported("arg type %s %s" % (arg.base_type, arg.ptr))
@@ -630,7 +636,7 @@ def write_wrapper(outf, meth):
             body.append("arg_%s->m_data = result;" % meth.args[0].name)
             body.append("return arg_%s;" % meth.args[0].name)
 
-            ret_descr = ":class:`%s`" % to_py_class(ret_cls)
+            ret_descr = ":class:`%s` (self)" % to_py_class(ret_cls)
         else:
             processed_return_type = "py::object"
             isl_obj_ret_val = "py::object(handle_from_new_ptr(new %s(result)))" % ret_cls
@@ -716,9 +722,9 @@ def write_wrapper(outf, meth):
             ", ".join(input_args),
             "\n".join(body)))
 
-    docs = (["%s(%s)" % (meth.name, ", ".join(arg_names)), ""] 
-            + docs 
-            + ["", ":return: %s" % ret_descr])
+    docs = (["%s(%s)" % (meth.name, ", ".join(arg_names)), ""]
+            + docs
+            + [":return: %s" % ret_descr])
 
     return arg_names, "\n".join(docs)
 
@@ -800,6 +806,7 @@ def gen_wrapper(include_dirs):
     fdata.read_header("isl/band.h")
     fdata.read_header("isl/schedule.h")
     fdata.read_header("isl/flow.h")
+    fdata.read_header("isl/div.h")
 
     expf = open("src/wrapper/gen-expose.inc", "wt")
     wrapf = open("src/wrapper/gen-wrap.inc", "wt")

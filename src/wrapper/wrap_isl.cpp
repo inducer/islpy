@@ -235,7 +235,7 @@ BOOST_PYTHON_MODULE(_isl)
 
 #define MAKE_WRAP(name, py_name) \
   py::class_<isl::name, boost::noncopyable> wrap_##name(#py_name, py::no_init); \
-  wrap_##name.def("is_valid", &isl::name::is_valid); \
+  wrap_##name.def("is_valid", &isl::name::is_valid, "Return whether current object is still valid"); \
   wrap_##name.attr("_base_name") = #name; \
   wrap_##name.attr("_isl_name") = "isl_"#name;
 

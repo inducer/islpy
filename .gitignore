@@ -15,7 +15,6 @@ doc/hedge-notes.pdf
 dump.py
 *.orig
 /Makefile
-*.png
 tags
 *.vtu
 *.pvtu

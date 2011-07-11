@@ -220,3 +220,31 @@ man_pages = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
+
+def autodoc_process_signature(app, what, name, obj, options, signature,
+        return_annotation):
+    from inspect import ismethod
+    if ismethod(obj) and obj.__doc__:
+        import re
+        pattern = r"^[ \n]*%s(\([a-z_0-9, ]+\))" % re.escape(obj.__name__)
+        func_match = re.match(pattern, obj.__doc__)
+
+        if func_match is not None:
+            signature = func_match.group(1)
+        elif obj.__name__ == "is_valid":
+            signature = "()"
+
+    return (signature, return_annotation)
+
+def autodoc_process_docstring(app, what, name, obj, options, lines):
+    from inspect import isclass, ismethod
+    if isclass(obj):
+        methods = [name for name in dir(obj)
+                if ismethod(getattr(obj, name)) and not name.startswith("_")]
+        if methods:
+            lines[:] = [".. hlist::", "  :columns: 3", ""] + [
+                    "  * :meth:`%s`" % meth for meth in methods] + lines
+
+def setup(app):
+    app.connect("autodoc-process-docstring", autodoc_process_docstring)
+    app.connect("autodoc-process-signature", autodoc_process_signature)
