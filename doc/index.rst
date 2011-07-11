@@ -73,7 +73,10 @@ Overview
 This manual will not try to teach you much about the isl itself, it simply
 lists, in a reference fashion, all the entrypoints available in :mod:`islpy`.
 To get information on how to use the isl, see the real `isl manual
-<http://www.kotnet.org/~skimo/isl/user.html>`_.
+<http://www.kotnet.org/~skimo/isl/manual.pdf>`_. The `manual
+<http://www.kotnet.org/~skimo/barvinok/barvinok.pdf>`_ for the `barvinok
+package <http://www.kotnet.org/~skimo/barvinok/>`_ is also quite helpful to get
+an idea.
 
 .. toctree::
     :maxdepth: 3
