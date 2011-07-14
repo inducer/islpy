@@ -11,6 +11,9 @@ ISL_SEM_TO_SEM = {
     "__isl_keep": SEM_KEEP,
     }
 
+NON_COPYABLE = ["ctx", "printer", "access_info"]
+NON_COPYABLE_WITH_ISL_PREFIX = ["isl_"+i for i in NON_COPYABLE]
+
 PYTHON_RESERVED_WORDS = """
 and       del       from      not       while
 as        elif      global    or        with
@@ -62,7 +65,8 @@ class Method:
                 and self.return_ptr == "*" == self.args[0].ptr
                 and self.return_base_type == self.args[0].base_type
                 and self.return_semantics is SEM_GIVE
-                and not self.mutator_veto)
+                and not self.mutator_veto
+                and self.args[0].base_type in NON_COPYABLE_WITH_ISL_PREFIX)
 
     def __repr__(self):
         return "<method %s>" % self.c_name
@@ -538,6 +542,7 @@ def write_wrapper(outf, meth):
 
         elif arg.base_type.startswith("isl_") and arg.ptr == "*":
             arg_cls = arg.base_type[4:]
+            arg_descr = ":param %s: :class:`%s`" % (arg.name, to_py_class(arg_cls))
 
             if arg.semantics is None and arg.base_type != "isl_ctx":
                 raise Undocumented(meth)
@@ -547,19 +552,41 @@ def write_wrapper(outf, meth):
                   PYTHON_ERROR(ValueError, "passed invalid arg to isl_%(meth)s for %(name)s");
                 """ % dict(name=arg.name, meth="%s_%s" % (meth.cls, meth.name)))
 
+            copyable = arg_cls not in NON_COPYABLE
             if arg.semantics is SEM_TAKE:
-                if not (arg_idx == 0 and meth.is_mutator):
-                    post_call.append("arg_%s->invalidate();" % arg.name)
+                if copyable:
+                    checks.append("""
+                        if (!arg_%(name)s || !arg_%(name)s->is_valid())
+                          PYTHON_ERROR(ValueError, "passed invalid arg to isl_%(meth)s for %(name)s");
+                        std::auto_ptr<%(cls)s> auto_arg_%(name)s;
+                        {
+                            isl_%(cls)s *tmp_ptr = isl_%(cls)s_copy(arg_%(name)s->m_data);
+                            if (!tmp_ptr)
+                                throw std::runtime_error("failed to copy arg %(name)s on entry to %(meth)s");
+                            auto_arg_%(name)s = std::auto_ptr<%(cls)s>(new %(cls)s(tmp_ptr));
+                        }
+                        """ % dict(
+                            name=arg.name,
+                            meth="%s_%s" % (meth.cls, meth.name),
+                            cls=arg_cls))
 
-            passed_args.append("arg_%s->m_data" % arg.name)
+                    post_call.append("auto_arg_%s.release();" % arg.name)
+                    passed_args.append("auto_arg_%s->m_data" % arg.name)
+
+                else:
+                    if not (arg_idx == 0 and meth.is_mutator):
+                        post_call.append("arg_%s->invalidate();" % arg.name)
+
+                    passed_args.append("arg_%s->m_data" % arg.name)
+
+                    if arg_idx == 0 and meth.is_mutator:
+                        arg_descr += " (mutated in-place)"
+                    else:
+                        arg_descr += " (:ref:`becomes invalid <auto-invalidation>`)"
+            else:
+                passed_args.append("arg_%s->m_data" % arg.name)
             input_args.append("%s *%s" % (arg_cls, "arg_"+arg.name))
 
-            arg_descr = ":param %s: :class:`%s`" % (arg.name, to_py_class(arg_cls))
-            if arg.semantics is SEM_TAKE:
-                if arg_idx == 0 and meth.is_mutator:
-                    arg_descr += " (mutated in-place)"
-                else:
-                    arg_descr += " (:ref:`becomes invalid <auto-invalidation>`)"
             docs.append(arg_descr)
 
         elif arg.base_type.startswith("isl_") and arg.ptr == "**":

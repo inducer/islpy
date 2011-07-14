@@ -8,14 +8,14 @@ def _add_functionality():
 
     # {{{ printing
 
-    def generic_str(self):
+    def generic_repr(self):
         prn = Printer.to_str(self.get_ctx())
         getattr(prn, "print_"+self._base_name)(self)
         return prn.get_str()
 
     for cls in ALL_CLASSES:
         if hasattr(Printer, "print_"+cls._base_name):
-            cls.__str__ = generic_str
+            cls.__repr__ = generic_repr
 
     # }}}
 
@@ -59,7 +59,7 @@ def _add_functionality():
                     dim=len(set))
 
             for i, name in enumerate(set):
-                result.set_name(dt.set, i, name)
+                result = result.set_name(dt.set, i, name)
 
         elif in_ is not None and out is not None:
             if dim is not None:
@@ -69,15 +69,15 @@ def _add_functionality():
                     n_in=len(in_), n_out=len(out))
 
             for i, name in enumerate(in_):
-                result.set_name(dt.in_, i, name)
+                result = result.set_name(dt.in_, i, name)
 
             for i, name in enumerate(out):
-                result.set_name(dt.out, i, name)
+                result = result.set_name(dt.out, i, name)
         else:
             raise RuntimeError("invalid parameter combination")
 
         for i, name in enumerate(params):
-            result.set_name(dt.param, i, name)
+            result = result.set_name(dt.param, i, name)
 
         return result
 

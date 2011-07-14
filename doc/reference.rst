@@ -31,7 +31,7 @@ undocumented functions, but you are doing so at your own risk.
 Invalidation of Arguments
 -------------------------
 
-You may notice that many methods below say '(becomes invalid)'. This has to do
+You may notice that a few methods below say '(becomes invalid)'. This has to do
 with an idiosyncrasy in isl's interface that was retained at the Python level
 for efficiency. Such arguments will be deleted (by isl) upon entry to the
 called function. If you would like to retain access to that object, simply
