@@ -24,12 +24,21 @@ def test_basics():
     bset2 = isl.BasicSet.read_from_str(ctx,
             "{[i] : exists (a : i = 2a and i >= 10 and i <= 42)}", nparam=-1)
 
-    mset = isl.Set.from_basic_set(bset2)
     points = []
-    mset.foreach_point(points.append)
+    bset.as_set().foreach_point(points.append)
 
     for pt in points:
         print pt
+
+
+
+def no_test_crash_on_invalid():
+    ctx = isl.Context()
+    my_set = isl.Set.read_from_str(ctx, "{ [k, l] : 3l >= -k and 3l <= 10 - k "
+                   "and k >=0 and k <= 2 }", -1)
+    p = my_set.sample_point()
+    p.get_coordinate(isl.dim_type.set, 99999999)
+
 
 
 
