@@ -31,7 +31,10 @@ def get_config_schema():
 def main():
     from aksetup_helper import (hack_distutils, \
             get_config, setup, Extension,
-            set_up_shipped_boost_if_requested)
+            set_up_shipped_boost_if_requested,
+            check_git_submodules)
+
+    check_git_submodules()
 
     hack_distutils(what_opt="s")
     conf = get_config(get_config_schema())
