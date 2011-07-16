@@ -72,6 +72,12 @@ See also :ref:`gen-remarks`.
 User-visible Changes
 ====================
 
+Version 2011.2
+--------------
+
+* Switch to copy-by-default semantics.
+* A few changes in Python-side functionality.
+
 Version 2011.1
 --------------
 

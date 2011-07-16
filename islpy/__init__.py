@@ -148,6 +148,27 @@ def _add_functionality():
 
     # }}}
 
+    # {{{ BasicSet
+
+    def basic_set_as_set(self):
+        """Return self as a :class:`Set`."""
+        return Set.from_basic_set(self)
+
+    BasicSet.as_set = basic_set_as_set
+
+    # }}}
+
+    # {{{ BasicMap
+
+    def basic_map_as_map(self):
+        """Return *self* as a :class:`Map`."""
+        return Map.from_basic_map(self)
+
+    BasicMap.as_map = basic_map_as_map
+
+    # }}}
+
+
 
 
 _add_functionality()
