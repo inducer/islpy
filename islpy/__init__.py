@@ -108,8 +108,7 @@ def _add_functionality():
 
     def constraint_set_coefficients_by_name(self, iterable):
         """
-        :param iterable: a :class:`dict` or iterable of :class:`tuple`s 
-            mapping variable names to their coefficients
+        :param iterable: a :class:`dict` or iterable of :class:`tuple` instances mapping variable names to their coefficients
         """
         try:
             iterable = iterable.iteritems()
@@ -129,7 +128,7 @@ def _add_functionality():
 
         :param dim: :class:`Dim`
         :param const: constant part of the constraint expression
-        :param coefficients: a :class:`dict` or iterable of :class:`tuple` 
+        :param coefficients: a :class:`dict` or iterable of :class:`tuple`
             instances mapping variable names to their coefficients
 
         """
@@ -142,8 +141,8 @@ def _add_functionality():
 
         :param dim: :class:`Dim`
         :param const: constant part of the constraint expression
-        :param coefficients: a :class:`dict` or iterable of :class:`tuple`s 
-            mapping variable names to their coefficients
+        :param coefficients: a :class:`dict` or iterable of :class:`tuple` 
+            instances mapping variable names to their coefficients
         """
         c = Constraint.inequality_alloc(dim.copy())
         c.set_constant(const)
