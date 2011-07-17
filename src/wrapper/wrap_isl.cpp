@@ -27,8 +27,21 @@ namespace py = boost::python;
 
 namespace isl
 {
-  struct ctx;
+  struct managed_int
+  {
+    isl_int m_data;
 
+    managed_int()
+    {
+      isl_int_init(m_data);
+    }
+    ~managed_int()
+    {
+      isl_int_clear(m_data);
+    }
+  };
+
+  struct ctx;
 
   typedef boost::unordered_map<isl_ctx *, unsigned> ctx_use_map_t;
   ctx_use_map_t ctx_use_map;

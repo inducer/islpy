@@ -517,9 +517,15 @@ def write_wrapper(outf, meth):
         elif arg.base_type == "isl_int" and arg.ptr == "*":
             # assume it's meant as a return value
             body.append("""
-                py::object arg_%s(py::handle<>((PyObject *) Pympz_new()));
-                """ % arg.name)
-            passed_args.append("&(Pympz_AS_MPZ(arg_%s.ptr()))" % arg.name)
+                py::object arg_%(name)s(py::handle<>((PyObject *) Pympz_new()));
+                managed_int arg_mi_%(name)s;
+
+                """ % dict(name=arg.name))
+            passed_args.append("&arg_mi_%s.m_data" % arg.name)
+            post_call.append("""
+                isl_int_get_gmp(arg_mi_%(name)s.m_data, Pympz_AS_MPZ(arg_%(name)s.ptr()));
+                """ % dict(name=arg.name))
+
             extra_ret_vals.append("arg_%s" % arg.name)
             extra_ret_descrs.append("%s (integer)" % arg.name)
 
@@ -528,15 +534,17 @@ def write_wrapper(outf, meth):
         elif arg.base_type == "isl_int" and not arg.ptr:
             input_args.append("py::object %s" % ("arg_"+arg.name))
             checks.append("""
-                py::handle<> converted_arg_%(name)s;
+                managed_int arg_mi_%(name)s;
                 {
                   PyObject *converted;
                   if (Pympz_convert_arg(arg_%(name)s.ptr(), &converted) == 0)
                     throw py::error_already_set();
-                  converted_arg_%(name)s = py::handle<>(converted);
+                  py::handle<> converted_arg_%(name)s = py::handle<>(converted);
+                  isl_int_set_gmp(Pympz_AS_MPZ(converted_arg_%(name)s.get()),
+                    arg_mi_%(name)s.m_data);
                 }
                 """ % dict(name=arg.name, meth="%s_%s" % (meth.cls, meth.name)))
-            passed_args.append("Pympz_AS_MPZ(converted_arg_%s.get())" % arg.name)
+            passed_args.append("arg_mi_%s.m_data" % arg.name)
 
             docs.append(":param %s: integer" % arg.name)
 
@@ -585,6 +593,7 @@ def write_wrapper(outf, meth):
                         arg_descr += " (:ref:`becomes invalid <auto-invalidation>`)"
             else:
                 passed_args.append("arg_%s->m_data" % arg.name)
+
             input_args.append("%s *%s" % (arg_cls, "arg_"+arg.name))
 
             docs.append(arg_descr)
