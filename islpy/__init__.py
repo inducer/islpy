@@ -30,9 +30,8 @@ def _add_functionality():
         result = {}
 
         def set_name(name, tp, idx):
-
             if name in result:
-                raise RuntimeError("non-unique var name '%s' encountered")
+                raise RuntimeError("non-unique var name '%s' encountered" % name)
             result[name] = tp, idx
 
         if dimtype is None:
