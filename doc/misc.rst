@@ -77,6 +77,7 @@ Version 2011.2
 
 * Switch to copy-by-default semantics.
 * A few changes in Python-side functionality.
+* Automatic type promotion.
 
 Version 2011.1
 --------------

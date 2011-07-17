@@ -20,19 +20,6 @@ It also includes an ILP solver based on generalized basis reduction, transitive
 closures on maps (which may encode infinite graphs), dependence analysis and
 bounds on piecewise step-polynomials.
 
-.. note::
-
-    After the first release of islpy, we found that the initial programming
-    interface was cumbersome in some respects, and decided to change it,
-    because there's still little risk we're breaking substantial code bases.
-    Going forward, we're committed to as much API stability as the isl itself
-    will allow.
-
-    This documentation reflects the in-development state of the interface in
-    version control, as it will be--not as it is in the released version
-    2011.1. If you would like to use the software that's described here, get a
-    current checkout from `github <http://github.com/inducer/islpy>`_.
-
 Now you obviously want to watch the library do something (at least mildly)
 cool? Well, sit back and watch::
 
