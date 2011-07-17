@@ -504,6 +504,8 @@ def write_wrapper(outf, meth):
                 passed_args.append(arg.name)
             input_args.append("%s *%s" % (arg.base_type, arg.name))
 
+            docs.append(":param %s: string" % arg.name)
+
         elif arg.base_type == "int" and arg.ptr == "*":
             if arg.name in ["exact", "tight"]:
                 body.append("int arg_%s;" % arg.name)
