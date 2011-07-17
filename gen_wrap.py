@@ -540,8 +540,8 @@ def write_wrapper(outf, meth):
                   if (Pympz_convert_arg(arg_%(name)s.ptr(), &converted) == 0)
                     throw py::error_already_set();
                   py::handle<> converted_arg_%(name)s = py::handle<>(converted);
-                  isl_int_set_gmp(Pympz_AS_MPZ(converted_arg_%(name)s.get()),
-                    arg_mi_%(name)s.m_data);
+                  isl_int_set_gmp(arg_mi_%(name)s.m_data,
+                    Pympz_AS_MPZ(converted_arg_%(name)s.get()));
                 }
                 """ % dict(name=arg.name, meth="%s_%s" % (meth.cls, meth.name)))
             passed_args.append("arg_mi_%s.m_data" % arg.name)

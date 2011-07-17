@@ -205,7 +205,6 @@ def _add_functionality():
                     return wrapper
 
                 wrapper = make_wrapper(method, upcast_method)
-                print "ADD %s to %s" % (method_name, basic_class)
                 setattr(basic_class, method_name, update_wrapper(wrapper, method))
 
     for args_triple in [
