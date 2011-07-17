@@ -1,8 +1,12 @@
 from islpy._isl import *
 from islpy.version import *
 
+
 def _add_functionality():
     import islpy._isl as _isl
+
+    _CHECK_DIM_TYPES = [
+            dim_type.in_, dim_type.param, dim_type.set, dim_type.cst, dim_type.div]
 
     ALL_CLASSES = [getattr(_isl, cls) for cls in dir(_isl) if cls[0].isupper()]
 
@@ -24,7 +28,7 @@ def _add_functionality():
     def dim_get_var_dict(self, dimtype=None):
         """Return a dictionary mapping variable names to tuples of (:class:`dim_type`, index).
 
-        :param dim_type: None to get all variables, otherwise
+        :param dimtype: None to get all variables, otherwise
             one of :class:`dim_type`.
         """
         result = {}
@@ -35,8 +39,7 @@ def _add_functionality():
             result[name] = tp, idx
 
         if dimtype is None:
-            types = [dim_type.cst, dim_type.param, dim_type.in_, 
-                    dim_type.out, dim_type.div]
+            types = _CHECK_DIM_TYPES
         else:
             types = [dimtype]
 
@@ -147,10 +150,32 @@ def _add_functionality():
         c.set_constant(const)
         return c.set_coefficients_by_name(coefficients)
 
+    def constraint_get_coefficients_by_name(self, dimtype=None):
+        """Return a dictionary mapping variable names to coefficients.
+
+        :param dimtype: None to get all variables, otherwise
+            one of :class:`dim_type`.
+        """
+        if dimtype is None:
+            types = _CHECK_DIM_TYPES
+        else:
+            types = [dimtype]
+
+        result = {}
+        dim = self.get_dim()
+        for tp in types:
+            for i in range(dim.size(tp)):
+                coeff = self.get_coefficient(tp, i)
+                if coeff:
+                    result[dim.get_name(tp, i)] = coeff
+
+        return result
+
     Constraint.set_coefficients = constraint_set_coefficients
     Constraint.set_coefficients_by_name = constraint_set_coefficients_by_name
     Constraint.eq_from_names = staticmethod(eq_from_names)
     Constraint.ineq_from_names = staticmethod(ineq_from_names)
+    Constraint.get_coefficients_by_name = constraint_get_coefficients_by_name
 
     # }}}
 
