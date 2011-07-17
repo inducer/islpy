@@ -238,9 +238,11 @@ def autodoc_process_signature(app, what, name, obj, options, signature,
 
 def autodoc_process_docstring(app, what, name, obj, options, lines):
     from inspect import isclass, isroutine, ismethod
+    UNDERSCORE_WHITELIST = ["__len__", "__hash__", "__eq__"]
     if isclass(obj) and obj.__name__[0].isupper():
         methods = [name for name in dir(obj)
-                if isroutine(getattr(obj, name)) and not name.startswith("_")]
+                if isroutine(getattr(obj, name))
+                and (not name.startswith("_") or name in UNDERSCORE_WHITELIST)]
         def gen_method_string(meth):
             result = ":meth:`%s`" % meth
             if not ismethod(getattr(obj, meth)):
