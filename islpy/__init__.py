@@ -241,6 +241,32 @@ def _add_functionality():
 
 
 
+def project_out_except(obj, names, types):
+    """
+    ..versionadded:: 2011.3
+    """
+
+    for tp in types:
+        while True:
+            dim = obj.get_dim()
+            var_dict = dim.get_var_dict(tp)
+
+            all_indices = set(xrange(dim.size(tp)))
+            leftover_indices = set(var_dict[name][1] for name in names)
+            project_indices = all_indices-leftover_indices
+            if not project_indices:
+                break
+
+            min_index = min(project_indices)
+            count = 1
+            while min_index+count in project_indices:
+                count += 1
+
+            obj = obj.project_out(tp, min_index, count)
+
+    return obj
+
+
 
 
 _add_functionality()
