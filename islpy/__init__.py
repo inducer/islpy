@@ -21,8 +21,11 @@ def _add_functionality():
 
     # {{{ Dim
 
-    def dim_get_var_dict(self):
+    def dim_get_var_dict(self, dimtype=None):
         """Return a dictionary mapping variable names to tuples of (:class:`dim_type`, index).
+
+        :param dim_type: None to get all variables, otherwise
+            one of :class:`dim_type`.
         """
         result = {}
 
@@ -32,8 +35,13 @@ def _add_functionality():
                 raise RuntimeError("non-unique var name '%s' encountered")
             result[name] = tp, idx
 
-        dt = dim_type
-        for tp in [dt.cst, dt.param, dt.in_, dt.out, dt.div]:
+        if dimtype is None:
+            types = [dim_type.cst, dim_type.param, dim_type.in_, 
+                    dim_type.out, dim_type.div]
+        else:
+            types = [dimtype]
+
+        for tp in types:
             for i in range(self.size(tp)):
                 name = self.get_name(tp, i)
                 if name is not None:
