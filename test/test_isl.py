@@ -25,7 +25,7 @@ def test_basics():
             "{[i] : exists (a : i = 2a and i >= 10 and i <= 42)}", nparam=-1)
 
     points = []
-    bset.as_set().foreach_point(points.append)
+    bset.foreach_point(points.append)
 
     for pt in points:
         print pt

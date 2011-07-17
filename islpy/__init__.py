@@ -168,6 +168,48 @@ def _add_functionality():
 
     # }}}
 
+    # {{{ add automatic upcasts
+
+    class UpcastWrapper(object):
+        def __init__(self, method, upcast):
+            self.method = method
+            self.upcast = upcast
+
+    def add_upcasts(basic_class, special_class, upcast_method):
+        from functools import update_wrapper
+
+        from inspect import ismethod
+        for method_name in dir(special_class):
+            if hasattr(basic_class, method_name):
+                continue
+
+            method = getattr(special_class, method_name)
+
+            if ismethod(method):
+                def make_wrapper(method, upcast):
+                    # this function provides a scope in which method and upcast
+                    # are not changed
+
+                    def wrapper(basic_instance, *args, **kwargs):
+                        special_instance = upcast(basic_instance)
+                        return method(special_instance, *args, **kwargs)
+
+                    return wrapper
+
+                wrapper = make_wrapper(method, upcast_method)
+                print "ADD %s to %s" % (method_name, basic_class)
+                setattr(basic_class, method_name, update_wrapper(wrapper, method))
+
+    for args_triple in [
+            (BasicSet, Set, BasicSet.as_set),
+            (BasicMap, Map, BasicMap.as_map),
+            ]:
+        add_upcasts(*args_triple)
+
+    # }}}
+
+
+
 
 
 
