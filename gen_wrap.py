@@ -781,6 +781,14 @@ def write_exposer(outf, meth, arg_names, doc_str, static_decls):
     if meth.name == "size" and len(meth.args) == 1:
         py_name = "__len__"
 
+    if meth.name == "get_hash" and len(meth.args) == 1:
+        py_name = "__hash__"
+
+    extra_py_names = []
+
+    if meth.name == "is_equal":
+        extra_py_names.append("__eq__")
+
     #if meth.is_static:
         #doc_str = "(static method)\n" + doc_str
 
@@ -791,11 +799,13 @@ def write_exposer(outf, meth, arg_names, doc_str, static_decls):
         extra_stuff = extra_stuff+", py::return_self<>()"
 
     wrap_class = CLASS_MAP.get(meth.cls, meth.cls)
-    outf.write("wrap_%s.def(\"%s\", %s%s);\n" % (
-        wrap_class, py_name, func_name, extra_stuff))
-    if meth.is_static:
-        static_decls.append("wrap_%s.staticmethod(\"%s\");\n" % (
-            wrap_class, py_name))
+
+    for exp_py_name in [py_name]+extra_py_names:
+        outf.write("wrap_%s.def(\"%s\", %s%s);\n" % (
+            wrap_class, exp_py_name, func_name, extra_stuff))
+        if meth.is_static:
+            static_decls.append("wrap_%s.staticmethod(\"%s\");\n" % (
+                wrap_class, exp_py_name))
 
 
 
