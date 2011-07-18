@@ -120,34 +120,40 @@ def _add_functionality():
         var2idx = self.get_dim().get_var_dict()
 
         for name, coeff in iterable:
-            tp, idx = var2idx[name]
-            self.set_coefficient(tp, idx, coeff)
+            if name == 1:
+                self.set_constant(coeff)
+            else:
+                tp, idx = var2idx[name]
+                self.set_coefficient(tp, idx, coeff)
 
         return self
 
-    def eq_from_names(dim, const=0, coefficients={}):
+    def eq_from_names(dim, coefficients={}):
         """Create a constraint `const + coeff_1*var_1 +... == 0`.
 
         :param dim: :class:`Dim`
-        :param const: constant part of the constraint expression
         :param coefficients: a :class:`dict` or iterable of :class:`tuple`
             instances mapping variable names to their coefficients
+            The constant is set to the value of the key '1'.
 
+        .. versionchanged:: 2011.3
+            Eliminated the separate *const* parameter.
         """
-        c = Constraint.equality_alloc(dim.copy())
-        c.set_constant(const)
+        c = Constraint.equality_alloc(dim)
         return c.set_coefficients_by_name(coefficients)
 
-    def ineq_from_names(dim, const=0, coefficients={}):
+    def ineq_from_names(dim, coefficients={}):
         """Create a constraint `const + coeff_1*var_1 +... >= 0`.
 
         :param dim: :class:`Dim`
-        :param const: constant part of the constraint expression
         :param coefficients: a :class:`dict` or iterable of :class:`tuple` 
             instances mapping variable names to their coefficients
+            The constant is set to the value of the key '1'.
+
+        .. versionchanged:: 2011.3
+            Eliminated the separate *const* parameter.
         """
-        c = Constraint.inequality_alloc(dim.copy())
-        c.set_constant(const)
+        c = Constraint.inequality_alloc(dim)
         return c.set_coefficients_by_name(coefficients)
 
     def constraint_get_coefficients_by_name(self, dimtype=None):
@@ -168,6 +174,10 @@ def _add_functionality():
                 coeff = self.get_coefficient(tp, i)
                 if coeff:
                     result[dim.get_name(tp, i)] = coeff
+
+        const = self.get_constant()
+        if const:
+            result[1] = const
 
         return result
 
