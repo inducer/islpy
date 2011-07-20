@@ -189,13 +189,21 @@ def _add_functionality():
 
     # }}}
 
+    def basic_obj_get_constraints(self):
+        """Get a list of constraints."""
+        result = []
+        self.foreach_constraint(result.append)
+        return result
+
     # {{{ BasicSet
 
     def basic_set_as_set(self):
         """Return self as a :class:`Set`."""
         return Set.from_basic_set(self)
 
+
     BasicSet.as_set = basic_set_as_set
+    BasicSet.get_constraints = basic_obj_get_constraints
 
     # }}}
 
@@ -206,6 +214,31 @@ def _add_functionality():
         return Map.from_basic_map(self)
 
     BasicMap.as_map = basic_map_as_map
+    BasicMap.get_constraints = basic_obj_get_constraints
+
+    # }}}
+
+    # {{{ Set
+
+    def set_get_basic_sets(self):
+        """Get the list of :class:`BasicSet` instances in this :class:`Set`."""
+        result = []
+        self.foreach_basic_set(result.append)
+        return result
+
+    Set.get_basic_sets = set_get_basic_sets
+
+    # }}}
+
+    # {{{ Map
+
+    def map_get_basic_maps(self):
+        """Get the list of :class:`BasicMap` instances in this :class:`Map`."""
+        result = []
+        self.foreach_basic_map(result.append)
+        return result
+
+    Map.get_basic_maps = map_get_basic_maps
 
     # }}}
 
