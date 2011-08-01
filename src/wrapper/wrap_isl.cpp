@@ -118,6 +118,7 @@ namespace isl
   WRAP_CLASS(printer);
   WRAP_CLASS(mat);
   WRAP_CLASS(vec);
+  WRAP_CLASS(id);
 
   WRAP_CLASS(aff);
   WRAP_CLASS(pw_aff);
@@ -150,6 +151,7 @@ namespace isl
   WRAP_CLASS(basic_set_list);
   WRAP_CLASS(set_list);
   WRAP_CLASS(aff_list);
+  WRAP_CLASS(pw_aff_list);
   WRAP_CLASS(band_list);
 
   WRAP_CLASS(band);
@@ -255,6 +257,7 @@ BOOST_PYTHON_MODULE(_isl)
   MAKE_WRAP(printer, Printer);
   MAKE_WRAP(mat, Mat);
   MAKE_WRAP(vec, Vec);
+  MAKE_WRAP(id, Id);
 
   MAKE_WRAP(aff, Aff);
   MAKE_WRAP(pw_aff, PwAff);
@@ -290,6 +293,7 @@ BOOST_PYTHON_MODULE(_isl)
   MAKE_WRAP(basic_set_list, BasicSetList);
   MAKE_WRAP(set_list, SetList);
   MAKE_WRAP(aff_list, AffList);
+  MAKE_WRAP(pw_aff_list, PwAffList);
   MAKE_WRAP(band_list, BandList);
 
   MAKE_WRAP(access_info, AccessInfo);

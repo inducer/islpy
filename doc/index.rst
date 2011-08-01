@@ -20,6 +20,20 @@ It also includes an ILP solver based on generalized basis reduction, transitive
 closures on maps (which may encode infinite graphs), dependence analysis and
 bounds on piecewise step-polynomials.
 
+.. note::
+
+    After the 2011.2 release of islpy, one more aspect of the islpy interface
+    has changed, namely that the constant in a constraint is now set as the '1'
+    key in a coefficient dictionary in 
+    :meth:`islpy.Constraint.eq_from_names`,
+    :meth:`islpy.Constraint.ineq_from_names`, and
+    :meth:`islpy.Constraint.set_coefficients_by_name`.
+
+    This documentation reflects the in-development state of the interface in
+    version control, as it will be--not as it is in the released version
+    2011.2. If you would like to use the software that's described here, get a
+    current checkout from `github <http://github.com/inducer/islpy>`_.
+
 Now you obviously want to watch the library do something (at least mildly)
 cool? Well, sit back and watch::
 
@@ -29,10 +43,10 @@ cool? Well, sit back and watch::
     dim = isl.Dim.create_from_names(ctx, set=["x", "y"])
 
     bset = (isl.BasicSet.universe(dim)
-            .add_constraint(isl.Constraint.ineq_from_names(dim, -1, dict(x=1)))
-            .add_constraint(isl.Constraint.ineq_from_names(dim, 5, dict(x=-1)))
-            .add_constraint(isl.Constraint.ineq_from_names(dim, -1, dict(y=1)))
-            .add_constraint(isl.Constraint.ineq_from_names(dim, 5, dict(y=-1))))
+            .add_constraint(isl.Constraint.ineq_from_names(dim, {1: -1, "x":1}))
+            .add_constraint(isl.Constraint.ineq_from_names(dim, {1: 5, "x":-1}))
+            .add_constraint(isl.Constraint.ineq_from_names(dim, {1: -1, "y": 1}))
+            .add_constraint(isl.Constraint.ineq_from_names(dim, {1: 5, "y": -1})))
     print "set 1:", bset
 
     bset2 = isl.BasicSet.read_from_str(ctx,

@@ -104,13 +104,16 @@ def _add_functionality():
         :param args: :class:`list` of coefficients, for indices `0..len(args)-1`.
         """
         for i, coeff in enumerate(args):
-            self.set_coefficient(dim_tp, i, coeff)
+            self = self.set_coefficient(dim_tp, i, coeff)
 
         return self
 
     def constraint_set_coefficients_by_name(self, iterable):
-        """
-        :param iterable: a :class:`dict` or iterable of :class:`tuple` instances mapping variable names to their coefficients
+        """Set the coefficients and the constant of the constraint.
+
+        :param iterable: a :class:`dict` or iterable of :class:`tuple`
+            instances mapping variable names to their coefficients.
+            The constant is set to the value of the key '1'.
         """
         try:
             iterable = iterable.iteritems()
@@ -121,10 +124,10 @@ def _add_functionality():
 
         for name, coeff in iterable:
             if name == 1:
-                self.set_constant(coeff)
+                self = self.set_constant(coeff)
             else:
                 tp, idx = var2idx[name]
-                self.set_coefficient(tp, idx, coeff)
+                self = self.set_coefficient(tp, idx, coeff)
 
         return self
 

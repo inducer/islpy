@@ -15,11 +15,10 @@ def test_basics():
     dim = isl.Dim.create_from_names(ctx, set=["a", "b"])
 
     bset = (isl.BasicSet.universe(dim)
-            .add_constraint(isl.Constraint.eq_from_names(dim, 0, dict(a=-1, b=2)))
-            .add_constraint(isl.Constraint.ineq_from_names(dim, -10, dict(a=1)))
-            .add_constraint(isl.Constraint.ineq_from_names(dim, 42, dict(a=-1)))
+            .add_constraint(isl.Constraint.eq_from_names(dim, {"a":-1, "b": 2}))
+            .add_constraint(isl.Constraint.ineq_from_names(dim, {"a":1, 1:-10}))
+            .add_constraint(isl.Constraint.ineq_from_names(dim, {"a":-1, 1: 42}))
             .project_out(dt.set, 1, 1))
-    print bset
 
     bset2 = isl.BasicSet.read_from_str(ctx,
             "{[i] : exists (a : i = 2a and i >= 10 and i <= 42)}", nparam=-1)

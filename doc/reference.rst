@@ -288,6 +288,6 @@ Output
 Convenience
 -----------
 
-.. autofunc:: project_out_except
+.. autofunction:: project_out_except
 
 .. vim: sw=4

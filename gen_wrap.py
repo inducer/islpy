@@ -75,8 +75,8 @@ class Method:
 
 
 CLASSES = [
-        "basic_set_list", "set_list", "aff_list", "band_list",
-        "printer",  "mat", "vec",
+        "basic_set_list", "set_list", "aff_list", "pw_aff_list", "band_list",
+        "printer",  "mat", "vec", "id",
         "aff", "pw_aff",
 
          "div", "dim",  "constraint", "local_space",
