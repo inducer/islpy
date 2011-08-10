@@ -72,12 +72,23 @@ See also :ref:`gen-remarks`.
 User-visible Changes
 ====================
 
+Version 2011.3
+--------------
+
+.. note::
+
+    This version is currently in development and can be obtained from
+    islpy's version control.
+
+* Add :meth:`islpy.Set.project_out_except` and friends.
+* Add :meth:`islpy.Set.remove_divs_of_dim_type` and friends.
+
 Version 2011.2
 --------------
 
 * Switch to copy-by-default semantics.
 * A few changes in Python-side functionality.
-* Automatic type promotion.
+* Automatic type promotion in 'self' argument.
 
 Version 2011.1
 --------------

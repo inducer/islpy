@@ -284,10 +284,4 @@ Output
 .. autoclass:: Printer
     :members:
 
-
-Convenience
------------
-
-.. autofunction:: project_out_except
-
 .. vim: sw=4

@@ -284,33 +284,81 @@ def _add_functionality():
 
     # }}}
 
+    # {{{ project_out_except
 
+    def obj_project_out_except(obj, names, types):
+        """
+        :param types: list of :class:`dim_type` determining
+            the types of axes to project out
+        :param names: names of axes matching the above which
+            should be left alone by the projection
 
+        ..versionadded:: 2011.3
+        """
 
-def project_out_except(obj, names, types):
-    """
-    ..versionadded:: 2011.3
-    """
+        for tp in types:
+            while True:
+                dim = obj.get_dim()
+                var_dict = dim.get_var_dict(tp)
 
-    for tp in types:
-        while True:
-            dim = obj.get_dim()
-            var_dict = dim.get_var_dict(tp)
+                all_indices = set(xrange(dim.size(tp)))
+                leftover_indices = set(var_dict[name][1] for name in names
+                        if name in var_dict)
+                project_indices = all_indices-leftover_indices
+                if not project_indices:
+                    break
 
-            all_indices = set(xrange(dim.size(tp)))
-            leftover_indices = set(var_dict[name][1] for name in names)
-            project_indices = all_indices-leftover_indices
-            if not project_indices:
-                break
+                min_index = min(project_indices)
+                count = 1
+                while min_index+count in project_indices:
+                    count += 1
 
-            min_index = min(project_indices)
-            count = 1
-            while min_index+count in project_indices:
-                count += 1
+                obj = obj.project_out(tp, min_index, count)
 
-            obj = obj.project_out(tp, min_index, count)
+        return obj
+    # }}}
 
-    return obj
+    # {{{ remove_divs_of_dim_type
+
+    def obj_remove_divs_of_dim_type(self, type):
+        """
+        ..versionadded:: 2011.3
+        """
+        result = self.remove_divs_involving_dims(
+            type, 0, self.get_dim().size(type))
+
+        basic_objs = None
+        if isinstance(self, BasicSet):
+            basic_objs = result.get_basic_sets()
+        elif isinstance(self, BasicMap):
+            basic_objs = result.get_basic_maps()
+
+        if basic_objs is not None and len(basic_objs) == 1:
+            return basic_objs[0]
+        else:
+            return result
+
+    # }}}
+
+    # {{{ add_constraints
+
+    def obj_add_constraints(obj, constraints):
+        """
+        ..versionadded:: 2011.3
+        """
+
+        for cns in constraints:
+            obj = obj.add_constraint(cns)
+
+        return obj
+
+    # }}}
+
+    for c in [BasicSet, BasicMap, Set, Map]:
+        c.project_out_except = obj_project_out_except
+        c.remove_divs_of_dim_type = obj_remove_divs_of_dim_type
+        c.add_constraints = obj_add_constraints
+
 
 
 
