@@ -293,7 +293,7 @@ def _add_functionality():
         :param names: names of axes matching the above which
             should be left alone by the projection
 
-        ..versionadded:: 2011.3
+        .. versionadded:: 2011.3
         """
 
         for tp in types:
@@ -322,7 +322,7 @@ def _add_functionality():
 
     def obj_remove_divs_of_dim_type(self, type):
         """
-        ..versionadded:: 2011.3
+        .. versionadded:: 2011.3
         """
         result = self.remove_divs_involving_dims(
             type, 0, self.get_dim().size(type))
@@ -344,7 +344,7 @@ def _add_functionality():
 
     def obj_add_constraints(obj, constraints):
         """
-        ..versionadded:: 2011.3
+        .. versionadded:: 2011.3
         """
 
         for cns in constraints:
