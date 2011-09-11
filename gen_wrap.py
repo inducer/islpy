@@ -79,12 +79,12 @@ CLASSES = [
         "printer",  "mat", "vec", "id",
         "aff", "pw_aff",
 
-         "div", "dim",  "constraint", "local_space",
+         "div", "constraint", "space", "local_space",
 
         "basic_set", "basic_map",
         "set", "map",
         "union_map", "union_set",
-        "point", "vertex", "cell", "vertices", "dim_set",
+        "point", "vertex", "cell", "vertices",
 
         "qpolynomial_fold", "pw_qpolynomial_fold",
         "union_pw_qpolynomial_fold",
@@ -850,7 +850,7 @@ def write_wrappers(expf, wrapf, methods):
 def gen_wrapper(include_dirs):
     fdata = FunctionData(["."] + include_dirs)
     fdata.read_header("isl_list.h")
-    fdata.read_header("isl/dim.h")
+    fdata.read_header("isl/space.h")
     fdata.read_header("isl/set.h")
     fdata.read_header("isl/map.h")
     fdata.read_header("isl/local_space.h")
@@ -886,4 +886,4 @@ def gen_wrapper(include_dirs):
 
 if __name__ == "__main__":
     from os.path import expanduser
-    gen_wrapper([expanduser("~/pool/include")])
+    gen_wrapper([expanduser("isl/include")])

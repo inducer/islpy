@@ -1,6 +1,6 @@
 #include <boost/python.hpp>
 #include <isl/ctx.h>
-#include <isl/dim.h>
+#include <isl/space.h>
 #include <isl/set.h>
 #include <isl/map.h>
 #include <isl/union_set.h>
@@ -124,8 +124,8 @@ namespace isl
   WRAP_CLASS(pw_aff);
 
   WRAP_CLASS(div);
-  WRAP_CLASS(dim);
   WRAP_CLASS(constraint);
+  WRAP_CLASS(space);
   WRAP_CLASS(local_space);
 
   WRAP_CLASS(basic_set);
@@ -263,8 +263,8 @@ BOOST_PYTHON_MODULE(_isl)
   MAKE_WRAP(pw_aff, PwAff);
 
   MAKE_WRAP(div, Div);
-  MAKE_WRAP(dim, Dim);
   MAKE_WRAP(constraint, Constraint);
+  MAKE_WRAP(space, Space);
   MAKE_WRAP(local_space, LocalSpace);
 
   MAKE_WRAP(basic_set, BasicSet);

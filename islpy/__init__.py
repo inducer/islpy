@@ -23,9 +23,9 @@ def _add_functionality():
 
     # }}}
 
-    # {{{ Dim
+    # {{{ Space
 
-    def dim_get_var_dict(self, dimtype=None):
+    def space_get_var_dict(self, dimtype=None):
         """Return a dictionary mapping variable names to tuples of (:class:`dim_type`, index).
 
         :param dimtype: None to get all variables, otherwise
@@ -33,7 +33,7 @@ def _add_functionality():
         """
         result = {}
 
-        def set_name(name, tp, idx):
+        def set_dim_name(name, tp, idx):
             if name in result:
                 raise RuntimeError("non-unique var name '%s' encountered" % name)
             result[name] = tp, idx
@@ -44,15 +44,15 @@ def _add_functionality():
             types = [dimtype]
 
         for tp in types:
-            for i in range(self.size(tp)):
-                name = self.get_name(tp, i)
+            for i in range(self.dim(tp)):
+                name = self.get_dim_name(tp, i)
                 if name is not None:
-                    set_name(name, tp, i)
+                    set_dim_name(name, tp, i)
 
         return result
 
-    def dim_create_from_names(ctx, set=None, in_=None, out=None, params=[]):
-        """Create a :class:`Dim` from lists of variable names.
+    def space_create_from_names(ctx, set=None, in_=None, out=None, params=[]):
+        """Create a :class:`Space` from lists of variable names.
 
         :param set_`: names of `set`-type variables.
         :param in_`: names of `in`-type variables.
@@ -65,34 +65,34 @@ def _add_functionality():
             if in_ is not None or out is not None:
                 raise RuntimeError("must pass only one of set / (in_,out)")
 
-            result = Dim.set_alloc(ctx, nparam=len(params),
+            result = Space.set_alloc(ctx, nparam=len(params),
                     dim=len(set))
 
             for i, name in enumerate(set):
-                result = result.set_name(dt.set, i, name)
+                result = result.set_dim_name(dt.set, i, name)
 
         elif in_ is not None and out is not None:
-            if dim is not None:
+            if set is not None:
                 raise RuntimeError("must pass only one of set / (in_,out)")
 
-            result = Dim.alloc(ctx, nparam=len(params),
+            result = Space.alloc(ctx, nparam=len(params),
                     n_in=len(in_), n_out=len(out))
 
             for i, name in enumerate(in_):
-                result = result.set_name(dt.in_, i, name)
+                result = result.set_dim_name(dt.in_, i, name)
 
             for i, name in enumerate(out):
-                result = result.set_name(dt.out, i, name)
+                result = result.set_dim_name(dt.out, i, name)
         else:
             raise RuntimeError("invalid parameter combination")
 
         for i, name in enumerate(params):
-            result = result.set_name(dt.param, i, name)
+            result = result.set_dim_name(dt.param, i, name)
 
         return result
 
-    Dim.create_from_names = staticmethod(dim_create_from_names)
-    Dim.get_var_dict = dim_get_var_dict
+    Space.create_from_names = staticmethod(space_create_from_names)
+    Space.get_var_dict = space_get_var_dict
 
     # }}}
 
@@ -120,7 +120,7 @@ def _add_functionality():
         except AttributeError:
             pass
 
-        var2idx = self.get_dim().get_var_dict()
+        var2idx = self.get_space().get_var_dict()
 
         for name, coeff in iterable:
             if name == 1:
@@ -131,10 +131,10 @@ def _add_functionality():
 
         return self
 
-    def eq_from_names(dim, coefficients={}):
+    def eq_from_names(space, coefficients={}):
         """Create a constraint `const + coeff_1*var_1 +... == 0`.
 
-        :param dim: :class:`Dim`
+        :param space: :class:`Space`
         :param coefficients: a :class:`dict` or iterable of :class:`tuple`
             instances mapping variable names to their coefficients
             The constant is set to the value of the key '1'.
@@ -142,13 +142,13 @@ def _add_functionality():
         .. versionchanged:: 2011.3
             Eliminated the separate *const* parameter.
         """
-        c = Constraint.equality_alloc(dim)
+        c = Constraint.equality_alloc(space)
         return c.set_coefficients_by_name(coefficients)
 
-    def ineq_from_names(dim, coefficients={}):
+    def ineq_from_names(space, coefficients={}):
         """Create a constraint `const + coeff_1*var_1 +... >= 0`.
 
-        :param dim: :class:`Dim`
+        :param space: :class:`Space`
         :param coefficients: a :class:`dict` or iterable of :class:`tuple` 
             instances mapping variable names to their coefficients
             The constant is set to the value of the key '1'.
@@ -156,7 +156,7 @@ def _add_functionality():
         .. versionchanged:: 2011.3
             Eliminated the separate *const* parameter.
         """
-        c = Constraint.inequality_alloc(dim)
+        c = Constraint.inequality_alloc(space)
         return c.set_coefficients_by_name(coefficients)
 
     def constraint_get_coefficients_by_name(self, dimtype=None):
@@ -171,12 +171,12 @@ def _add_functionality():
             types = [dimtype]
 
         result = {}
-        dim = self.get_dim()
+        space = self.get_space()
         for tp in types:
-            for i in range(dim.size(tp)):
+            for i in range(space.size(tp)):
                 coeff = self.get_coefficient(tp, i)
                 if coeff:
-                    result[dim.get_name(tp, i)] = coeff
+                    result[space.get_name(tp, i)] = coeff
 
         const = self.get_constant()
         if const:
@@ -298,10 +298,10 @@ def _add_functionality():
 
         for tp in types:
             while True:
-                dim = obj.get_dim()
-                var_dict = dim.get_var_dict(tp)
+                space = obj.get_space()
+                var_dict = space.get_var_dict(tp)
 
-                all_indices = set(xrange(dim.size(tp)))
+                all_indices = set(xrange(space.size(tp)))
                 leftover_indices = set(var_dict[name][1] for name in names
                         if name in var_dict)
                 project_indices = all_indices-leftover_indices
@@ -325,7 +325,7 @@ def _add_functionality():
         .. versionadded:: 2011.3
         """
         result = self.remove_divs_involving_dims(
-            type, 0, self.get_dim().size(type))
+            type, 0, self.get_space().size(type))
 
         basic_objs = None
         if isinstance(self, BasicSet):

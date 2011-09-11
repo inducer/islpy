@@ -34,19 +34,21 @@ bounds on piecewise step-polynomials.
     2011.2. If you would like to use the software that's described here, get a
     current checkout from `github <http://github.com/inducer/islpy>`_.
 
+    Also, :class:`islpy.Dim` was renamed to :class:`islpy.Space` in isl.
+
 Now you obviously want to watch the library do something (at least mildly)
 cool? Well, sit back and watch::
 
     import islpy as isl
 
     ctx = isl.Context()
-    dim = isl.Dim.create_from_names(ctx, set=["x", "y"])
+    space = isl.Space.create_from_names(ctx, set=["x", "y"])
 
-    bset = (isl.BasicSet.universe(dim)
-            .add_constraint(isl.Constraint.ineq_from_names(dim, {1: -1, "x":1}))
-            .add_constraint(isl.Constraint.ineq_from_names(dim, {1: 5, "x":-1}))
-            .add_constraint(isl.Constraint.ineq_from_names(dim, {1: -1, "y": 1}))
-            .add_constraint(isl.Constraint.ineq_from_names(dim, {1: 5, "y": -1})))
+    bset = (isl.BasicSet.universe(space)
+            .add_constraint(isl.Constraint.ineq_from_names(space, {1: -1, "x":1}))
+            .add_constraint(isl.Constraint.ineq_from_names(space, {1: 5, "x":-1}))
+            .add_constraint(isl.Constraint.ineq_from_names(space, {1: -1, "y": 1}))
+            .add_constraint(isl.Constraint.ineq_from_names(space, {1: 5, "y": -1})))
     print "set 1:", bset
 
     bset2 = isl.BasicSet.read_from_str(ctx,

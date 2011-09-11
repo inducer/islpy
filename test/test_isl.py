@@ -12,12 +12,12 @@ def test_basics():
     dt = isl.dim_type
 
     ctx = isl.Context()
-    dim = isl.Dim.create_from_names(ctx, set=["a", "b"])
+    space = isl.Space.create_from_names(ctx, set=["a", "b"])
 
-    bset = (isl.BasicSet.universe(dim)
-            .add_constraint(isl.Constraint.eq_from_names(dim, {"a":-1, "b": 2}))
-            .add_constraint(isl.Constraint.ineq_from_names(dim, {"a":1, 1:-10}))
-            .add_constraint(isl.Constraint.ineq_from_names(dim, {"a":-1, 1: 42}))
+    bset = (isl.BasicSet.universe(space)
+            .add_constraint(isl.Constraint.eq_from_names(space, {"a":-1, "b": 2}))
+            .add_constraint(isl.Constraint.ineq_from_names(space, {"a":1, 1:-10}))
+            .add_constraint(isl.Constraint.ineq_from_names(space, {"a":-1, 1: 42}))
             .project_out(dt.set, 1, 1))
 
     bset2 = isl.BasicSet.read_from_str(ctx,

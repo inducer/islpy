@@ -77,10 +77,12 @@ Context
 
 .. class:: Context()
 
-Dim
----
+Space
+-----
 
-.. autoclass:: Dim
+(formerly called :class:`Dim`. A compatibility alias is in place.
+
+.. autoclass:: Space
     :members:
 
 Local Space
