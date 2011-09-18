@@ -826,6 +826,12 @@ def write_wrappers(expf, wrapf, methods):
     static_decls = []
 
     for meth in methods:
+        if meth.name.endswith("_si") or meth.name.endswith("_ui") and len([
+            meth2.name == meth.name[:-3]
+            for meth2 in methods]):
+            # no need to expose C integer versions of things
+            continue
+
         try:
             arg_names, doc_str = write_wrapper(wrapf, meth)
             write_exposer(expf, meth, arg_names, doc_str, static_decls)
