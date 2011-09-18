@@ -96,40 +96,88 @@ def _add_functionality():
 
     # }}}
 
-    # {{{ Constraint
+    # {{{ coefficient wrangling
 
-    def constraint_set_coefficients(self, dim_tp, args):
+    def obj_set_coefficients(self, dim_tp, args):
         """
         :param dim_tp: :class:`dim_type`
         :param args: :class:`list` of coefficients, for indices `0..len(args)-1`.
+
+        .. versionchanged:: 2011.3
+            New for :class:`Aff`, :class:`Div`.
         """
         for i, coeff in enumerate(args):
             self = self.set_coefficient(dim_tp, i, coeff)
 
         return self
 
-    def constraint_set_coefficients_by_name(self, iterable):
-        """Set the coefficients and the constant of the constraint.
+    def obj_set_coefficients_by_name(self, iterable, name_to_dim=None):
+        """Set the coefficients and the constant.
 
         :param iterable: a :class:`dict` or iterable of :class:`tuple`
             instances mapping variable names to their coefficients.
             The constant is set to the value of the key '1'.
+
+        .. versionchanged:: 2011.3
+            New for :class:`Aff`, :class:`Div`.
         """
         try:
             iterable = iterable.iteritems()
         except AttributeError:
             pass
 
-        var2idx = self.get_space().get_var_dict()
+        if name_to_dim is None:
+            name_to_dim = self.get_space().get_var_dict()
 
         for name, coeff in iterable:
             if name == 1:
                 self = self.set_constant(coeff)
             else:
-                tp, idx = var2idx[name]
+                tp, idx = name_to_dim[name]
                 self = self.set_coefficient(tp, idx, coeff)
 
         return self
+
+    def obj_get_coefficients_by_name(self, dimtype=None, dim_to_name=None):
+        """Return a dictionary mapping variable names to coefficients.
+
+        :param dimtype: None to get all variables, otherwise
+            one of :class:`dim_type`.
+
+        .. versionchanged:: 2011.3
+            New for :class:`Aff`, :class:`Div`.
+        """
+        if dimtype is None:
+            types = _CHECK_DIM_TYPES
+        else:
+            types = [dimtype]
+
+        result = {}
+        for tp in types:
+            for i in range(self.dim(tp)):
+                coeff = self.get_coefficient(tp, i)
+                if coeff:
+                    if dim_to_name is None:
+                        name = self.get_dim_name(tp, i)
+                    else:
+                        name = dim_to_name[(tp, i)]
+
+                    result[name] = coeff
+
+        const = self.get_constant()
+        if const:
+            result[1] = const
+
+        return result
+
+    for coeff_class in [Constraint, Aff, Div]:
+        coeff_class.set_coefficients = obj_set_coefficients
+        coeff_class.set_coefficients_by_name = obj_set_coefficients_by_name
+        coeff_class.get_coefficients_by_name = obj_get_coefficients_by_name
+
+    # }}}
+
+    # {{{ Constraint
 
     def eq_from_names(space, coefficients={}):
         """Create a constraint `const + coeff_1*var_1 +... == 0`.
@@ -159,36 +207,8 @@ def _add_functionality():
         c = Constraint.inequality_alloc(space)
         return c.set_coefficients_by_name(coefficients)
 
-    def constraint_get_coefficients_by_name(self, dimtype=None):
-        """Return a dictionary mapping variable names to coefficients.
-
-        :param dimtype: None to get all variables, otherwise
-            one of :class:`dim_type`.
-        """
-        if dimtype is None:
-            types = _CHECK_DIM_TYPES
-        else:
-            types = [dimtype]
-
-        result = {}
-        space = self.get_space()
-        for tp in types:
-            for i in range(space.size(tp)):
-                coeff = self.get_coefficient(tp, i)
-                if coeff:
-                    result[space.get_name(tp, i)] = coeff
-
-        const = self.get_constant()
-        if const:
-            result[1] = const
-
-        return result
-
-    Constraint.set_coefficients = constraint_set_coefficients
-    Constraint.set_coefficients_by_name = constraint_set_coefficients_by_name
     Constraint.eq_from_names = staticmethod(eq_from_names)
     Constraint.ineq_from_names = staticmethod(ineq_from_names)
-    Constraint.get_coefficients_by_name = constraint_get_coefficients_by_name
 
     # }}}
 
