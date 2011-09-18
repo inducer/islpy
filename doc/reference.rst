@@ -80,7 +80,7 @@ Context
 Space
 -----
 
-(formerly called :class:`Dim`. A compatibility alias is in place.
+(formerly called :class:`Dim`. A compatibility alias is in place.)
 
 .. autoclass:: Space
     :members:
