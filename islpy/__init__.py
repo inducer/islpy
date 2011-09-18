@@ -265,6 +265,70 @@ def _add_functionality():
 
     # }}}
 
+    # {{{ PwAff
+
+    def pwaff_get_pieces(self):
+        """
+        :return: list of (:class:`Set`, :class:`Aff`)
+        """
+
+        result = []
+        def append_tuple(*args):
+            result.append(args)
+
+        self.foreach_piece(append_tuple)
+        return result
+
+    PwAff.get_pieces = pwaff_get_pieces
+
+    # }}}
+
+    # {{{ aff arithmetic
+
+    def _number_to_aff(template, num):
+        result = Aff.zero_on_domain(LocalSpace.from_space(template.get_domain_space()))
+        result = result.set_constant(num)
+        if isinstance(template, PwAff):
+            return PwAff.from_aff(result)
+        else:
+            return result
+
+    def aff_add(self, other):
+        if not isinstance(other, (Aff, PwAff)):
+            other = _number_to_aff(self, other)
+
+        return self.add(other)
+
+    def aff_sub(self, other):
+        if not isinstance(other, (Aff, PwAff)):
+            other = _number_to_aff(self, other)
+
+        return self.sub(other)
+
+    def aff_rsub(self, other):
+        if not isinstance(other, (Aff, PwAff)):
+            other = _number_to_aff(self, other)
+
+        return -self + other
+
+    def aff_mul(self, other):
+        if not isinstance(other, (Aff, PwAff)):
+            other = _number_to_aff(self, other)
+
+        return self.mul(other)
+
+    for aff_class in [Aff, PwAff]:
+        aff_class.__add__ = aff_add
+        aff_class.__radd__ = aff_add
+        aff_class.__sub__ = aff_sub
+        aff_class.__rsub__ = aff_rsub
+        aff_class.__mul__ = aff_mul
+        aff_class.__rmul__ = aff_mul
+        aff_class.__neg__ = aff_class.neg
+        aff_class.__mod__ = aff_class.mod
+
+    # }}}
+
     # {{{ add automatic upcasts
 
     class UpcastWrapper(object):
@@ -299,6 +363,7 @@ def _add_functionality():
     for args_triple in [
             (BasicSet, Set, BasicSet.as_set),
             (BasicMap, Map, BasicMap.as_map),
+            (Aff, PwAff, PwAff.from_aff),
             ]:
         add_upcasts(*args_triple)
 
