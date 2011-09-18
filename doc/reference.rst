@@ -97,12 +97,6 @@ Constraints
 .. autoclass:: Constraint
     :members:
 
-Existentially Quantified Variables
-----------------------------------
-
-.. autoclass:: Div
-    :members:
-
 Vector
 ------
 

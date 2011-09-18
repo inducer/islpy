@@ -79,7 +79,7 @@ CLASSES = [
         "printer",  "mat", "vec", "id",
         "aff", "pw_aff",
 
-         "div", "constraint", "space", "local_space",
+         "constraint", "space", "local_space",
 
         "basic_set", "basic_map",
         "set", "map",
@@ -873,7 +873,6 @@ def gen_wrapper(include_dirs):
     fdata.read_header("isl/band.h")
     fdata.read_header("isl/schedule.h")
     fdata.read_header("isl/flow.h")
-    fdata.read_header("isl/div.h")
 
     expf = open("src/wrapper/gen-expose.inc", "wt")
     wrapf = open("src/wrapper/gen-wrap.inc", "wt")

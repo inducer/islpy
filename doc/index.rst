@@ -34,7 +34,9 @@ bounds on piecewise step-polynomials.
     2011.2. If you would like to use the software that's described here, get a
     current checkout from `github <http://github.com/inducer/islpy>`_.
 
-    Also, :class:`islpy.Dim` was renamed to :class:`islpy.Space` in isl.
+    Also, there were a few breaking changes in isl that reflect through to Python:
+    :class:`islpy.Dim` was renamed to :class:`islpy.Space` in isl,
+    and :class:`islpy.Div` was removed, having been superseded by :class:`islpy.Aff`.
 
 Now you obviously want to watch the library do something (at least mildly)
 cool? Well, sit back and watch::

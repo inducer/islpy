@@ -104,7 +104,7 @@ def _add_functionality():
         :param args: :class:`list` of coefficients, for indices `0..len(args)-1`.
 
         .. versionchanged:: 2011.3
-            New for :class:`Aff`, :class:`Div`.
+            New for :class:`Aff`
         """
         for i, coeff in enumerate(args):
             self = self.set_coefficient(dim_tp, i, coeff)
@@ -119,7 +119,7 @@ def _add_functionality():
             The constant is set to the value of the key '1'.
 
         .. versionchanged:: 2011.3
-            New for :class:`Aff`, :class:`Div`.
+            New for :class:`Aff`
         """
         try:
             iterable = iterable.iteritems()
@@ -145,7 +145,7 @@ def _add_functionality():
             one of :class:`dim_type`.
 
         .. versionchanged:: 2011.3
-            New for :class:`Aff`, :class:`Div`.
+            New for :class:`Aff`
         """
         if dimtype is None:
             types = _CHECK_DIM_TYPES
@@ -170,7 +170,7 @@ def _add_functionality():
 
         return result
 
-    for coeff_class in [Constraint, Aff, Div]:
+    for coeff_class in [Constraint, Aff]:
         coeff_class.set_coefficients = obj_set_coefficients
         coeff_class.set_coefficients_by_name = obj_set_coefficients_by_name
         coeff_class.get_coefficients_by_name = obj_get_coefficients_by_name

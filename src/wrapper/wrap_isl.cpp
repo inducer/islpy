@@ -123,7 +123,6 @@ namespace isl
   WRAP_CLASS(aff);
   WRAP_CLASS(pw_aff);
 
-  WRAP_CLASS(div);
   WRAP_CLASS(constraint);
   WRAP_CLASS(space);
   WRAP_CLASS(local_space);
@@ -262,7 +261,6 @@ BOOST_PYTHON_MODULE(_isl)
   MAKE_WRAP(aff, Aff);
   MAKE_WRAP(pw_aff, PwAff);
 
-  MAKE_WRAP(div, Div);
   MAKE_WRAP(constraint, Constraint);
   MAKE_WRAP(space, Space);
   MAKE_WRAP(local_space, LocalSpace);

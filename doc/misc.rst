@@ -83,6 +83,8 @@ Version 2011.3
 * Add :meth:`islpy.Set.project_out_except` and friends.
 * Add :meth:`islpy.Set.remove_divs_of_dim_type` and friends.
 * :class:`islpy.Dim` was renamed to :class:`islpy.Space` in isl.
+* :class:`islpy.Div` was removed and replaced by :class:`islpy.Aff`
+  wherever it was used previously.
 
 Version 2011.2
 --------------
