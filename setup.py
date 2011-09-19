@@ -70,7 +70,7 @@ def main():
             if "int main(" not in contents and not blacklisted:
                 EXTRA_OBJECTS.append(fn)
 
-        conf["ISL_INC_DIR"] = ["isl/include", "isl-generated", "isl"]
+        conf["ISL_INC_DIR"] = ["isl-supplementary", "isl/include",  "isl"]
     else:
         LIBRARY_DIRS.extend(conf["ISL_LIB_DIR"])
         LIBRARIES.extend(conf["ISL_LIBNAME"])
