@@ -46,6 +46,27 @@ Whenever an integer argument is required, :mod:`islpy` supports regular Python
 integers, Python long integers, and :mod:`gmpy` integers. It will return
 :mod:`gmpy` integers.
 
+.. _automatic casts:
+
+Automatic Casts
+---------------
+
+:mod:`islpy` will automatically perform the following upward casts in argument
+lists:
+
+==================== ==========================
+Called with          Argument Type
+==================== ==========================
+:class:`BasicSet`    :class:`Set`
+:class:`BasicMap`    :class:`Map`
+:class:`Set`         :class:`UnionSet`
+:class:`Map`         :class:`UnionMap`
+:class:`Space`       :class:`LocalSpace`
+:class:`Aff`         :class:`PwAff`
+==================== ==========================
+
+as well as casts contained in the transitive closure of this 'casting graph'.
+
 Symbolic Constants
 ^^^^^^^^^^^^^^^^^^
 

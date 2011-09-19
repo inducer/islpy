@@ -54,8 +54,26 @@ namespace isl
   }
 
 #define WRAP_CLASS(name) \
-  struct name \
-  { \
+  struct name { WRAP_CLASS_CONTENT(name) }
+
+#define MAKE_CAST_CTOR(name, from_type, cast_func) \
+      name(from_type &data) \
+      : m_valid(false) \
+      { \
+        m_ctx = isl_##from_type##_get_ctx(data.m_data); \
+        \
+        isl_##from_type *copy = isl_##from_type##_copy(data.m_data); \
+        if (!copy) \
+          throw std::runtime_error("isl_" #from_type "_copy failed"); \
+        m_data = cast_func(copy); \
+        if (!m_data) \
+          throw std::runtime_error(#cast_func " failed"); \
+        \
+        m_valid = true; \
+        ctx_use_map[m_ctx] += 1; \
+      }
+
+#define WRAP_CLASS_CONTENT(name) \
     private: \
       bool              m_valid; \
       isl_ctx           *m_ctx; \
@@ -87,8 +105,7 @@ namespace isl
           isl_##name##_free(m_data); \
           deref_ctx(m_ctx); \
         } \
-      } \
-  };
+      }
 
   struct ctx \
   {
@@ -105,7 +122,7 @@ namespace isl
           ctx_use_map[m_data] += 1;
       }
 
-      bool is_valid()
+      bool is_valid() const
       {
         return true;
       }
@@ -121,18 +138,47 @@ namespace isl
   WRAP_CLASS(id);
 
   WRAP_CLASS(aff);
-  WRAP_CLASS(pw_aff);
+
+  struct pw_aff
+  {
+    WRAP_CLASS_CONTENT(pw_aff);
+    MAKE_CAST_CTOR(pw_aff, aff, isl_pw_aff_from_aff);
+  };
 
   WRAP_CLASS(constraint);
   WRAP_CLASS(space);
-  WRAP_CLASS(local_space);
+
+  struct local_space
+  {
+    WRAP_CLASS_CONTENT(local_space);
+    MAKE_CAST_CTOR(local_space, space, isl_local_space_from_space);
+  };
 
   WRAP_CLASS(basic_set);
   WRAP_CLASS(basic_map);
-  WRAP_CLASS(set);
-  WRAP_CLASS(map);
-  WRAP_CLASS(union_set);
-  WRAP_CLASS(union_map);
+
+  struct set
+  {
+    WRAP_CLASS_CONTENT(set);
+    MAKE_CAST_CTOR(set, basic_set, isl_set_from_basic_set);
+  };
+
+  struct map
+  {
+    WRAP_CLASS_CONTENT(map);
+    MAKE_CAST_CTOR(map, basic_map, isl_map_from_basic_map);
+  };
+
+  struct union_set
+  {
+    WRAP_CLASS_CONTENT(union_set);
+    MAKE_CAST_CTOR(union_set, set, isl_union_set_from_set);
+  };
+  struct union_map
+  {
+    WRAP_CLASS_CONTENT(union_map);
+    MAKE_CAST_CTOR(union_map, map, isl_union_map_from_map);
+  };
 
   WRAP_CLASS(point);
   WRAP_CLASS(vertex);
@@ -306,6 +352,13 @@ BOOST_PYTHON_MODULE(_isl)
   FORMAT_ATTR(C);
   FORMAT_ATTR(LATEX);
   FORMAT_ATTR(EXT_POLYLIB);
+
+  py::implicitly_convertible<isl::basic_set, isl::set>();
+  py::implicitly_convertible<isl::basic_map, isl::map>();
+  py::implicitly_convertible<isl::set, isl::union_set>();
+  py::implicitly_convertible<isl::map, isl::union_map>();
+  py::implicitly_convertible<isl::space, isl::local_space>();
+  py::implicitly_convertible<isl::aff, isl::pw_aff>();
 
   #include "gen-expose.inc"
 }

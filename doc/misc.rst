@@ -85,6 +85,11 @@ Version 2011.3
 * :class:`islpy.Dim` was renamed to :class:`islpy.Space` in isl.
 * :class:`islpy.Div` was removed and replaced by :class:`islpy.Aff`
   wherever it was used previously.
+* :meth:`islpy.BasicSet.as_set`
+  and
+  :meth:`islpy.BasicMap.as_map`
+  were removed.
+* :ref:`automatic-casts` were added.
 
 Version 2011.2
 --------------

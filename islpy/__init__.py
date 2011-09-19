@@ -275,7 +275,7 @@ def _add_functionality():
     # {{{ aff arithmetic
 
     def _number_to_aff(template, num):
-        result = Aff.zero_on_domain(LocalSpace.from_space(template.get_domain_space()))
+        result = Aff.zero_on_domain(template.get_domain_space())
         result = result.set_constant(num)
         if isinstance(template, PwAff):
             return PwAff.from_aff(result)
@@ -318,7 +318,10 @@ def _add_functionality():
 
     # }}}
 
-    # {{{ add automatic upcasts
+    # {{{ add automatic 'self' upcasts
+
+    # note: automatic upcasts for method arguments are provided through
+    # 'implicitly_convertible' on the C++ side of the wrapper.
 
     class UpcastWrapper(object):
         def __init__(self, method, upcast):
@@ -350,9 +353,16 @@ def _add_functionality():
                 setattr(basic_class, method_name, update_wrapper(wrapper, method))
 
     for args_triple in [
-            (BasicSet, Set, BasicSet.as_set),
-            (BasicMap, Map, BasicMap.as_map),
+            (BasicSet, Set, Set.from_basic_set),
+            (BasicMap, Map, Map.from_basic_map),
+            (Set, UnionSet, UnionSet.from_set),
+            (Map, UnionMap, UnionMap.from_map),
+
+            (BasicSet, UnionSet, lambda x: UnionSet.from_set(Set.from_basic_set(x))),
+            (BasicMap, UnionMap, lambda x: UnionMap.from_map(Map.from_basic_map(x))),
+
             (Aff, PwAff, PwAff.from_aff),
+            (Space, LocalSpace, LocalSpace.from_space),
             ]:
         add_upcasts(*args_triple)
 
