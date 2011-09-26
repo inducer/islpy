@@ -154,7 +154,7 @@ def _add_functionality():
 
         result = {}
         for tp in types:
-            for i in range(self.dim(tp)):
+            for i in range(self.get_space().dim(tp)):
                 coeff = self.get_coefficient(tp, i)
                 if coeff:
                     if dim_to_name is None:
