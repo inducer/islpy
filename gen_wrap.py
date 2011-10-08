@@ -41,7 +41,7 @@ class CallbackArgument:
 class Method:
     def __init__(self, cls, name, c_name,
             return_semantics, return_base_type, return_ptr,
-            args):
+            args, is_exported, is_constructor):
         self.cls = cls
         self.name = name
         self.c_name = c_name
@@ -50,6 +50,8 @@ class Method:
         self.return_ptr = return_ptr
         self.args = args
         self.mutator_veto = False
+        self.is_exported = is_exported
+        self.is_constructor = is_constructor
 
         if not self.is_static:
             self.args[0].name = "self"
@@ -74,18 +76,24 @@ class Method:
 
 
 
-CLASSES = [
+PART_TO_CLASSES = {
+        "part1": [
         "basic_set_list", "set_list", "aff_list", "pw_aff_list", "band_list",
         "printer",  "mat", "vec", "id",
         "aff", "pw_aff",
+        "multi_aff", "pw_multi_aff",
 
          "constraint", "space", "local_space",
+         ],
 
+        "part2": [
         "basic_set", "basic_map",
         "set", "map",
         "union_map", "union_set",
         "point", "vertex", "cell", "vertices",
+        ],
 
+        "part3": [
         "qpolynomial_fold", "pw_qpolynomial_fold",
         "union_pw_qpolynomial_fold",
         "union_pw_qpolynomial", "term",
@@ -95,6 +103,10 @@ CLASSES = [
 
         "access_info", "flow",
         ]
+        }
+CLASSES = []
+for cls_list in PART_TO_CLASSES.itervalues():
+    CLASSES.extend(cls_list)
 
 CLASS_MAP = {
         "equality": "constraint",
@@ -122,7 +134,7 @@ FUNC_PTR_RE = re.compile(r"""
     \)
     """,
     re.VERBOSE)
-STRUCT_DECL_RE = re.compile(r"struct\s+([a-z_A-Z0-9]+)\s*;")
+STRUCT_DECL_RE = re.compile(r"(__isl_export\s+)?struct\s+([a-z_A-Z0-9]+)\s*;")
 ARG_RE = re.compile(r"^((?:\w+)\s+)+(\**)\s*(\w+)$")
 INLINE_SEMICOLON_RE = re.compile(r"\;[ \t]*(?=\w)")
 
@@ -310,16 +322,23 @@ class FunctionData:
 
             else:
                 decl = ""
+
                 while True:
                     decl = decl + l
+                    if decl:
+                        decl += " "
                     i += 1
+                    if STRUCT_DECL_RE.search(decl):
+                        break
+
                     open_par_count = sum(1 for i in decl if i == "(")
                     close_par_count = sum(1 for i in decl if i == ")")
-                    if open_par_count == close_par_count:
+                    if open_par_count and open_par_count == close_par_count:
                         break
                     l = lines[i].strip()
 
-                self.parse_decl(decl)
+                if not STRUCT_DECL_RE.search(decl):
+                    self.parse_decl(decl)
 
     def parse_decl(self, decl):
         decl_match = DECL_RE.match(decl)
@@ -364,6 +383,15 @@ class FunctionData:
             name = name + "_"
 
         words = return_base_type.split()
+
+        is_exported = "__isl_export" in words
+        if is_exported:
+            words.remove("__isl_export")
+
+        is_constructor = "__isl_constructor" in words
+        if is_constructor:
+            words.remove("__isl_constructor")
+
         return_semantics, words = filter_semantics(words)
         words = [w for w in words if w not in ["struct", "enum"]]
         return_base_type = " ".join(words)
@@ -372,7 +400,7 @@ class FunctionData:
         cls_meth_list.append(Method(
                 cls, name, c_name,
                 return_semantics, return_base_type, return_ptr,
-                args))
+                args, is_exported=is_exported, is_constructor=is_constructor))
 
 
 
@@ -886,16 +914,18 @@ def gen_wrapper(include_dirs):
     fdata.read_header("isl/schedule.h")
     fdata.read_header("isl/flow.h")
 
-    expf = open("src/wrapper/gen-expose.inc", "wt")
-    wrapf = open("src/wrapper/gen-wrap.inc", "wt")
 
-    write_wrappers(expf, wrapf, [
-        meth
-        for methods in fdata.classes_to_methods.itervalues()
-        for meth in methods])
+    for part, classes in PART_TO_CLASSES.iteritems():
+        expf = open("src/wrapper/gen-expose-%s.inc" % part, "wt")
+        wrapf = open("src/wrapper/gen-wrap-%s.inc" % part, "wt")
 
-    expf.close()
-    wrapf.close()
+        write_wrappers(expf, wrapf, [
+            meth
+            for cls in classes
+            for meth in fdata.classes_to_methods.get(cls, [])])
+
+        expf.close()
+        wrapf.close()
 
 
 

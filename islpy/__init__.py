@@ -385,7 +385,7 @@ def _add_functionality():
                 space = obj.get_space()
                 var_dict = space.get_var_dict(tp)
 
-                all_indices = set(xrange(space.size(tp)))
+                all_indices = set(xrange(space.dim(tp)))
                 leftover_indices = set(var_dict[name][1] for name in names
                         if name in var_dict)
                 project_indices = all_indices-leftover_indices
@@ -400,6 +400,44 @@ def _add_functionality():
                 obj = obj.project_out(tp, min_index, count)
 
         return obj
+
+    # }}}
+
+    # {{{ eliminate_except
+
+    def obj_eliminate_except(obj, names, types):
+        """
+        :param types: list of :class:`dim_type` determining
+            the types of axes to eliminate
+        :param names: names of axes matching the above which
+            should be left alone by the eliminate
+
+        .. versionadded:: 2011.3
+        """
+
+        already_eliminated = set()
+
+        for tp in types:
+            space = obj.get_space()
+            var_dict = space.get_var_dict(tp)
+            to_eliminate = (
+                    set(xrange(space.dim(tp)))
+                    - set(var_dict[name][1] for name in names
+                        if name in var_dict))
+
+            while to_eliminate:
+                min_index = min(to_eliminate)
+                count = 1
+                while min_index+count in to_eliminate:
+                    count += 1
+
+                print "elim", min_index, count
+                obj = obj.eliminate(tp, min_index, count)
+
+                to_eliminate -= set(xrange(min_index, min_index+count))
+
+        return obj
+
     # }}}
 
     # {{{ remove_divs_of_dim_type
@@ -409,7 +447,7 @@ def _add_functionality():
         .. versionadded:: 2011.3
         """
         result = self.remove_divs_involving_dims(
-            type, 0, self.get_space().size(type))
+            type, 0, self.get_space().dim(type))
 
         basic_objs = None
         if isinstance(self, BasicSet):
@@ -440,6 +478,7 @@ def _add_functionality():
 
     for c in [BasicSet, BasicMap, Set, Map]:
         c.project_out_except = obj_project_out_except
+        c.eliminate_except = obj_eliminate_except
         c.remove_divs_of_dim_type = obj_remove_divs_of_dim_type
         c.add_constraints = obj_add_constraints
 

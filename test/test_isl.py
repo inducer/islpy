@@ -21,7 +21,7 @@ def test_basics():
             .project_out(dt.set, 1, 1))
 
     bset2 = isl.BasicSet.read_from_str(ctx,
-            "{[i] : exists (a : i = 2a and i >= 10 and i <= 42)}", nparam=-1)
+            "{[i] : exists (a : i = 2a and i >= 10 and i <= 42)}")
 
     points = []
     bset.foreach_point(points.append)
