@@ -431,7 +431,6 @@ def _add_functionality():
                 while min_index+count in to_eliminate:
                     count += 1
 
-                print "elim", min_index, count
                 obj = obj.eliminate(tp, min_index, count)
 
                 to_eliminate -= set(xrange(min_index, min_index+count))
