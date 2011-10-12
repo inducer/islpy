@@ -2,11 +2,11 @@ from islpy._isl import *
 from islpy.version import *
 
 
+_CHECK_DIM_TYPES = [
+        dim_type.in_, dim_type.param, dim_type.set]
+
 def _add_functionality():
     import islpy._isl as _isl
-
-    _CHECK_DIM_TYPES = [
-            dim_type.in_, dim_type.param, dim_type.set, dim_type.cst, dim_type.div]
 
     ALL_CLASSES = [getattr(_isl, cls) for cls in dir(_isl) if cls[0].isupper()]
 
@@ -478,13 +478,72 @@ def _add_functionality():
     for c in [BasicSet, BasicMap, Set, Map]:
         c.project_out_except = obj_project_out_except
         c.eliminate_except = obj_eliminate_except
-        c.remove_divs_of_dim_type = obj_remove_divs_of_dim_type
         c.add_constraints = obj_add_constraints
 
 
 
 
-
 _add_functionality()
+
+
+
+
+def align_spaces(obj, tgt, obj_bigger_ok=False):
+    """
+    Try to make the space in which *obj* lives the same as that of *tgt* by
+    adding/matching named dimensions.
+
+    :param obj_bigger_ok: If *True*, no error is raised if the resulting *obj*
+        has more dimensions than *tgt*.
+    """
+    for dt in _CHECK_DIM_TYPES:
+        obj_names = [obj.get_dim_name(dt, i) for i in xrange(obj.dim(dt))]
+        tgt_names = [tgt.get_dim_name(dt, i) for i in xrange(tgt.dim(dt))]
+
+        if None in tgt_names:
+            all_nones = [None] * len(tgt_names)
+            if tgt_names == all_nones and obj_names == all_nones:
+                # that's ok
+                continue
+
+            raise RuntimeError("tgt may not contain any unnamed dimensions")
+
+        obj_names = set(obj_names) - set([None])
+        tgt_names = set(tgt_names) - set([None])
+
+        names_in_both = obj_names & tgt_names
+
+        i = 0
+        while i < tgt.dim(dt):
+            tgt_name = tgt.get_dim_name(dt, i)
+
+            if tgt_name in names_in_both:
+                assert i < obj.dim(dt)
+
+                obj_name = obj.get_dim_name(dt, i)
+
+                if tgt_name == obj_name:
+                    i += 1
+                else:
+                    obj_name_idx, = (j for j in xrange(obj.dim(dt,i))
+                            if obj.get_dim_name(dt, j) == tgt_name)
+
+                    if i != obj_name_idx:
+                        obj = obj.move_dims(dt, i, dt, obj_name_idx, 1)
+
+                    i += 1
+            else:
+                obj = obj.insert_dims(dt, i, 1)
+                obj = obj.set_dim_name(dt, i, tgt_name)
+                i += 1
+
+        if i < obj.dim(dt) and not obj_bigger_ok:
+            raise ValueError("obj has leftover dimensions in align_spaces()")
+
+    return obj
+
+
+
+
 
 # vim: foldmethod=marker
