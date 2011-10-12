@@ -268,6 +268,18 @@ def _add_functionality():
         self.foreach_piece(append_tuple)
         return result
 
+    def pwaff_get_aggregate_domain(self):
+        """
+        :return: a :class:`Set` that is the union of the domains of all pieces
+        """
+
+        result = Set.empty(self.get_domain_space())
+        for dom, _ in self.get_pieces():
+            result = result.union(dom)
+
+        return result
+
+    PwAff.get_aggregate_domain = pwaff_get_aggregate_domain
     PwAff.get_pieces = pwaff_get_pieces
 
     # }}}
