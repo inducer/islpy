@@ -301,4 +301,9 @@ Output
 .. autoclass:: Printer
     :members:
 
+Helper functions
+^^^^^^^^^^^^^^^^
+
+.. autofunction:: align_spaces
+
 .. vim: sw=4
