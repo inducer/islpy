@@ -457,28 +457,6 @@ def _add_functionality():
 
     # }}}
 
-    # {{{ remove_divs_of_dim_type
-
-    def obj_remove_divs_of_dim_type(self, type):
-        """
-        .. versionadded:: 2011.3
-        """
-        result = self.remove_divs_involving_dims(
-            type, 0, self.get_space().dim(type))
-
-        basic_objs = None
-        if isinstance(self, BasicSet):
-            basic_objs = result.get_basic_sets()
-        elif isinstance(self, BasicMap):
-            basic_objs = result.get_basic_maps()
-
-        if basic_objs is not None and len(basic_objs) == 1:
-            return basic_objs[0]
-        else:
-            return result
-
-    # }}}
-
     # {{{ add_constraints
 
     def obj_add_constraints(obj, constraints):
