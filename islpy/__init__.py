@@ -287,12 +287,17 @@ def _add_functionality():
     # {{{ aff arithmetic
 
     def _number_to_aff(template, num):
-        result = Aff.zero_on_domain(template.get_domain_space())
-        result = result.set_constant(num)
+        number_aff = Aff.zero_on_domain(template.get_domain_space())
+        number_aff = number_aff.set_constant(num)
+
         if isinstance(template, PwAff):
-            return PwAff.from_aff(result)
-        else:
+            result = PwAff.empty(template.get_space())
+            for set, _ in template.get_pieces():
+                result = result.cond(set, number_aff, result)
             return result
+
+        else:
+            return number_aff
 
     def aff_add(self, other):
         if not isinstance(other, (Aff, PwAff)):
@@ -352,8 +357,9 @@ def _add_functionality():
 
             if ismethod(method):
                 def make_wrapper(method, upcast):
-                    # this function provides a scope in which method and upcast
-                    # are not changed
+                    # This function provides a scope in which method and upcast
+                    # are not changed from one iteration of the enclosing for
+                    # loop to the next.
 
                     def wrapper(basic_instance, *args, **kwargs):
                         special_instance = upcast(basic_instance)
