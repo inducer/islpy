@@ -23,6 +23,45 @@ def _add_functionality():
 
     # }}}
 
+    # {{{ rich comparisons
+
+    def obj_eq(self, other):
+        return self.is_equal(other)
+
+    def obj_ne(self, other):
+        return not self.is_equal(other)
+
+    for cls in ALL_CLASSES:
+        if hasattr(cls, "is_equal"):
+            cls.__eq__ = obj_eq
+            cls.__ne__ = obj_ne
+
+    def obj_lt(self, other): return self.is_strict_subset(other)
+    def obj_le(self, other): return self.is_subset(other)
+    def obj_gt(self, other): return other.is_strict_subset(self)
+    def obj_ge(self, other): return other.is_subset(self)
+
+    for cls in [BasicSet, BasicMap, Set, Map]:
+        cls.__lt__ = obj_lt
+        cls.__le__ = obj_le
+        cls.__gt__ = obj_gt
+        cls.__ge__ = obj_ge
+
+    # }}}
+
+    # {{{ Python set-like behavior
+
+    def obj_or(self, other): return self.union(other)
+    def obj_and(self, other): return self.intersect(other)
+    def obj_sub(self, other): return other.subtract(self)
+
+    for cls in [BasicSet, BasicMap, Set, Map]:
+        cls.__or__ = obj_or
+        cls.__and__ = obj_and
+        cls.__sub__ = obj_sub
+
+    #}}}
+
     # {{{ Space
 
     def space_get_var_dict(self, dimtype=None):

@@ -837,9 +837,6 @@ def write_exposer(outf, meth, arg_names, doc_str, static_decls):
 
     extra_py_names = []
 
-    if meth.name == "is_equal":
-        extra_py_names.append("__eq__")
-
     #if meth.is_static:
         #doc_str = "(static method)\n" + doc_str
 

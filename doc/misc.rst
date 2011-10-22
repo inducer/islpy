@@ -90,6 +90,8 @@ Version 2011.3
   :meth:`islpy.BasicMap.as_map`
   were removed.
 * :ref:`automatic-casts` were added.
+* Support for more Python :class:`set`-like behavior was added. In particular,
+  the operators `|`, `&', '-', `<`, `<=`, `>`, `>=`, `==`, `!=` work as expected.
 
 Version 2011.2
 --------------
