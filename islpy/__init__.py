@@ -53,7 +53,7 @@ def _add_functionality():
 
     def obj_or(self, other): return self.union(other)
     def obj_and(self, other): return self.intersect(other)
-    def obj_sub(self, other): return other.subtract(self)
+    def obj_sub(self, other): return self.subtract(other)
 
     for cls in [BasicSet, BasicMap, Set, Map]:
         cls.__or__ = obj_or
