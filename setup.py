@@ -36,7 +36,7 @@ def main():
 
     check_git_submodules()
 
-    hack_distutils(what_opt="s")
+    hack_distutils(what_opt=None)
     conf = get_config(get_config_schema())
 
     EXTRA_OBJECTS, EXTRA_DEFINES = set_up_shipped_boost_if_requested("islpy", conf)
