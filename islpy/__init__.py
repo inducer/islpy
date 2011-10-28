@@ -41,13 +41,20 @@ def _add_functionality():
 
     # {{{ printing
 
-    def generic_repr(self):
+    def generic_str(self):
         prn = Printer.to_str(self.get_ctx())
         getattr(prn, "print_"+self._base_name)(self)
         return prn.get_str()
 
+    def generic_repr(self):
+        prn = Printer.to_str(self.get_ctx())
+        getattr(prn, "print_"+self._base_name)(self)
+        return "%s(\"%s\")" % (
+                type(self).__name__, prn.get_str())
+
     for cls in ALL_CLASSES:
         if hasattr(Printer, "print_"+cls._base_name):
+            cls.__str__ = generic_str
             cls.__repr__ = generic_repr
 
     # }}}
