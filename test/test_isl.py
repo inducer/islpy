@@ -31,15 +31,17 @@ def test_basics():
 
 
 
-def no_test_crash_on_invalid():
+def test_error_on_invalid_index():
     ctx = isl.Context()
-    my_set = isl.Set.read_from_str(ctx, "{ [k, l] : 3l >= -k and 3l <= 10 - k "
-                   "and k >=0 and k <= 2 }", -1)
+    my_set = isl.Set("{ [k, l] : 3l >= -k and 3l <= 10 - k "
+                   "and k >=0 and k <= 2 }", context=ctx)
     p = my_set.sample_point()
-    p.get_coordinate(isl.dim_type.set, 99999999)
-
-
-
+    try:
+        p.get_coordinate(isl.dim_type.set, 99999999)
+    except RuntimeError:
+        pass
+    else:
+        assert False
 
 
 
