@@ -53,8 +53,7 @@ cool? Well, sit back and watch::
             .add_constraint(isl.Constraint.ineq_from_names(space, {1: 5, "y": -1})))
     print "set 1:", bset
 
-    bset2 = isl.BasicSet.read_from_str(ctx,
-            "{[x, y] : x >= 0 and x < 5 and y >= 0 and y < x+4 }")
+    bset2 = isl.BasicSet("{[x, y] : x >= 0 and x < 5 and y >= 0 and y < x+4 }")
     print "set 2:", bset2
 
     bsets_in_union = []

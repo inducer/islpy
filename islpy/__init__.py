@@ -5,10 +5,39 @@ from islpy.version import *
 _CHECK_DIM_TYPES = [
         dim_type.in_, dim_type.param, dim_type.set]
 
+_DEFAULT_CONTEXT = Context()
+
 def _add_functionality():
     import islpy._isl as _isl
 
     ALL_CLASSES = [getattr(_isl, cls) for cls in dir(_isl) if cls[0].isupper()]
+
+    # {{{ generic initialization
+
+    def obj_new_from_string(cls, s, context=None):
+        """Construct a new object from :class:`str` s.
+
+        :arg context: a :class:`islpy.Context` to use. If not supplied, use a
+            global default context.
+        """
+
+        if context is None:
+            context = _DEFAULT_CONTEXT
+
+        result = cls.read_from_str(context, s)
+        result._made_from_string = True
+        return result
+
+    def obj_bogus_init(self, s, context=None):
+        assert self._made_from_string
+        del self._made_from_string
+
+    for cls in ALL_CLASSES:
+        if hasattr(cls, "read_from_str"):
+            cls.__new__ = staticmethod(obj_new_from_string)
+            cls.__init__ = obj_bogus_init
+
+    # }}}
 
     # {{{ printing
 

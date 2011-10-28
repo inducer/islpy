@@ -20,8 +20,8 @@ def test_basics():
             .add_constraint(isl.Constraint.ineq_from_names(space, {"a":-1, 1: 42}))
             .project_out(dt.set, 1, 1))
 
-    bset2 = isl.BasicSet.read_from_str(ctx,
-            "{[i] : exists (a : i = 2a and i >= 10 and i <= 42)}")
+    bset2 = isl.BasicSet("{[i] : exists (a : i = 2a and i >= 10 and i <= 42)}",
+            context=ctx)
 
     points = []
     bset.foreach_point(points.append)

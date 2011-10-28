@@ -92,6 +92,8 @@ Version 2011.3
 * :ref:`automatic-casts` were added.
 * Support for more Python :class:`set`-like behavior was added. In particular,
   the operators `|`, `&', '-', `<`, `<=`, `>`, `>=`, `==`, `!=` work as expected.
+* Support direct construction from string for objects that have a `read_from_str`
+  method.
 
 Version 2011.2
 --------------
