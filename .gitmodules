@@ -1,6 +1,6 @@
 [submodule "isl"]
 	path = isl
-	url = http://repo.or.cz/r/isl.git
+	url = git://github.com/inducer/isl-mirror.git
 [submodule "bpl-subset"]
 	path = bpl-subset
 	url = git://github.com/inducer/bpl-subset
