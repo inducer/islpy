@@ -87,9 +87,23 @@ def _add_functionality():
 
     # {{{ Python set-like behavior
 
-    def obj_or(self, other): return self.union(other)
-    def obj_and(self, other): return self.intersect(other)
-    def obj_sub(self, other): return self.subtract(other)
+    def obj_or(self, other):
+        try:
+            return self.union(other)
+        except TypeError:
+            return NotImplemented
+
+    def obj_and(self, other):
+        try:
+            return self.intersect(other)
+        except TypeError:
+            return NotImplemented
+
+    def obj_sub(self, other):
+        try:
+            return self.subtract(other)
+        except TypeError:
+            return NotImplemented
 
     for cls in [BasicSet, BasicMap, Set, Map]:
         cls.__or__ = obj_or
@@ -378,13 +392,19 @@ def _add_functionality():
         if not isinstance(other, (Aff, PwAff)):
             other = _number_to_aff(self, other)
 
-        return self.add(other)
+        try:
+            return self.add(other)
+        except TypeError:
+            return NotImplemented
 
     def aff_sub(self, other):
         if not isinstance(other, (Aff, PwAff)):
             other = _number_to_aff(self, other)
 
-        return self.sub(other)
+        try:
+            return self.sub(other)
+        except TypeError:
+            return NotImplemented
 
     def aff_rsub(self, other):
         if not isinstance(other, (Aff, PwAff)):
@@ -396,7 +416,10 @@ def _add_functionality():
         if not isinstance(other, (Aff, PwAff)):
             other = _number_to_aff(self, other)
 
-        return self.mul(other)
+        try:
+            return self.mul(other)
+        except TypeError:
+            return NotImplemented
 
     for aff_class in [Aff, PwAff]:
         aff_class.__add__ = aff_add
