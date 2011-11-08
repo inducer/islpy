@@ -531,8 +531,6 @@ def _add_functionality():
         .. versionadded:: 2011.3
         """
 
-        already_eliminated = set()
-
         for tp in types:
             space = obj.get_space()
             var_dict = space.get_var_dict(tp)
@@ -571,8 +569,10 @@ def _add_functionality():
 
     for c in [BasicSet, BasicMap, Set, Map]:
         c.project_out_except = obj_project_out_except
-        c.eliminate_except = obj_eliminate_except
         c.add_constraints = obj_add_constraints
+
+    for c in [BasicSet, Set]:
+        c.eliminate_except = obj_eliminate_except
 
 
 
