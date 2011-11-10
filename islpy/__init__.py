@@ -107,7 +107,9 @@ def _add_functionality():
 
     for cls in [BasicSet, BasicMap, Set, Map]:
         cls.__or__ = obj_or
+        cls.__ror__ = obj_or
         cls.__and__ = obj_and
+        cls.__rand__ = obj_and
         cls.__sub__ = obj_sub
 
     #}}}
