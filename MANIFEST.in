@@ -1,8 +1,8 @@
 include isl/*.c
 include isl/*.h
 include isl/include/isl/*.h
-include isl-generated/isl/*.h
-include isl-generated/*.h
+include isl-supplementary/isl/*.h
+include isl-supplementary/*.h
 
 include isl_list.h
 include src/wrapper/*.h
