@@ -89,6 +89,9 @@ Symbolic Constants
     :undoc-members:
     :exclude-members: names, values
 
+.. autoclass:: constants
+    :members:
+    :undoc-members:
 
 Basic Building Blocks
 ^^^^^^^^^^^^^^^^^^^^^

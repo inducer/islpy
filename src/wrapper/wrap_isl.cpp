@@ -66,15 +66,6 @@ BOOST_PYTHON_MODULE(_isl)
     .ENUM_VALUE(isl_fold_, list)
     ;
 
-  {
-    typedef isl::ctx cls;
-    py::class_<cls, boost::shared_ptr<cls>, boost::noncopyable> 
-      wrap_ctx("Context", py::no_init);
-    wrap_ctx.def("__init__", py::make_constructor(isl::alloc_ctx));
-    wrap_ctx.attr("_base_name") = "ctx";
-    wrap_ctx.attr("_isl_name") = "isl_ctx";
-  }
-
 #define FORMAT_ATTR(name) cls_format.attr(#name) = ISL_FORMAT_##name
   py::class_<isl::format> cls_format("format", py::no_init);
   FORMAT_ATTR(ISL);

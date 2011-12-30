@@ -46,3 +46,4 @@ setuptools.pth
 distribute-*.tar.gz
 core
 src/wrapper/gen-*
+.dirty-git-ok

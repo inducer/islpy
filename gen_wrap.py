@@ -111,6 +111,7 @@ for cls_list in PART_TO_CLASSES.itervalues():
 CLASS_MAP = {
         "equality": "constraint",
         "inequality": "constraint",
+        "options": "ctx",
         }
 
 ENUMS = ["isl_dim_type", "isl_fold"]
@@ -342,7 +343,9 @@ class FunctionData:
 
     def parse_decl(self, decl):
         decl_match = DECL_RE.match(decl)
-        assert decl_match is not None, decl
+        if decl_match is None:
+            print "WARNING: func decl regexp not matched: %s" % decl
+            return
 
         return_base_type = decl_match.group(1)
         return_ptr = decl_match.group(2)
@@ -350,7 +353,10 @@ class FunctionData:
         args = [i.strip()
                 for i in split_at_unparenthesized_commas(decl_match.group(4))]
 
-        assert c_name.startswith("isl_")
+        if c_name == "ISL_ARG_DECL":
+            return
+
+        assert c_name.startswith("isl_"), c_name
         name = c_name[4:]
 
         found_class = False
@@ -381,6 +387,10 @@ class FunctionData:
 
         if name in PYTHON_RESERVED_WORDS:
             name = name + "_"
+
+        if cls == "options":
+            assert name.startswith("set_") or name.startswith("get_")
+            name = name[:4]+"option_"+name[4:]
 
         words = return_base_type.split()
 
@@ -910,6 +920,7 @@ def gen_wrapper(include_dirs):
     fdata.read_header("isl/band.h")
     fdata.read_header("isl/schedule.h")
     fdata.read_header("isl/flow.h")
+    fdata.read_header("isl/options.h")
 
 
     for part, classes in PART_TO_CLASSES.iteritems():

@@ -17,6 +17,7 @@
 #include <isl/band.h>
 #include <isl/schedule.h>
 #include <isl/flow.h>
+#include <isl/options.h>
 #include <boost/unordered_map.hpp>
 #include "gmpy.h"
 #include "wrap_helpers.hpp"

@@ -3,11 +3,34 @@
 namespace isl
 {
 #include "gen-wrap-part1.inc"
+
+  class constants { };
 }
 
 void islpy_expose_part1()
 {
   import_gmpy();
+
+  {
+    typedef isl::ctx cls;
+    py::class_<cls, boost::shared_ptr<cls>, boost::noncopyable>
+      wrap_ctx("Context", py::no_init);
+    wrap_ctx.def("__init__", py::make_constructor(isl::alloc_ctx));
+    wrap_ctx.attr("_base_name") = "ctx";
+    wrap_ctx.attr("_isl_name") = "isl_ctx";
+  }
+
+#define CONST(NAME) cls.attr(#NAME) = ISL_##NAME
+  {
+    py::class_<isl::constants> cls("constants", py::no_init);
+    CONST(BOUND_BERNSTEIN);
+    CONST(BOUND_RANGE);
+    CONST(ON_ERROR_WARN);
+    CONST(ON_ERROR_CONTINUE);
+    CONST(ON_ERROR_ABORT);
+    CONST(SCHEDULE_ALGORITHM_ISL);
+    CONST(SCHEDULE_ALGORITHM_FEAUTRIER);
+  }
 
   MAKE_WRAP(basic_set_list, BasicSetList);
   MAKE_WRAP(set_list, SetList);
