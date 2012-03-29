@@ -568,12 +568,17 @@ def set_up_shipped_boost_if_requested(project_name, conf):
                 + glob("bpl-subset/bpl_subset/libs/*/*/*.cpp")
                 + glob("bpl-subset/bpl_subset/libs/*/*.cpp"))
 
+        # make sure next line succeeds even on Windows
+        source_files = [f.replace("\\","/") for f in source_files]
+
         source_files = [f for f in source_files
                 if not f.startswith("bpl-subset/bpl_subset/libs/thread/src")]
 
         if sys.platform == "win32":
             source_files += glob(
                     "bpl-subset/bpl_subset/libs/thread/src/win32/*.cpp")
+            source_files += glob(
+                    "bpl-subset/bpl_subset/libs/thread/src/*.cpp")
         else:
             source_files += glob(
                     "bpl-subset/bpl_subset/libs/thread/src/pthread/*.cpp")
@@ -594,6 +599,10 @@ def set_up_shipped_boost_if_requested(project_name, conf):
 
         return (source_files,
                 {
+                    # do not pick up libboost link dependency on windows
+                    "BOOST_ALL_NO_LIB": 1,
+                    "BOOST_THREAD_BUILD_DLL": 1,
+
                     "BOOST_MULTI_INDEX_DISABLE_SERIALIZATION": 1,
                     "BOOST_PYTHON_SOURCE": 1,
                     "boost": '%sboost' % project_name
