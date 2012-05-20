@@ -638,11 +638,20 @@ def align_spaces(obj, tgt, obj_bigger_ok=False):
                 if tgt_name == obj_name:
                     i += 1
                 else:
-                    obj_name_idx, = (j for j in xrange(obj.dim(dt,i))
+                    obj_name_idx, = (j for j in xrange(obj.dim(dt))
                             if obj.get_dim_name(dt, j) == tgt_name)
 
                     if i != obj_name_idx:
-                        obj = obj.move_dims(dt, i, dt, obj_name_idx, 1)
+                        assert obj_name_idx > i
+                        # isl requires move_dims to be between different types.
+                        # Not sure why. Let's make it happy.
+                        other_dt = dim_type.param
+                        if dt == other_dt:
+                            other_dt = dim_type.out
+
+                        other_dt_dim = obj.dim(other_dt)
+                        obj = obj.move_dims(other_dt, other_dt_dim, dt, obj_name_idx, 1)
+                        obj = obj.move_dims(dt, i, other_dt, other_dt_dim, 1)
 
                     i += 1
             else:
