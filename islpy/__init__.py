@@ -345,6 +345,23 @@ def _add_functionality():
 
     # }}}
 
+    # {{{ common functionality
+
+    def obj_get_var_dict(self, dimtype=None):
+        return self.get_space().get_var_dict(dimtype)
+
+    def obj_get_var_names(self, dimtype):
+        return [self.get_dim_name(dimtype, i) for i in xrange(self.dim(dimtype))]
+
+    for cls in ALL_CLASSES:
+        if hasattr(cls, "get_space"):
+            cls.get_var_dict = obj_get_var_dict
+            cls.get_var_names = obj_get_var_names
+            cls.space = property(cls.get_space)
+
+    # }}}
+
+
     # {{{ PwAff
 
     def pwaff_get_pieces(self):
