@@ -658,5 +658,17 @@ def align_spaces(obj, tgt, obj_bigger_ok=False):
 
 
 
+def align_two(obj1, obj2):
+    """Align the spaces of two objects, potentially modifying both of them.
+
+    See also :func:`align_spaces`.
+    """
+    obj1 = align_spaces(obj1, obj2, obj_bigger_ok=True)
+    obj2 = align_spaces(obj2, obj1, obj_bigger_ok=True)
+    return (obj1, obj2)
+
+
+
+
 
 # vim: foldmethod=marker
