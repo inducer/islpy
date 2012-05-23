@@ -81,7 +81,7 @@ PART_TO_CLASSES = {
         "basic_set_list", "set_list", "aff_list", "pw_aff_list", "band_list",
         "printer",  "mat", "vec", "id",
         "aff", "pw_aff",
-        "multi_aff", "pw_multi_aff",
+        "multi_aff", "pw_multi_aff", "union_pw_multi_aff",
 
          "constraint", "space", "local_space",
          ],
@@ -101,7 +101,7 @@ PART_TO_CLASSES = {
 
         "band", "schedule",
 
-        "access_info", "flow",
+        "access_info", "flow", "restriction",
         ]
         }
 CLASSES = []
@@ -514,7 +514,6 @@ def write_wrapper(outf, meth):
             assert meth.args[arg_idx].name == "user"
 
             cb_name = "cb_%s_%s_%s" % (meth.cls, meth.name, arg.name)
-            py_cb_name = "py_"+arg.name
 
             input_args.append("py::object py_%s" % arg.name)
             passed_args.append(cb_name)
@@ -808,7 +807,7 @@ def write_wrapper(outf, meth):
             ret_descr = "None"
 
     else:
-        raise NotImplementedError("ret type: %s %s in %s" % (
+        raise SignatureNotSupported("ret type: %s %s in %s" % (
             meth.return_base_type, meth.return_ptr, meth))
 
     outf.write("""

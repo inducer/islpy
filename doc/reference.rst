@@ -199,19 +199,40 @@ Cell
 .. autoclass:: Cell
     :members:
 
-Quasi Affine Expressions
+Quasi-Affine Expressions
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Quasi Affine Expression
+Quasi-Affine Expression
 -----------------------
 
 .. autoclass:: Aff
     :members:
 
-Piecewise Quasi Affine Expression
+Piecewise Quasi-Affine Expression
 ---------------------------------
 
 .. autoclass:: PwAff
+    :members:
+
+Multiply Affine Expressions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Multiply Affine Expression
+--------------------------
+
+.. autoclass:: MultiAff
+    :members:
+
+Piecewise Multiply Affine Expression
+------------------------------------
+
+.. autoclass:: PwMultiAff
+    :members:
+
+Union of Piecewise Multiply Affine Expression
+---------------------------------------------
+
+.. autoclass:: UnionPwMultiAff
     :members:
 
 Quasipolynomials
@@ -277,6 +298,12 @@ Access Info
 .. autoclass:: AccessInfo
     :members:
 
+Restriction
+-----------
+
+.. autoclass:: Restriction
+    :members:
+
 Flow
 ----
 
@@ -308,5 +335,6 @@ Helper functions
 ^^^^^^^^^^^^^^^^
 
 .. autofunction:: align_spaces
+.. autofunction:: align_two
 
 .. vim: sw=4

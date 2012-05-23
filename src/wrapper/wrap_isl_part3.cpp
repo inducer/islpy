@@ -22,6 +22,7 @@ void islpy_expose_part3()
 
   MAKE_WRAP(access_info, AccessInfo);
   MAKE_WRAP(flow, Flow);
+  MAKE_WRAP(restriction, Restriction);
 
 #include "gen-expose-part3.inc"
 }

@@ -149,6 +149,7 @@ namespace isl
 
   WRAP_CLASS(multi_aff);
   WRAP_CLASS(pw_multi_aff);
+  WRAP_CLASS(union_pw_multi_aff);
 
   WRAP_CLASS(constraint);
   WRAP_CLASS(space);
@@ -209,6 +210,7 @@ namespace isl
 
   WRAP_CLASS(access_info);
   WRAP_CLASS(flow);
+  WRAP_CLASS(restriction);
 
   inline ctx *alloc_ctx()
   {
