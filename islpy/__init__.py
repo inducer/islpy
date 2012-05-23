@@ -401,7 +401,7 @@ def _add_functionality():
         if isinstance(template, PwAff):
             result = PwAff.empty(template.get_space())
             for set, _ in template.get_pieces():
-                result = result.cond(set, number_aff, result)
+                result = set.indicator_function().cond(number_aff, result)
             return result
 
         else:
