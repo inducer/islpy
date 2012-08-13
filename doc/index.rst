@@ -20,24 +20,6 @@ It also includes an ILP solver based on generalized basis reduction, transitive
 closures on maps (which may encode infinite graphs), dependence analysis and
 bounds on piecewise step-polynomials.
 
-.. note::
-
-    After the 2011.2 release of islpy, one more aspect of the islpy interface
-    has changed, namely that the constant in a constraint is now set as the '1'
-    key in a coefficient dictionary in 
-    :meth:`islpy.Constraint.eq_from_names`,
-    :meth:`islpy.Constraint.ineq_from_names`, and
-    :meth:`islpy.Constraint.set_coefficients_by_name`.
-
-    This documentation reflects the in-development state of the interface in
-    version control, as it will be--not as it is in the released version
-    2011.2. If you would like to use the software that's described here, get a
-    current checkout from `github <http://github.com/inducer/islpy>`_.
-
-    Also, there were a few breaking changes in isl that reflect through to Python:
-    :class:`islpy.Dim` was renamed to :class:`islpy.Space` in isl,
-    and :class:`islpy.Div` was removed, having been superseded by :class:`islpy.Aff`.
-
 Now you obviously want to watch the library do something (at least mildly)
 cool? Well, sit back and watch::
 

@@ -72,13 +72,16 @@ See also :ref:`gen-remarks`.
 User-visible Changes
 ====================
 
-Version 2011.3
+Version 2012.1
 --------------
 
 .. note::
 
     This version is currently in development and can be obtained from
     islpy's version control.
+
+Version 2011.3
+--------------
 
 * Add :meth:`islpy.Set.project_out_except` and friends.
 * Add :meth:`islpy.Set.remove_divs_of_dim_type` and friends.
@@ -94,6 +97,11 @@ Version 2011.3
   the operators `|`, `&', '-', `<`, `<=`, `>`, `>=`, `==`, `!=` work as expected.
 * Support direct construction from string for objects that have a `read_from_str`
   method.
+* The constant in a :class:`islpy.Constraint` is now set as the '1'
+  key in a coefficient dictionary in
+  :meth:`islpy.Constraint.eq_from_names`,
+  :meth:`islpy.Constraint.ineq_from_names`, and
+  :meth:`islpy.Constraint.set_coefficients_by_name`.
 
 Version 2011.2
 --------------
