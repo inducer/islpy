@@ -288,7 +288,7 @@ def _add_functionality():
         """Create a constraint `const + coeff_1*var_1 +... >= 0`.
 
         :param space: :class:`Space`
-        :param coefficients: a :class:`dict` or iterable of :class:`tuple` 
+        :param coefficients: a :class:`dict` or iterable of :class:`tuple`
             instances mapping variable names to their coefficients
             The constant is set to the value of the key '1'.
 
@@ -601,7 +601,61 @@ _add_functionality()
 
 
 
-def align_spaces(obj, tgt, obj_bigger_ok=False):
+def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
+    if None in tgt_names:
+        all_nones = [None] * len(tgt_names)
+        if tgt_names == all_nones and obj_names == all_nones:
+            # that's ok
+            return obj
+
+        raise RuntimeError("tgt may not contain any unnamed dimensions")
+
+    obj_names = set(obj_names) - set([None])
+    tgt_names = set(tgt_names) - set([None])
+
+    names_in_both = obj_names & tgt_names
+
+    tgt_idx = 0
+    while tgt_idx < tgt.dim(tgt_dt):
+        tgt_name = tgt.get_dim_name(tgt_dt, tgt_idx)
+
+        if tgt_name in names_in_both:
+            if (obj.dim(tgt_dt) > tgt_idx
+                    and tgt_name == obj.get_dim_name(tgt_dt, tgt_idx)):
+                tgt_idx += 1
+            else:
+                src_dt, src_idx = obj.get_var_dict()[tgt_name]
+
+                if src_dt == tgt_dt:
+                    assert src_idx > tgt_idx
+
+                    # isl requires move_dims to be between different types.
+                    # Not sure why. Let's make it happy.
+                    other_dt = dim_type.param
+                    if src_dt == other_dt:
+                        other_dt = dim_type.out
+
+                    other_dt_dim = obj.dim(other_dt)
+                    obj = obj.move_dims(other_dt, other_dt_dim, src_dt, src_idx, 1)
+                    obj = obj.move_dims(tgt_dt, tgt_idx, other_dt, other_dt_dim, 1)
+                else:
+                    obj = obj.move_dims(tgt_dt, tgt_idx, src_dt, src_idx, 1)
+
+                tgt_idx += 1
+        else:
+            obj = obj.insert_dims(tgt_dt, tgt_idx, 1)
+            obj = obj.set_dim_name(tgt_dt, tgt_idx, tgt_name)
+            tgt_idx += 1
+
+    if tgt_idx < obj.dim(tgt_dt) and not obj_bigger_ok:
+        raise ValueError("obj has leftover dimensions")
+
+    return obj
+
+
+
+
+def align_spaces(obj, tgt, obj_bigger_ok=False, across_dim_types=False):
     """
     Try to make the space in which *obj* lives the same as that of *tgt* by
     adding/matching named dimensions.
@@ -609,71 +663,41 @@ def align_spaces(obj, tgt, obj_bigger_ok=False):
     :param obj_bigger_ok: If *True*, no error is raised if the resulting *obj*
         has more dimensions than *tgt*.
     """
-    for dt in _CHECK_DIM_TYPES:
-        obj_names = [obj.get_dim_name(dt, i) for i in xrange(obj.dim(dt))]
-        tgt_names = [tgt.get_dim_name(dt, i) for i in xrange(tgt.dim(dt))]
 
-        if None in tgt_names:
-            all_nones = [None] * len(tgt_names)
-            if tgt_names == all_nones and obj_names == all_nones:
-                # that's ok
-                continue
+    if across_dim_types:
+        obj_names = [obj.get_dim_name(dt, i)
+                for dt in _CHECK_DIM_TYPES
+                for i in xrange(obj.dim(dt))
+                ]
+        tgt_names = [tgt.get_dim_name(dt, i)
+                for dt in _CHECK_DIM_TYPES
+                for i in xrange(tgt.dim(dt))
+                ]
 
-            raise RuntimeError("tgt may not contain any unnamed dimensions")
+        for dt in _CHECK_DIM_TYPES:
+            obj = _align_dim_type(dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names)
+    else:
+        for dt in _CHECK_DIM_TYPES:
+            obj_names = [obj.get_dim_name(dt, i) for i in xrange(obj.dim(dt))]
+            tgt_names = [tgt.get_dim_name(dt, i) for i in xrange(tgt.dim(dt))]
 
-        obj_names = set(obj_names) - set([None])
-        tgt_names = set(tgt_names) - set([None])
-
-        names_in_both = obj_names & tgt_names
-
-        i = 0
-        while i < tgt.dim(dt):
-            tgt_name = tgt.get_dim_name(dt, i)
-
-            if tgt_name in names_in_both:
-                assert i < obj.dim(dt)
-
-                obj_name = obj.get_dim_name(dt, i)
-
-                if tgt_name == obj_name:
-                    i += 1
-                else:
-                    obj_name_idx, = (j for j in xrange(obj.dim(dt))
-                            if obj.get_dim_name(dt, j) == tgt_name)
-
-                    if i != obj_name_idx:
-                        assert obj_name_idx > i
-                        # isl requires move_dims to be between different types.
-                        # Not sure why. Let's make it happy.
-                        other_dt = dim_type.param
-                        if dt == other_dt:
-                            other_dt = dim_type.out
-
-                        other_dt_dim = obj.dim(other_dt)
-                        obj = obj.move_dims(other_dt, other_dt_dim, dt, obj_name_idx, 1)
-                        obj = obj.move_dims(dt, i, other_dt, other_dt_dim, 1)
-
-                    i += 1
-            else:
-                obj = obj.insert_dims(dt, i, 1)
-                obj = obj.set_dim_name(dt, i, tgt_name)
-                i += 1
-
-        if i < obj.dim(dt) and not obj_bigger_ok:
-            raise ValueError("obj has leftover dimensions in align_spaces()")
+            obj = _align_dim_type(dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names)
 
     return obj
 
 
 
 
-def align_two(obj1, obj2):
+def align_two(obj1, obj2, across_dim_types=False):
     """Align the spaces of two objects, potentially modifying both of them.
 
     See also :func:`align_spaces`.
     """
-    obj1 = align_spaces(obj1, obj2, obj_bigger_ok=True)
-    obj2 = align_spaces(obj2, obj1, obj_bigger_ok=True)
+
+    obj1 = align_spaces(obj1, obj2, obj_bigger_ok=True,
+            across_dim_types=across_dim_types)
+    obj2 = align_spaces(obj2, obj1, obj_bigger_ok=True,
+            across_dim_types=across_dim_types)
     return (obj1, obj2)
 
 
