@@ -5,12 +5,14 @@ from islpy.version import *
 _CHECK_DIM_TYPES = [
         dim_type.in_, dim_type.param, dim_type.set]
 
+ALL_CLASSES = tuple(getattr(_isl, cls) for cls in dir(_isl) if cls[0].isupper())
+EXPR_CLASSES = tuple(cls for cls in ALL_CLASSES
+        if "Aff" in cls.__name__ or "Polynomial" in cls.__name__)
+
 _DEFAULT_CONTEXT = Context()
 
 def _add_functionality():
     import islpy._isl as _isl
-
-    ALL_CLASSES = [getattr(_isl, cls) for cls in dir(_isl) if cls[0].isupper()]
 
     # {{{ generic initialization
 
@@ -145,9 +147,9 @@ def _add_functionality():
     def space_create_from_names(ctx, set=None, in_=None, out=None, params=[]):
         """Create a :class:`Space` from lists of variable names.
 
-        :param set_`: names of `set`-type variables.
-        :param in_`: names of `in`-type variables.
-        :param out`: names of `out`-type variables.
+        :param set_: names of `set`-type variables.
+        :param in_: names of `in`-type variables.
+        :param out: names of `out`-type variables.
         :param params`: names of parameter-type variables.
         """
         dt = dim_type
@@ -348,13 +350,19 @@ def _add_functionality():
     # {{{ common functionality
 
     def obj_get_var_dict(self, dimtype=None):
+        """Return a dictionary mapping variable names to tuples of (:class:`dim_type`, index).
+
+        :param dimtype: None to get all variables, otherwise
+            one of :class:`dim_type`.
+        """
         return self.get_space().get_var_dict(dimtype)
 
     def obj_get_var_names(self, dimtype):
+        """Return a list of dim names (in order) for :class:`dim_type` *dimtype*."""
         return [self.get_dim_name(dimtype, i) for i in xrange(self.dim(dimtype))]
 
     for cls in ALL_CLASSES:
-        if hasattr(cls, "get_space"):
+        if hasattr(cls, "get_space") and cls is not Space:
             cls.get_var_dict = obj_get_var_dict
             cls.get_var_names = obj_get_var_names
             cls.space = property(cls.get_space)
@@ -467,6 +475,7 @@ def _add_functionality():
 
         from inspect import ismethod
         for method_name in dir(special_class):
+            # do not overwrite existing methods
             if hasattr(basic_class, method_name):
                 continue
 
@@ -664,20 +673,26 @@ def align_spaces(obj, tgt, obj_bigger_ok=False, across_dim_types=False):
         has more dimensions than *tgt*.
     """
 
+    if isinstance(obj, EXPR_CLASSES):
+        dim_types = _CHECK_DIM_TYPES[:]
+        dim_types.remove(dim_type.out)
+    else:
+        dim_types = _CHECK_DIM_TYPES
+
     if across_dim_types:
         obj_names = [obj.get_dim_name(dt, i)
-                for dt in _CHECK_DIM_TYPES
+                for dt in dim_types
                 for i in xrange(obj.dim(dt))
                 ]
         tgt_names = [tgt.get_dim_name(dt, i)
-                for dt in _CHECK_DIM_TYPES
+                for dt in dim_types
                 for i in xrange(tgt.dim(dt))
                 ]
 
-        for dt in _CHECK_DIM_TYPES:
+        for dt in dim_types:
             obj = _align_dim_type(dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names)
     else:
-        for dt in _CHECK_DIM_TYPES:
+        for dt in dim_types:
             obj_names = [obj.get_dim_name(dt, i) for i in xrange(obj.dim(dt))]
             tgt_names = [tgt.get_dim_name(dt, i) for i in xrange(tgt.dim(dt))]
 
