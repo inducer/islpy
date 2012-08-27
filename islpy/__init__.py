@@ -673,7 +673,7 @@ def align_spaces(obj, tgt, obj_bigger_ok=False, across_dim_types=False):
         has more dimensions than *tgt*.
     """
 
-    if isinstance(obj, EXPR_CLASSES):
+    if isinstance(tgt, EXPR_CLASSES):
         dim_types = _CHECK_DIM_TYPES[:]
         dim_types.remove(dim_type.out)
     else:
