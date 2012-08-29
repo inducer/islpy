@@ -9,7 +9,9 @@ namespace isl
 
 void islpy_expose_part1()
 {
+#ifndef ISL_USE_PYTHON_INTEGERS
   import_gmpy();
+#endif
 
   {
     typedef isl::ctx cls;

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 def get_config_schema():
-    from aksetup_helper import ConfigSchema, Option, \
+    from aksetup_helper import ConfigSchema, \
             IncludeDir, LibraryDir, Libraries, BoostLibraries, \
             Switch, StringListOption, make_boost_base_options
 
@@ -10,6 +10,7 @@ def get_config_schema():
 
         Switch("USE_SHIPPED_BOOST", True, "Use included Boost library"),
         Switch("USE_SHIPPED_ISL", True, "Use included copy of isl"),
+        Switch("ISL_USE_PYTHON_INTEGERS", False, "Allows isl not to depend on gmp"),
 
         IncludeDir("GMP", []),
         LibraryDir("GMP", []),
@@ -44,10 +45,16 @@ def main():
     INCLUDE_DIRS = conf["BOOST_INC_DIR"] + ["src/wrapper"]
     LIBRARY_DIRS = conf["BOOST_LIB_DIR"]
     LIBRARIES = conf["BOOST_PYTHON_LIBNAME"]
+    DEFINES = {}
+
+    if not conf["USE_SHIPPED_ISL"] and conf["ISL_USE_PYTHON_INTEGERS"]:
+        raise RuntimeError("Cannot use Python integers with system-wide isl")
 
     if conf["USE_SHIPPED_ISL"]:
         from glob import glob
         ISL_BLACKLIST = ["_templ.c", "mp_get"]
+        ISL_PYINT_BLACKLIST = ["isl_gmp.c", "basis_reduction_tab.c",
+                "isl_scan.c", "isl_sample.c", "isl_affine_hull.c"]
 
         for fn in glob("isl/*.c"):
             blacklisted = False
@@ -60,6 +67,12 @@ def main():
                 pass
             elif "piplib" in fn:
                 blacklisted = True
+
+            if conf["ISL_USE_PYTHON_INTEGERS"]:
+                for bl in ISL_PYINT_BLACKLIST:
+                    if bl in fn:
+                        blacklisted = True
+                        break
 
             inf = open(fn, "rt")
             try:
@@ -77,9 +90,15 @@ def main():
 
     INCLUDE_DIRS.extend(conf["ISL_INC_DIR"])
 
-    INCLUDE_DIRS.extend(conf["GMP_INC_DIR"])
-    LIBRARY_DIRS.extend(conf["GMP_LIB_DIR"])
-    LIBRARIES.extend(conf["GMP_LIBNAME"])
+    if conf["ISL_USE_PYTHON_INTEGERS"]:
+        # must come first, so it can override isl/int.h
+        INCLUDE_DIRS = ["isl-py-int"] + INCLUDE_DIRS
+
+        DEFINES["ISL_USE_PYTHON_INTEGERS"] = 1
+    else:
+        INCLUDE_DIRS.extend(conf["GMP_INC_DIR"])
+        LIBRARY_DIRS.extend(conf["GMP_LIB_DIR"])
+        LIBRARIES.extend(conf["GMP_LIBNAME"])
 
     init_filename = "islpy/version.py"
     exec(compile(open(init_filename, "r").read(), init_filename, "exec"), conf)
@@ -118,10 +137,11 @@ def main():
 
                 Islpy comes with comprehensive `documentation <http://documen.tician.de/islpy>`_.
 
-                *Requirements:* Only the `GNU Multiprecision Library <http://gmplib.org/>`_
-                and its Python wrapper `gmpy <https://code.google.com/p/gmpy/>`_ (Version 1.x)
-                are required. A version of isl is shipped with islpy, but optionally
-                a system-wide one may also be used.
+                The `GNU Multiprecision Library <http://gmplib.org/>`_ and its
+                Python wrapper `gmpy <https://code.google.com/p/gmpy/>`_
+                (Version 1.x) may optionally be used.  A version of isl is
+                shipped with islpy, but optionally a system-wide one may also
+                be used.
                 """,
           author="Andreas Kloeckner",
           author_email="inform@tiker.net",
@@ -150,8 +170,6 @@ def main():
 
           install_requires=[
               "pytest>=2",
-              "gmpy>=1,<2",
-              # "Mako>=0.3.6",
               ],
           ext_modules = [
             Extension(
@@ -165,7 +183,9 @@ def main():
               include_dirs=INCLUDE_DIRS,
               library_dirs=LIBRARY_DIRS,
               libraries=LIBRARIES,
-              define_macros=list(EXTRA_DEFINES.items()),
+              define_macros=(
+                  list(EXTRA_DEFINES.items())
+                  +list(DEFINES.items())),
               extra_compile_args=conf["CXXFLAGS"],
               extra_link_args=conf["LDFLAGS"],
               ),

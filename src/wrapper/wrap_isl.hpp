@@ -19,7 +19,11 @@
 #include <isl/flow.h>
 #include <isl/options.h>
 #include <boost/unordered_map.hpp>
+
+#ifndef ISL_USE_PYTHON_INTEGERS
 #include "gmpy.h"
+#endif
+
 #include "wrap_helpers.hpp"
 
 // TODO: flow.h

@@ -416,7 +416,6 @@ class FunctionData:
 
 
 def get_callback(cb_name, cb):
-    input_args = []
     body = []
     passed_args = []
 
@@ -486,7 +485,7 @@ def get_callback(cb_name, cb):
 
 
 
-def write_wrapper(outf, meth):
+def write_wrapper(outf, meth, wrap_generated_code):
     body = []
     checks = []
     docs = []
@@ -556,13 +555,21 @@ def write_wrapper(outf, meth):
         elif arg.base_type == "isl_int" and arg.ptr == "*":
             # assume it's meant as a return value
             body.append("""
-                py::object arg_%(name)s(py::handle<>((PyObject *) Pympz_new()));
-                managed_int arg_mi_%(name)s;
-
+                #ifdef ISL_USE_PYTHON_INTEGERS
+                    py::object arg_%(name)s;
+                    managed_int arg_mi_%(name)s;
+                #else
+                    py::object arg_%(name)s(py::handle<>((PyObject *) Pympz_new()));
+                    managed_int arg_mi_%(name)s;
+                #endif
                 """ % dict(name=arg.name))
             passed_args.append("&arg_mi_%s.m_data" % arg.name)
             post_call.append("""
-                isl_int_get_gmp(arg_mi_%(name)s.m_data, Pympz_AS_MPZ(arg_%(name)s.ptr()));
+                #ifdef ISL_USE_PYTHON_INTEGERS
+                    arg_%(name)s = py::object(py::handle<>(*arg_mi_%(name)s.m_data));
+                #else
+                    isl_int_get_gmp(arg_mi_%(name)s.m_data, Pympz_AS_MPZ(arg_%(name)s.ptr()));
+                #endif
                 """ % dict(name=arg.name))
 
             extra_ret_vals.append("arg_%s" % arg.name)
@@ -575,12 +582,18 @@ def write_wrapper(outf, meth):
             checks.append("""
                 managed_int arg_mi_%(name)s;
                 {
-                  PyObject *converted;
-                  if (Pympz_convert_arg(arg_%(name)s.ptr(), &converted) == 0)
-                    throw py::error_already_set();
-                  py::handle<> converted_arg_%(name)s = py::handle<>(converted);
-                  isl_int_set_gmp(arg_mi_%(name)s.m_data,
-                    Pympz_AS_MPZ(converted_arg_%(name)s.get()));
+                    #ifdef ISL_USE_PYTHON_INTEGERS
+                        PyObject *converted = arg_%(name)s.ptr();
+                        isl_int_set(arg_mi_%(name)s.m_data, &converted);
+                    #else
+                        PyObject *converted;
+
+                        if (Pympz_convert_arg(arg_%(name)s.ptr(), &converted) == 0)
+                          throw py::error_already_set();
+                        py::handle<> converted_arg_%(name)s = py::handle<>(converted);
+                        isl_int_set_gmp(arg_mi_%(name)s.m_data,
+                          Pympz_AS_MPZ(converted_arg_%(name)s.get()));
+                    #endif
                 }
                 """ % dict(name=arg.name, meth="%s_%s" % (meth.cls, meth.name)))
             passed_args.append("arg_mi_%s.m_data" % arg.name)
@@ -810,7 +823,7 @@ def write_wrapper(outf, meth):
         raise SignatureNotSupported("ret type: %s %s in %s" % (
             meth.return_base_type, meth.return_ptr, meth))
 
-    outf.write("""
+    result = ("""
         %s
         %s %s_%s(%s)
         {
@@ -821,6 +834,7 @@ def write_wrapper(outf, meth):
             processed_return_type, meth.cls, meth.name,
             ", ".join(input_args),
             "\n".join(body)))
+    outf.write(wrap_generated_code(result))
 
     docs = (["%s(%s)" % (meth.name, ", ".join(arg_names)), ""]
             + docs
@@ -831,7 +845,8 @@ def write_wrapper(outf, meth):
 
 
 
-def write_exposer(outf, meth, arg_names, doc_str, static_decls):
+def write_exposer(outf, meth, arg_names, doc_str, static_decls,
+        wrap_generated_code):
     func_name = "isl::%s_%s" % (meth.cls, meth.name)
     py_name = meth.name
 
@@ -858,14 +873,41 @@ def write_exposer(outf, meth, arg_names, doc_str, static_decls):
     wrap_class = CLASS_MAP.get(meth.cls, meth.cls)
 
     for exp_py_name in [py_name]+extra_py_names:
-        outf.write("wrap_%s.def(\"%s\", %s%s);\n" % (
-            wrap_class, exp_py_name, func_name, extra_stuff))
+        outf.write(wrap_generated_code(
+            "wrap_%s.def(\"%s\", %s%s);\n" % (
+                wrap_class, exp_py_name, func_name, extra_stuff)))
         if meth.is_static:
-            static_decls.append("wrap_%s.staticmethod(\"%s\");\n" % (
-                wrap_class, exp_py_name))
+            static_decls.append(
+                    wrap_generated_code(
+                        "wrap_%s.staticmethod(\"%s\");\n" % (
+                            wrap_class, exp_py_name)))
 
 
 
+
+MPQ_DEPENDENT = """
+        isl_set_scan
+        isl_basic_set_count_upto
+        isl_set_count_upto
+        isl_set_count
+        isl_basic_set_skew_to_positive_orthant
+        isl_basic_set_sample_with_cone
+        isl_tab_set_initial_basis_with_cone
+        isl_basic_set_sample_vec
+        isl_basic_set_sample_bounded
+        isl_basic_set_from_vec
+        isl_basic_map_sample
+        isl_basic_set_sample
+        isl_map_sample
+        isl_set_sample
+        isl_map_detect_equalities
+        isl_set_detect_equalities
+        isl_basic_map_affine_hull
+        isl_basic_set_sample_point
+        isl_basic_set_affine_hull
+        isl_map_affine_hull
+        isl_set_affine_hull
+        """.split()
 
 def write_wrappers(expf, wrapf, methods):
     undoc = []
@@ -878,14 +920,30 @@ def write_wrappers(expf, wrapf, methods):
             # no need to expose C integer versions of things
             continue
 
+        wrap_generated_code = lambda x: x
+        extra_doc_str = ""
+        if meth.c_name in MPQ_DEPENDENT:
+            def wrap_generated_code(x):
+                return """
+                    #ifndef ISL_USE_PYTHON_INTEGERS
+                    %s
+                    #endif
+                    """ % x
+
+            extra_doc_str = "\n\n(Only available in islpy built with GMP integers.)"
+
         try:
-            arg_names, doc_str = write_wrapper(wrapf, meth)
-            write_exposer(expf, meth, arg_names, doc_str, static_decls)
+            arg_names, doc_str = write_wrapper(wrapf, meth, wrap_generated_code)
+            doc_str += extra_doc_str
+            write_exposer(expf, meth, arg_names, doc_str,
+                    static_decls, wrap_generated_code)
         except Undocumented:
             undoc.append(str(meth))
         except Retry:
-            arg_names, doc_str = write_wrapper(wrapf, meth)
-            write_exposer(expf, meth, arg_names, doc_str, static_decls)
+            arg_names, doc_str = write_wrapper(wrapf, meth, wrap_generated_code)
+            doc_str += extra_doc_str
+            write_exposer(expf, meth, arg_names, doc_str, static_decls,
+                    wrap_generated_code)
         except SignatureNotSupported, e:
             print "SKIP (sig not supported: %s): %s" % (e, meth)
         else:

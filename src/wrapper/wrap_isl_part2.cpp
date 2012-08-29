@@ -7,7 +7,9 @@ namespace isl
 
 void islpy_expose_part2()
 {
+#ifndef ISL_USE_PYTHON_INTEGERS
   import_gmpy();
+#endif
 
   MAKE_WRAP(basic_set, BasicSet);
   MAKE_WRAP(basic_map, BasicMap);

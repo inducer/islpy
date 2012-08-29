@@ -7,7 +7,9 @@ namespace isl
 
 void islpy_expose_part3()
 {
+#ifndef ISL_USE_PYTHON_INTEGERS
   import_gmpy();
+#endif
 
   MAKE_WRAP(qpolynomial, QPolynomial);
   MAKE_WRAP(pw_qpolynomial, PwQPolynomial);

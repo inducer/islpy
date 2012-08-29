@@ -16,7 +16,9 @@ BOOST_PYTHON_MODULE(_isl)
 {
   py::docstring_options doc_opt(true, false, false);
 
+#ifndef ISL_USE_PYTHON_INTEGERS
   import_gmpy();
+#endif
 
   /*
   {
