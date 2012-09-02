@@ -448,6 +448,9 @@ def _add_functionality():
         except TypeError:
             return NotImplemented
 
+    def aff_flordiv(self, other):
+        return self.scale_down(other).floor()
+
     for aff_class in [Aff, PwAff]:
         aff_class.__add__ = aff_add
         aff_class.__radd__ = aff_add
@@ -457,6 +460,7 @@ def _add_functionality():
         aff_class.__rmul__ = aff_mul
         aff_class.__neg__ = aff_class.neg
         aff_class.__mod__ = aff_class.mod
+        aff_class.__floordiv__ = aff_flordiv
 
     # }}}
 
