@@ -45,6 +45,17 @@ def test_error_on_invalid_index():
 
 
 
+def test_pwqpoly():
+    def term_handler(term):
+        print(term.get_num())
+
+    def piece_handler(set, qpoly):
+        qpoly.foreach_term(term_handler)
+
+    pwqp = isl.PwQPolynomial('[n] -> { n }')
+    pwqp.foreach_piece(piece_handler)
+
+
 
 
 if __name__ == "__main__":
