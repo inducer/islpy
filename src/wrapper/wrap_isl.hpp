@@ -148,6 +148,7 @@ namespace isl
   };
 
   WRAP_CLASS(multi_aff);
+  WRAP_CLASS(multi_pw_aff);
   WRAP_CLASS(pw_multi_aff);
   WRAP_CLASS(union_pw_multi_aff);
 

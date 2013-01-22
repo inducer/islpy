@@ -81,7 +81,7 @@ PART_TO_CLASSES = {
         "basic_set_list", "set_list", "aff_list", "pw_aff_list", "band_list",
         "printer",  "mat", "vec", "id",
         "aff", "pw_aff",
-        "multi_aff", "pw_multi_aff", "union_pw_multi_aff",
+        "multi_aff", "multi_pw_aff", "pw_multi_aff", "union_pw_multi_aff",
 
          "constraint", "space", "local_space",
          ],

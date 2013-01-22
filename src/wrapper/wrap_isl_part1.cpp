@@ -46,6 +46,7 @@ void islpy_expose_part1()
   MAKE_WRAP(aff, Aff);
   MAKE_WRAP(pw_aff, PwAff);
   MAKE_WRAP(multi_aff, MultiAff);
+  MAKE_WRAP(multi_pw_aff, MultiPwAff);
   MAKE_WRAP(pw_multi_aff, PwMultiAff);
   MAKE_WRAP(union_pw_multi_aff, UnionPwMultiAff);
 
