@@ -11,9 +11,24 @@ namespace isl
 
 
 
+namespace
+{
+  py::handle<> ISLError;
+
+  void translate_isl_error(const isl::error &err)
+  {
+    PyErr_SetObject(ISLError.get(), py::object(err.what()).ptr());
+  }
+}
+
+
 
 BOOST_PYTHON_MODULE(_isl)
 {
+  ISLError = py::handle<>(PyErr_NewException("islpy.Error", PyExc_RuntimeError, NULL));
+  py::scope().attr("Error") = ISLError;
+  py::register_exception_translator<isl::error>(translate_isl_error);
+
   py::docstring_options doc_opt(true, false, false);
 
   import_gmpy();

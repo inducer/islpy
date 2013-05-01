@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include <boost/python.hpp>
 #include <isl/ctx.h>
 #include <isl/space.h>
@@ -29,6 +30,14 @@ namespace py = boost::python;
 
 namespace isl
 {
+  class error : public std::runtime_error
+  {
+    public:
+      explicit error (const std::string &what)
+        : std::runtime_error(what)
+      { }
+  };
+
   struct managed_int
   {
     isl_int m_data;

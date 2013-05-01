@@ -55,7 +55,7 @@ def _add_functionality():
                 type(self).__name__, prn.get_str())
 
     for cls in ALL_CLASSES:
-        if hasattr(Printer, "print_"+cls._base_name):
+        if hasattr(cls, "_base_name") and hasattr(Printer, "print_"+cls._base_name):
             cls.__str__ = generic_str
             cls.__repr__ = generic_repr
 

@@ -67,6 +67,11 @@ Called with          Argument Type
 
 as well as casts contained in the transitive closure of this 'casting graph'.
 
+Error Reporting
+---------------
+
+.. exception:: Error
+
 Symbolic Constants
 ^^^^^^^^^^^^^^^^^^
 

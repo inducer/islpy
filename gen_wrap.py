@@ -598,7 +598,7 @@ def write_wrapper(outf, meth):
 
             checks.append("""
                 if (!arg_%(name)s.is_valid())
-                  PYTHON_ERROR(ValueError, "passed invalid arg to isl_%(meth)s for %(name)s");
+                  throw isl::error("passed invalid arg to isl_%(meth)s for %(name)s");
                 """ % dict(name=arg.name, meth="%s_%s" % (meth.cls, meth.name)))
 
             copyable = arg_cls not in NON_COPYABLE
@@ -606,12 +606,12 @@ def write_wrapper(outf, meth):
                 if copyable:
                     checks.append("""
                         if (!arg_%(name)s.is_valid())
-                          PYTHON_ERROR(ValueError, "passed invalid arg to isl_%(meth)s for %(name)s");
+                          throw isl::error("passed invalid arg to isl_%(meth)s for %(name)s");
                         std::auto_ptr<%(cls)s> auto_arg_%(name)s;
                         {
                             isl_%(cls)s *tmp_ptr = isl_%(cls)s_copy(arg_%(name)s.m_data);
                             if (!tmp_ptr)
-                                throw std::runtime_error("failed to copy arg %(name)s on entry to %(meth)s");
+                                throw isl::error("failed to copy arg %(name)s on entry to %(meth)s");
                             auto_arg_%(name)s = std::auto_ptr<%(cls)s>(new %(cls)s(tmp_ptr));
                         }
                         """ % dict(
@@ -695,7 +695,7 @@ def write_wrapper(outf, meth):
         body.append("""
             if (result == -1)
             {
-              PYTHON_ERROR(RuntimeError, "call to isl_%(cls)s_%(name)s failed");
+              throw isl::error("call to isl_%(cls)s_%(name)s failed");
             }""" % { "cls": meth.cls, "name": meth.name })
 
         if meth.name.startswith("is_") or meth.name.startswith("has_"):
@@ -768,7 +768,7 @@ def write_wrapper(outf, meth):
                 }
                 else
                 {
-                  PYTHON_ERROR(RuntimeError, "call to isl_%(cls)s_%(name)s failed");
+                  throw isl::error("call to isl_%(cls)s_%(name)s failed");
                 }
                 """ % {
                     "ret_cls": ret_cls,
