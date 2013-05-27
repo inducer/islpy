@@ -105,7 +105,7 @@ PART_TO_CLASSES = {
         ]
         }
 CLASSES = []
-for cls_list in PART_TO_CLASSES.itervalues():
+for cls_list in PART_TO_CLASSES.values():
     CLASSES.extend(cls_list)
 
 CLASS_MAP = {
@@ -369,7 +369,7 @@ class FunctionData:
             name = name[len(cls)+1:]
 
         if not found_class:
-            for fake_cls, cls in CLASS_MAP.iteritems():
+            for fake_cls, cls in CLASS_MAP.items():
                 if name.startswith(fake_cls):
                     found_class = True
                     break
@@ -923,7 +923,7 @@ def gen_wrapper(include_dirs):
     fdata.read_header("isl/options.h")
 
 
-    for part, classes in PART_TO_CLASSES.iteritems():
+    for part, classes in PART_TO_CLASSES.items():
         expf = open("src/wrapper/gen-expose-%s.inc" % part, "wt")
         wrapf = open("src/wrapper/gen-wrap-%s.inc" % part, "wt")
 
