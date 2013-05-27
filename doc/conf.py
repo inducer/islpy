@@ -11,7 +11,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+#import sys, os
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -106,8 +106,9 @@ else:
     # further.  For a list of options available for each theme, see the
     # documentation.
     html_theme_options = {
-            'navbar_fixed_top': "true",
-            'navbar_class': "navbar navbar-inverse",
+            "navbar_fixed_top": "true",
+            "navbar_class": "navbar navbar-inverse",
+            "navbar_site_name": "Contents",
             }
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -255,9 +256,9 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
     from inspect import isclass, isroutine, ismethod
     UNDERSCORE_WHITELIST = ["__len__", "__hash__", "__eq__"]
     if isclass(obj) and obj.__name__[0].isupper():
-        methods = [name for name in dir(obj)
-                if isroutine(getattr(obj, name))
-                and (not name.startswith("_") or name in UNDERSCORE_WHITELIST)]
+        methods = [nm for nm in dir(obj)
+                if isroutine(getattr(obj, nm))
+                and (not nm.startswith("_") or nm in UNDERSCORE_WHITELIST)]
         def gen_method_string(meth):
             result = ":meth:`%s`" % meth
             if not ismethod(getattr(obj, meth)):

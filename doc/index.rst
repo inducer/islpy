@@ -21,27 +21,10 @@ closures on maps (which may encode infinite graphs), dependence analysis and
 bounds on piecewise step-polynomials.
 
 Now you obviously want to watch the library do something (at least mildly)
-cool? Well, sit back and watch::
+cool? Well, sit back and watch:
 
-    import islpy as isl
-
-    ctx = isl.Context()
-    space = isl.Space.create_from_names(ctx, set=["x", "y"])
-
-    bset = (isl.BasicSet.universe(space)
-            .add_constraint(isl.Constraint.ineq_from_names(space, {1: -1, "x":1}))
-            .add_constraint(isl.Constraint.ineq_from_names(space, {1: 5, "x":-1}))
-            .add_constraint(isl.Constraint.ineq_from_names(space, {1: -1, "y": 1}))
-            .add_constraint(isl.Constraint.ineq_from_names(space, {1: 5, "y": -1})))
-    print "set 1:", bset
-
-    bset2 = isl.BasicSet("{[x, y] : x >= 0 and x < 5 and y >= 0 and y < x+4 }")
-    print "set 2:", bset2
-
-    bsets_in_union = []
-    bset.union(bset2).coalesce().foreach_basic_set(bsets_in_union.append)
-    union, = bsets_in_union
-    print "union:", union
+.. literalinclude:: ../examples/demo.py
+   :end-before: ENDEXAMPLE
 
 This prints the following::
 
@@ -63,8 +46,8 @@ integer points were added to the polyhedron during this process.  (A "basic
 polyhedron", really an :class:`islpy.BasicSet`, is expressible through a
 conjunction of constraints.)
 
-See :file:`example/demo.py` to see the full example, including the less-than-perfect
-plotting code. :)
+See :download:`example/demo.py <../examples/download.py>` to see the full example,
+including the less-than-perfect plotting code. :)
 
 Overview
 --------

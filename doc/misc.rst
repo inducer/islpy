@@ -19,8 +19,8 @@ For a mailing list, please consider using the `isl list
 <http://groups.google.com/group/isl-development>`_ until they tell us to get
 lost.
 
-Licensing
-=========
+License
+=======
 
 islpy is licensed to you under the MIT/X Consortium license:
 
