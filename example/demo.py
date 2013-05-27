@@ -17,6 +17,7 @@ bsets_in_union = []
 bset.union(bset2).coalesce().foreach_basic_set(bsets_in_union.append)
 union, = bsets_in_union
 print "union:", union
+# ENDEXAMPLE
 
 import matplotlib.pyplot as pt
 
