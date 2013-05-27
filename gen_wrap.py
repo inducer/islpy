@@ -886,7 +886,7 @@ def write_wrappers(expf, wrapf, methods):
         except Retry:
             arg_names, doc_str = write_wrapper(wrapf, meth)
             write_exposer(expf, meth, arg_names, doc_str, static_decls)
-        except SignatureNotSupported as e:
+        except SignatureNotSupported:
             _, e, _ = sys.exc_info()
             print("SKIP (sig not supported: %s): %s" % (e, meth))
         else:
