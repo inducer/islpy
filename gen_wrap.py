@@ -344,7 +344,7 @@ class FunctionData:
     def parse_decl(self, decl):
         decl_match = DECL_RE.match(decl)
         if decl_match is None:
-            print "WARNING: func decl regexp not matched: %s" % decl
+            print("WARNING: func decl regexp not matched: %s" % decl)
             return
 
         return_base_type = decl_match.group(1)
@@ -382,7 +382,7 @@ class FunctionData:
         try:
             args = [parse_arg(arg) for arg in args]
         except BadArg:
-            print "SKIP:", cls, name
+            print("SKIP: %s %s" % (cls, name))
             return
 
         if name in PYTHON_RESERVED_WORDS:
@@ -886,8 +886,8 @@ def write_wrappers(expf, wrapf, methods):
         except Retry:
             arg_names, doc_str = write_wrapper(wrapf, meth)
             write_exposer(expf, meth, arg_names, doc_str, static_decls)
-        except SignatureNotSupported, e:
-            print "SKIP (sig not supported: %s): %s" % (e, meth)
+        except SignatureNotSupported as e:
+            print("SKIP (sig not supported: %s): %s" % (e, meth))
         else:
             #print "WRAPPED:", meth
             pass
@@ -895,7 +895,7 @@ def write_wrappers(expf, wrapf, methods):
     for static_decl in static_decls:
         expf.write(static_decl)
 
-    print "SKIP (%d undocumented methods): %s" % (len(undoc), ", ".join(undoc))
+    print("SKIP (%d undocumented methods): %s" % (len(undoc), ", ".join(undoc)))
 
 
 
