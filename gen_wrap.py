@@ -1,9 +1,9 @@
 import re
+import sys
 
-
-SEM_TAKE = intern("take")
-SEM_GIVE = intern("give")
-SEM_KEEP = intern("keep")
+SEM_TAKE = "take"
+SEM_GIVE = "give"
+SEM_KEEP = "keep"
 
 ISL_SEM_TO_SEM = {
     "__isl_take": SEM_TAKE,
@@ -887,6 +887,7 @@ def write_wrappers(expf, wrapf, methods):
             arg_names, doc_str = write_wrapper(wrapf, meth)
             write_exposer(expf, meth, arg_names, doc_str, static_decls)
         except SignatureNotSupported as e:
+            _, e, _ = sys.exc_info()
             print("SKIP (sig not supported: %s): %s" % (e, meth))
         else:
             #print "WRAPPED:", meth
