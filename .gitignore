@@ -43,7 +43,7 @@ MANIFEST
 tmp
 temp*
 setuptools.pth
-distribute-*.tar.gz
+setuptools-*.tar.gz
 core
 src/wrapper/gen-*
 .dirty-git-ok
