@@ -144,8 +144,10 @@ namespace isl
   };
 
   WRAP_CLASS(printer);
-  WRAP_CLASS(mat);
+  WRAP_CLASS(val);
+  WRAP_CLASS(multi_val);
   WRAP_CLASS(vec);
+  WRAP_CLASS(mat);
   WRAP_CLASS(id);
 
   WRAP_CLASS(aff);

@@ -80,7 +80,7 @@ class Method:
 PART_TO_CLASSES = {
         "part1": [
         "basic_set_list", "set_list", "aff_list", "pw_aff_list", "band_list",
-        "printer",  "mat", "vec", "id",
+        "printer",  "val", "multi_val", "vec", "mat", "id",
         "aff", "pw_aff",
         "multi_aff", "multi_pw_aff", "pw_multi_aff", "union_pw_multi_aff",
 
@@ -916,6 +916,7 @@ def gen_wrapper(include_dirs):
     fdata.read_header("isl/vertices.h")
     fdata.read_header("isl/point.h")
     fdata.read_header("isl/constraint.h")
+    fdata.read_header("isl/val.h")
     fdata.read_header("isl/vec.h")
     fdata.read_header("isl/mat.h")
     fdata.read_header("isl/band.h")

@@ -39,8 +39,10 @@ void islpy_expose_part1()
   MAKE_WRAP(band_list, BandList);
 
   MAKE_WRAP(printer, Printer);
-  MAKE_WRAP(mat, Mat);
+  MAKE_WRAP(val, Val);
+  MAKE_WRAP(multi_val, MultiVal);
   MAKE_WRAP(vec, Vec);
+  MAKE_WRAP(mat, Mat);
   MAKE_WRAP(id, Id);
 
   MAKE_WRAP(aff, Aff);
