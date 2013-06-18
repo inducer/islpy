@@ -6,8 +6,8 @@ islpy may be downloaded from the page for `islpy at the Python package index
 
 You may also clone its git repository::
 
-    git clone http://git.tiker.net/trees/islpy.git
-    git clone git://github.com/inducer/islpy
+    git clone --recursive http://git.tiker.net/trees/islpy.git
+    git clone --recursive git://github.com/inducer/islpy
 
 Wiki, FAQ, Installation Instructions
 ====================================
@@ -49,9 +49,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 .. note::
 
-    The isl itself is licensed under the `Lesser GPL
-    <https://secure.wikimedia.org/wikipedia/en/wiki/GNU_Lesser_General_Public_License>`_.
-    The license above applies only to the wrapping code.
+    isl itself is now also licensed under the `MIT license
+    <http://repo.or.cz/w/isl.git/blob/HEAD:/LICENSE>`_.
 
 
 Relation with isl's C interface
