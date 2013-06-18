@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
+
 def get_config_schema():
-    from aksetup_helper import ConfigSchema, Option, \
+    from aksetup_helper import ConfigSchema, \
             IncludeDir, LibraryDir, Libraries, BoostLibraries, \
             Switch, StringListOption, make_boost_base_options
 
@@ -19,17 +20,15 @@ def get_config_schema():
         LibraryDir("ISL", []),
         Libraries("ISL", ["isl"]),
 
-        StringListOption("CXXFLAGS", [], 
+        StringListOption("CXXFLAGS", [],
             help="Any extra C++ compiler options to include"),
-        StringListOption("LDFLAGS", [], 
+        StringListOption("LDFLAGS", [],
             help="Any extra linker options to include"),
         ])
 
 
-
-
 def main():
-    from aksetup_helper import (hack_distutils, \
+    from aksetup_helper import (hack_distutils,
             get_config, setup, Extension,
             set_up_shipped_boost_if_requested,
             check_git_submodules)
@@ -99,62 +98,59 @@ def main():
           long_description=open("README.rst", "rt").read(),
           author="Andreas Kloeckner",
           author_email="inform@tiker.net",
-          license = "MIT for the wrapper/LGPL for isl",
+          license="MIT",
           url="http://documen.tician.de/islpy",
           classifiers=[
-            'Development Status :: 4 - Beta',
-            'Intended Audience :: Developers',
-            'Intended Audience :: Other Audience',
-            'Intended Audience :: Science/Research',
-            'License :: OSI Approved :: MIT License',
-            'License :: Free for non-commercial use',
-            'Natural Language :: English',
-            'Programming Language :: C++',
-            'Programming Language :: Python',
-            'Programming Language :: Python :: 2.5',
-            'Programming Language :: Python :: 2.6',
-            'Programming Language :: Python :: 2.7',
-            'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.2',
-            'Programming Language :: Python :: 3.3',
-            'Topic :: Multimedia :: Graphics :: 3D Modeling',
-            'Topic :: Scientific/Engineering',
-            'Topic :: Scientific/Engineering :: Mathematics',
-            'Topic :: Scientific/Engineering :: Physics',
-            'Topic :: Scientific/Engineering :: Visualization',
-            'Topic :: Software Development :: Libraries',
-            ],
+              'Development Status :: 4 - Beta',
+              'Intended Audience :: Developers',
+              'Intended Audience :: Other Audience',
+              'Intended Audience :: Science/Research',
+              'License :: OSI Approved :: MIT License',
+              'Natural Language :: English',
+              'Programming Language :: C++',
+              'Programming Language :: Python',
+              'Programming Language :: Python :: 2.5',
+              'Programming Language :: Python :: 2.6',
+              'Programming Language :: Python :: 2.7',
+              'Programming Language :: Python :: 3',
+              'Programming Language :: Python :: 3.2',
+              'Programming Language :: Python :: 3.3',
+              'Topic :: Multimedia :: Graphics :: 3D Modeling',
+              'Topic :: Scientific/Engineering',
+              'Topic :: Scientific/Engineering :: Mathematics',
+              'Topic :: Scientific/Engineering :: Physics',
+              'Topic :: Scientific/Engineering :: Visualization',
+              'Topic :: Software Development :: Libraries',
+              ],
 
-          packages = [ "islpy" ],
+          packages=["islpy"],
 
           install_requires=[
               "pytest>=2",
               "gmpy>=1,<2",
               # "Mako>=0.3.6",
               ],
-          ext_modules = [
-            Extension(
-              "islpy._isl", 
-              [
-                  "src/wrapper/wrap_isl.cpp",
-                  "src/wrapper/wrap_isl_part1.cpp",
-                  "src/wrapper/wrap_isl_part2.cpp",
-                  "src/wrapper/wrap_isl_part3.cpp",
-                  ] + EXTRA_OBJECTS,
-              include_dirs=INCLUDE_DIRS,
-              library_dirs=LIBRARY_DIRS,
-              libraries=LIBRARIES,
-              define_macros=list(EXTRA_DEFINES.items()),
-              extra_compile_args=conf["CXXFLAGS"],
-              extra_link_args=conf["LDFLAGS"],
-              ),
-            ],
+          ext_modules=[
+              Extension(
+                  "islpy._isl",
+                  [
+                      "src/wrapper/wrap_isl.cpp",
+                      "src/wrapper/wrap_isl_part1.cpp",
+                      "src/wrapper/wrap_isl_part2.cpp",
+                      "src/wrapper/wrap_isl_part3.cpp",
+                      ] + EXTRA_OBJECTS,
+                  include_dirs=INCLUDE_DIRS,
+                  library_dirs=LIBRARY_DIRS,
+                  libraries=LIBRARIES,
+                  define_macros=list(EXTRA_DEFINES.items()),
+                  extra_compile_args=conf["CXXFLAGS"],
+                  extra_link_args=conf["LDFLAGS"],
+                  ),
+              ],
 
           # 2to3 invocation
           cmdclass={'build_py': build_py},
           )
-
-
 
 
 if __name__ == '__main__':
