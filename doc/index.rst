@@ -46,7 +46,7 @@ integer points were added to the polyhedron during this process.  (A "basic
 polyhedron", really an :class:`islpy.BasicSet`, is expressible through a
 conjunction of constraints.)
 
-See :download:`example/demo.py <../examples/download.py>` to see the full example,
+See :download:`example/demo.py <../examples/demo.py>` to see the full example,
 including the less-than-perfect plotting code. :)
 
 Overview
