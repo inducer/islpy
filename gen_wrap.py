@@ -347,7 +347,8 @@ class FunctionData:
         args = [i.strip()
                 for i in split_at_unparenthesized_commas(decl_match.group(4))]
 
-        if c_name == "ISL_ARG_DECL":
+        if c_name in ["ISL_ARG_DECL", "ISL_DECLARE_MULTI",
+                "ISL_DECLARE_LIST"]:
             return
 
         assert c_name.startswith("isl_"), c_name
@@ -658,8 +659,8 @@ def write_wrapper(outf, meth):
                 py::object py_ret_%(name)s;
                 if (ret_%(name)s)
                 {
-                  std::auto_ptr<%(ret_cls)s> auto_ret_%(
-                    name)s(new %(ret_cls)s(ret_%(name)s));
+                  std::auto_ptr<%(ret_cls)s> auto_ret_%(name)s(
+                    new %(ret_cls)s(ret_%(name)s));
                   py_ret_%(name)s = py::object(
                     handle_from_new_ptr(auto_ret_%(name)s.get()));
                   auto_ret_%(name)s.release();
