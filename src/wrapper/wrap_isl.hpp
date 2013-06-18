@@ -1,5 +1,3 @@
-#include <stdexcept>
-#include <boost/python.hpp>
 #include <isl/ctx.h>
 #include <isl/space.h>
 #include <isl/set.h>
@@ -19,6 +17,8 @@
 #include <isl/schedule.h>
 #include <isl/flow.h>
 #include <isl/options.h>
+#include <stdexcept>
+#include <boost/python.hpp>
 #include <boost/unordered_map.hpp>
 #include "gmpy.h"
 #include "wrap_helpers.hpp"
