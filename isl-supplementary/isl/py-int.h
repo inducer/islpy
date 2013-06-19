@@ -236,6 +236,7 @@ ISL_INT_PY_DECL_SPECIFIER void isl_int_gcd(isl_int r, isl_int u, isl_int v)
     return;
   }
 
+  // FIXME
   // look for factors of 2
   if (~u & 1) // u is even
   {
@@ -259,6 +260,7 @@ ISL_INT_PY_DECL_SPECIFIER void isl_int_gcd(isl_int r, isl_int u, isl_int v)
 ISL_INT_PY_DECL_SPECIFIER void isl_int_lcm(isl_int r, isl_int i, isl_int j)
 {
   // FIXME
+  // return i*j/gcd
   fputs("isl_int_lcm unimplemented", stderr);
   abort();
 }
