@@ -5,6 +5,8 @@
 
 typedef PyObject **isl_int;
 
+// {{{ helpers
+
 #define ISL_INT_PY_HANDLE_PY_ERROR(ROUTINE) \
   { \
     fputs(stderr, "*** error occurred in " #ROUTINE ", aborting."); \
@@ -32,6 +34,8 @@ typedef PyObject **isl_int;
     PyDECREF(j2); \
   }
 
+// }}}
+
 inline void isl_int_init(isl_int i)
 {
   isl_int result = malloc(sizeof(PyObject *));
@@ -58,7 +62,7 @@ inline void isl_int_set(isl_int r, isl_int i)
   Py_INCREF(*r);
 }
 
-// isl_int_set_gmp(r, i)	mpz_set(r, i)
+// isl_int_set_gmp(r, i)        mpz_set(r, i)
 
 inline void isl_int_set_si(isl_int r, signed long int i)
 {
@@ -97,7 +101,7 @@ inline char *isl_int_get_str(isl_int r)
   char *result = PyString_AsString(str);
   if (!result) ISL_INT_PY_HANDLE_PY_ERROR(isl_int_get_str);
   Py_DECREF(str);
-  return result; 
+  return result;
 #error FIXME: Wrong--would be freed using gmp.
 }
 
@@ -112,7 +116,7 @@ inline void isl_int_neg(isl_int r, isl_int i)
 {
   Py_DECREF(*r);
   *r = PyNumber_Negative(*i);
-  if (!str) ISL_INT_PY_HANDLE_PY_ERROR(isl_int_abs);
+  if (!*r) ISL_INT_PY_HANDLE_PY_ERROR(isl_int_abs);
 }
 
 inline void isl_int_swap(isl_int i, isl_int j)
@@ -126,6 +130,8 @@ inline void isl_int_swap_or_set(isl_int i, isl_int j)
 {
   isl_int_swap(i, j);
 }
+
+// {{{ arithmetic
 
 ISL_INT_PY_THREE_OP_UI_FUNC(add_ui, PyNumber_Add);
 ISL_INT_PY_THREE_OP_UI_FUNC(sub_ui, PyNumber_Subtract);
@@ -148,7 +154,12 @@ isl_int_lcm(isl_int r, isl_int i, isl_int j)
 ISL_INT_PY_THREE_OP_FUNC(divexact, PyNumber_FloorDiv);
 ISL_INT_PY_THREE_OP_UI_FUNC(divexact_ui, PyNumber_FloorDiv);
 
+// }}}
+
+// FIXME
 isl_int_tdiv_q(isl_int r, isl_int i, isl_int j)
+  //
+// FIXME
 isl_int_cdiv_q(isl_int r, isl_int i, isl_int j)
 
 ISL_INT_PY_THREE_OP_FUNC(fdiv_q, PyNumber_FloorDiv);
@@ -158,46 +169,105 @@ isl_int_fdiv_r(isl_int r, isl_int i, isl_int j)
 
 ISL_INT_PY_THREE_OP_UI_FUNC(fdiv_q_ui, PyNumber_FloorDiv);
 
-isl_int_read(r,s)	mpz_set_str(r,s,10)
+inline void isl_int_read(isl_int r, const char *s)
+{
+  Py_DECREF(*r);
+  *r = PyLong_FromString(s, NULL, 10);
+  if (!*r) ISL_INT_PY_HANDLE_PY_ERROR(isl_int_read);
+}
 
-#define isl_int_print(out, i,width)					\
-	do {								\
-		char *s;						\
-		isl_int_print_gmp_free_t gmp_free;			\
-		s = mpz_get_str(0, 10, i);				\
-		fprintf(out, "%*s", width, s);				\
-		mp_get_memory_functions(NULL, NULL, &gmp_free);		\
-		(*gmp_free)(s, strlen(s)+1);				\
-	} while (0)
+// FIXME
+#define isl_int_print(out, i,width)                                     \
+        do {                                                            \
+                char *s;                                                \
+                isl_int_print_gmp_free_t gmp_free;                      \
+                s = mpz_get_str(0, 10, i);                              \
+                fprintf(out, "%*s", width, s);                          \
+                mp_get_memory_functions(NULL, NULL, &gmp_free);         \
+                (*gmp_free)(s, strlen(s)+1);                            \
+        } while (0)
 
-isl_int_sgn(isl_int i)
+#define isl_int_sgn(i) isl_int_cmp_si(i, 0)
+
+// FIXME
 isl_int_cmp(isl_int i, isl_int j)
+// FIXME
 isl_int_cmp_si(isl_int i,si)
-isl_int_eq(isl_int i, isl_int j)
-isl_int_ne(isl_int i, isl_int j)
-isl_int_lt(isl_int i, isl_int j)
-isl_int_le(isl_int i, isl_int j)
-isl_int_gt(isl_int i, isl_int j)
-isl_int_ge(isl_int i, isl_int j)
-isl_int_abs_eq(isl_int i, isl_int j)
-isl_int_abs_ne(isl_int i, isl_int j)
-isl_int_abs_lt(isl_int i, isl_int j)
-isl_int_abs_gt(isl_int i, isl_int j)
-isl_int_abs_ge(isl_int i, isl_int j)
 
+// {{{ "rich" comparisons
 
-isl_int_is_zero(isl_int i)
-isl_int_is_one(isl_int i)
-isl_int_is_negone(isl_int i)
-isl_int_is_pos(isl_int i)
-isl_int_is_neg(isl_int i)
-isl_int_is_nonpos(isl_int i)
-isl_int_is_nonneg(isl_int i)
-isl_int_is_divisible_by(isl_int i, isl_int j)
+#define ISL_INT_PY_DEFINE_COMPARISON(LOWER, UPPER) \
+  inline bool isl_int_#LOWER(isl_int i, isl_int j) \
+  { \
+    int res = PyObject_RichCompareBool(*i, *j, Py_#UPPER); \
+    if (res == -1) \
+      ISL_INT_PY_HANDLE_PY_ERROR(isl_int_#LOWER); \
+    return res == 1; \
+  }
+
+ISL_INT_PY_DEFINE_COMPARISON(eq, EQ)
+ISL_INT_PY_DEFINE_COMPARISON(ne, NE)
+ISL_INT_PY_DEFINE_COMPARISON(lt, LT)
+ISL_INT_PY_DEFINE_COMPARISON(le, LE)
+ISL_INT_PY_DEFINE_COMPARISON(gt, GT)
+ISL_INT_PY_DEFINE_COMPARISON(ge, GE)
+
+#define ISL_INT_PY_DEFINE_ABS_COMPARISON(LOWER, UPPER) \
+  inline bool isl_int_abs_#LOWER(isl_int i, isl_int j) \
+  { \
+    PyObject *ai = PyNumber_Absolute(*i); \
+    if (!ai) \
+      ISL_INT_PY_HANDLE_PY_ERROR(isl_int_abs_#LOWER); \
+    PyObject *aj = PyNumber_Absolute(*j); \
+    if (!aj) \
+      ISL_INT_PY_HANDLE_PY_ERROR(isl_int_abs_#LOWER); \
+    int res = PyObject_RichCompareBool(ai, aj, Py_#UPPER); \
+    if (res == -1) \
+      ISL_INT_PY_HANDLE_PY_ERROR(isl_int_abs_#LOWER); \
+    Py_DECREF(ai); \
+    Py_DECREF(aj); \
+    return res == 1; \
+  }
+
+ISL_INT_PY_DEFINE_ABS_COMPARISON(eq, EQ)
+ISL_INT_PY_DEFINE_ABS_COMPARISON(ne, NE)
+ISL_INT_PY_DEFINE_ABS_COMPARISON(lt, LT)
+ISL_INT_PY_DEFINE_ABS_COMPARISON(le, LE)
+ISL_INT_PY_DEFINE_ABS_COMPARISON(gt, GT)
+ISL_INT_PY_DEFINE_ABS_COMPARISON(ge, GE)
+
+// }}}
+
+#define isl_int_is_zero(i)      (isl_int_sgn(i) == 0)
+#define isl_int_is_one(i)       (isl_int_cmp_si(i,1) == 0)
+#define isl_int_is_negone(i)    (isl_int_cmp_si(i,-1) == 0)
+#define isl_int_is_pos(i)       (isl_int_sgn(i) > 0)
+#define isl_int_is_neg(i)       (isl_int_sgn(i) < 0)
+#define isl_int_is_nonpos(i)    (isl_int_sgn(i) <= 0)
+#define isl_int_is_nonneg(i)    (isl_int_sgn(i) >= 0)
+
+inline bool isl_int_is_divisible_by(isl_int i, isl_int j)
+{
+  PyObject *remdr = PyNumber_Remainder(*i, *j);
+  if (!remdr)
+    ISL_INT_PY_HANDLE_PY_ERROR(isl_int_is_divisible_by);
+  int remdr_zero = PyObject_Not(remdr);
+  if (remdr_zero == -1)
+    ISL_INT_PY_HANDLE_PY_ERROR(isl_int_is_divisible_by);
+  Py_DECREF(remdr);
+  return remdr_zero == 1;
+}
 
 inline uint32_t isl_int_hash(isl_int v, uint32_t hash)
 {
-  xxx
+  long py_hash = PyObject_Hash(*v);
+  if (py_hash == -1)
+    ISL_INT_PY_HANDLE_PY_ERROR(isl_int_hash);
+
+  // Likely truncates, oh well.
+  return (uint32_t) py_hash;
 }
 
 #endif
+
+// vim: foldmethod=marker
