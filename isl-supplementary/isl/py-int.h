@@ -5,17 +5,19 @@
 
 typedef PyObject **isl_int;
 
+#define ISL_INT_PY_DECL_SPECIFIER static __attribute__ ((unused))
+
 // {{{ helpers
 
 #define ISL_INT_PY_HANDLE_PY_ERROR(ROUTINE) \
   { \
-    fputs(stderr, "*** error occurred in " #ROUTINE ", aborting."); \
+    fputs("*** error occurred in " #ROUTINE ", aborting.", stderr); \
     PyErr_PrintEx(1); \
     abort(); \
   }
 
 #define ISL_INT_PY_THREE_OP_FUNC(ISL_NAME, PY_NAME) \
-  inline void isl_int_##ISL_NAME (isl_int r, isl_int i, isl_int j) \
+  ISL_INT_PY_DECL_SPECIFIER void isl_int_##ISL_NAME (isl_int r, isl_int i, isl_int j) \
   { \
     Py_DECREF(*r); \
     *r = PY_NAME(*i, *j); \
@@ -23,24 +25,24 @@ typedef PyObject **isl_int;
   }
 
 #define ISL_INT_PY_THREE_OP_UI_FUNC(ISL_NAME, PY_NAME) \
-  inline void isl_int_##ISL_NAME (isl_int r, isl_int i, unsinged long int j) \
+  ISL_INT_PY_DECL_SPECIFIER void isl_int_##ISL_NAME (isl_int r, isl_int i, unsigned long int j) \
   { \
-    isl_int j2 = PyLong_FromUnsignedLong(j); \
+    PyObject *j2 = PyLong_FromUnsignedLong(j); \
     if (!j2) ISL_INT_PY_HANDLE_PY_ERROR(isl_int_##ISL_NAME); \
     \
     Py_DECREF(r); \
     *r = PY_NAME(*i, j2); \
     if (!*r) ISL_INT_PY_HANDLE_PY_ERROR(isl_int_##ISL_NAME); \
-    PyDECREF(j2); \
+    Py_DECREF(j2); \
   }
 
 // }}}
 
-// {{{ init/set/get
+// {{{ init/get/set
 
-inline void isl_int_init(isl_int i)
+ISL_INT_PY_DECL_SPECIFIER void isl_int_init(isl_int i)
 {
-  isl_int result = malloc(sizeof(PyObject *));
+  isl_int result = (isl_int) malloc(sizeof(PyObject *));
   if (!result)
   {
     perror("allocating isl_int");
@@ -51,13 +53,13 @@ inline void isl_int_init(isl_int i)
   if (!*i) ISL_INT_PY_HANDLE_PY_ERROR(isl_int_init);
 }
 
-inline void isl_int_clear(i)
+ISL_INT_PY_DECL_SPECIFIER void isl_int_clear(isl_int i)
 {
   Py_DECREF(*i);
   free(i);
 }
 
-inline void isl_int_set(isl_int r, isl_int i)
+ISL_INT_PY_DECL_SPECIFIER void isl_int_set(isl_int r, isl_int i)
 {
   Py_DECREF(*r);
   *r = *i;
@@ -66,73 +68,81 @@ inline void isl_int_set(isl_int r, isl_int i)
 
 // isl_int_set_gmp(r, i)        mpz_set(r, i)
 
-inline void isl_int_set_si(isl_int r, signed long int i)
+ISL_INT_PY_DECL_SPECIFIER void isl_int_set_si(isl_int r, signed long int i)
 {
   Py_DECREF(*r);
-  *r = PyLong_FromLong(*i);
+  *r = PyLong_FromLong(i);
 }
 
-inline void isl_int_set_ui(isl_int *r, isl_int *i)
+ISL_INT_PY_DECL_SPECIFIER void isl_int_set_ui(isl_int r, unsigned long i)
 {
   Py_DECREF(*r);
-  *r = PyLong_FromUnsignedLong(*i);
+  *r = PyLong_FromUnsignedLong(i);
   if (!*r) ISL_INT_PY_HANDLE_PY_ERROR(isl_int_set_ui);
 }
 
-// isl_int_get_gmp(i,g)
+/* isl_int_get_gmp(i,g): no way */
 
-inline void signed long int isl_int_get_si(isl_int r)
+ISL_INT_PY_DECL_SPECIFIER signed long int isl_int_get_si(isl_int r)
 {
   return PyLong_AsLong(*r);
 }
 
-inline void unsigned long int isl_int_get_ui(isl_int r)
+ISL_INT_PY_DECL_SPECIFIER unsigned long int isl_int_get_ui(isl_int r)
 {
   return PyLong_AsUnsignedLong(*r);
 }
 
-inline isl_int_get_d(isl_int r)
+ISL_INT_PY_DECL_SPECIFIER double isl_int_get_d(isl_int r)
 {
-  return PyLong_AsDouble(*r)
+  return PyLong_AsDouble(*r);
 }
 
-// }}}
-
-inline char *isl_int_get_str(isl_int r)
+ISL_INT_PY_DECL_SPECIFIER char *isl_int_get_str(isl_int r)
 {
   PyObject *str = PyObject_Str(*r);
   if (!str) ISL_INT_PY_HANDLE_PY_ERROR(isl_int_get_str);
   char *result = PyString_AsString(str);
   if (!result) ISL_INT_PY_HANDLE_PY_ERROR(isl_int_get_str);
+  result = strdup(result);
+  if (!result)
+  {
+    fputs("error duplicating string in isl_int_get_str", stderr);
+    abort();
+  }
   Py_DECREF(str);
   return result;
-#error FIXME: Wrong--would be freed using gmp.
 }
 
-inline void isl_int_abs(isl_int r, isl_int i)
+ISL_INT_PY_DECL_SPECIFIER void isl_int_free_str(char *s)
+{
+  free(s);
+}
+
+// }}}
+
+ISL_INT_PY_DECL_SPECIFIER void isl_int_abs(isl_int r, isl_int i)
 {
   Py_DECREF(*r);
   *r = PyNumber_Absolute(*i);
-  if (!*r)
-    ISL_INT_PY_HANDLE_PY_ERROR(isl_int_abs);
+  if (!*r) ISL_INT_PY_HANDLE_PY_ERROR(isl_int_abs);
 }
 
-inline void isl_int_neg(isl_int r, isl_int i)
+ISL_INT_PY_DECL_SPECIFIER void isl_int_neg(isl_int r, isl_int i)
 {
   Py_DECREF(*r);
   *r = PyNumber_Negative(*i);
-  if (!*r)
-    ISL_INT_PY_HANDLE_PY_ERROR(isl_int_abs);
+  if (!*r) ISL_INT_PY_HANDLE_PY_ERROR(isl_int_neg);
 }
 
-inline void isl_int_swap(isl_int i, isl_int j)
+ISL_INT_PY_DECL_SPECIFIER void isl_int_swap(isl_int i, isl_int j)
 {
   PyObject *tmp = *i;
   *i = *j;
   *j = tmp;
 }
 
-inline void isl_int_swap_or_set(isl_int i, isl_int j)
+ISL_INT_PY_DECL_SPECIFIER void isl_int_swap_or_set(isl_int i, isl_int j)
 {
   isl_int_swap(i, j);
 }
@@ -146,50 +156,155 @@ ISL_INT_PY_THREE_OP_FUNC(add, PyNumber_Add);
 ISL_INT_PY_THREE_OP_FUNC(sub, PyNumber_Subtract);
 ISL_INT_PY_THREE_OP_FUNC(mul, PyNumber_Multiply);
 
-ISL_INT_PY_THREE_OP_UI_FUNC(mul_2exp, PyNumber_LShift);
+ISL_INT_PY_THREE_OP_UI_FUNC(mul_2exp, PyNumber_Lshift);
 ISL_INT_PY_THREE_OP_UI_FUNC(mul_ui, PyNumber_Multiply);
-ISL_INT_PY_THREE_OP_UI_FUNC(pow_ui, PyNumber_Power);
+
+ISL_INT_PY_DECL_SPECIFIER void isl_int_pow_ui(isl_int r, isl_int i, unsigned long int j)
+{
+  PyObject *j2 = PyLong_FromUnsignedLong(j);
+  if (!j2) ISL_INT_PY_HANDLE_PY_ERROR(isl_int_##ISL_NAME);
+
+  Py_DECREF(r);
+  *r = PyNumber_Power(*i, j2, Py_None);
+  if (!*r) ISL_INT_PY_HANDLE_PY_ERROR(isl_int_##ISL_NAME);
+  Py_DECREF(j2);
+}
+
+ISL_INT_PY_DECL_SPECIFIER void isl_int_addmul(isl_int r, isl_int i, isl_int j)
+{
+  PyObject *ij = PyNumber_Multiply(*i, *j);
+  if (!ij) ISL_INT_PY_HANDLE_PY_ERROR(isl_int_addmul);
+
+  PyObject *newr = PyNumber_Add(*r, ij);
+  Py_DECREF(ij);
+  if (!newr) ISL_INT_PY_HANDLE_PY_ERROR(isl_int_addmul);
+
+  Py_DECREF(r);
+  *r = newr;
+}
+
+ISL_INT_PY_DECL_SPECIFIER void isl_int_submul(isl_int r, isl_int i, isl_int j)
+{
+  PyObject *ij = PyNumber_Multiply(*i, *j);
+  if (!ij) ISL_INT_PY_HANDLE_PY_ERROR(isl_int_addmul);
+
+  PyObject *newr = PyNumber_Subtract(*r, ij);
+  Py_DECREF(ij);
+  if (!newr) ISL_INT_PY_HANDLE_PY_ERROR(isl_int_addmul);
+
+  Py_DECREF(r);
+  *r = newr;
+}
 
 // }}}
 
-// FIXME
-isl_int_addmul(isl_int r, isl_int i, isl_int j)
-// FIXME
-isl_int_submul(isl_int r, isl_int i, isl_int j)
-
-// FIXME
-isl_int_gcd(isl_int r, isl_int i, isl_int j)
-// FIXME
-isl_int_lcm(isl_int r, isl_int i, isl_int j)
-
-// FIXME: not exploiting performance increase for exactness
-ISL_INT_PY_THREE_OP_FUNC(divexact, PyNumber_FloorDiv);
-ISL_INT_PY_THREE_OP_UI_FUNC(divexact_ui, PyNumber_FloorDiv);
-
-// FIXME
-isl_int_tdiv_q(isl_int r, isl_int i, isl_int j)
-
-// FIXME
-isl_int_cdiv_q(isl_int r, isl_int i, isl_int j)
-
-ISL_INT_PY_THREE_OP_FUNC(fdiv_q, PyNumber_FloorDiv);
-
-// FIXME: Different behavior for negative j
-isl_int_fdiv_r(isl_int r, isl_int i, isl_int j)
-
-ISL_INT_PY_THREE_OP_UI_FUNC(fdiv_q_ui, PyNumber_FloorDiv);
-
-// {{{ I/O / string conversion
-
-inline void isl_int_read(isl_int r, const char *s)
+ISL_INT_PY_DECL_SPECIFIER void isl_int_gcd(isl_int r, isl_int u, isl_int v)
 {
-  Py_DECREF(*r);
-  *r = PyLong_FromString(s, NULL, 10);
-  if (!*r)
-    ISL_INT_PY_HANDLE_PY_ERROR(isl_int_read);
+  // from https://en.wikipedia.org/wiki/Binary_GCD_algorithm
+
+  // simple cases (termination)
+  int res = PyObject_RichCompareBool(*i, *j, Py_EQ); \
+  if (res == -1)
+    ISL_INT_PY_HANDLE_PY_ERROR(isl_int_gcd);
+  if (res == 1)
+  {
+    Py_DECREF(*r);
+    *r = *u;
+    Py_INCREF(*r);
+    return;
+  }
+
+  res = PyObject_Not(*u);
+  if (res == -1)
+    ISL_INT_PY_HANDLE_PY_ERROR(isl_int_gcd);
+  if (res == 1)
+  {
+    Py_DECREF(*r);
+    *r = *v;
+    Py_INCREF(*r);
+    return;
+  }
+
+  res = PyObject_Not(*v);
+  if (res == -1)
+    ISL_INT_PY_HANDLE_PY_ERROR(isl_int_gcd);
+  if (res == 1)
+  {
+    Py_DECREF(*r);
+    *r = *u;
+    Py_INCREF(*r);
+    return;
+  }
+
+  // look for factors of 2
+  if (~u & 1) // u is even
+  {
+      if (v & 1) // v is odd
+          return gcd(u >> 1, v);
+      else // both u and v are even
+          return gcd(u >> 1, v >> 1) << 1;
+  }
+
+  if (~v & 1) // u is odd, v is even
+      return gcd(u, v >> 1);
+
+  // reduce larger argument
+  if (u > v)
+      return gcd((u - v) >> 1, v);
+
+  return gcd((v - u) >> 1, u);
 }
 
-inline void isl_int_print(FILE *out, isl_int i, int width)
+
+ISL_INT_PY_DECL_SPECIFIER void isl_int_lcm(isl_int r, isl_int i, isl_int j)
+{
+  // FIXME
+  fputs("isl_int_lcm unimplemented", stderr);
+  abort();
+}
+
+/* not exploiting performance increase for exactness, but ok */
+ISL_INT_PY_THREE_OP_FUNC(divexact, PyNumber_FloorDivide);
+ISL_INT_PY_THREE_OP_UI_FUNC(divexact_ui, PyNumber_FloorDivide);
+
+ISL_INT_PY_DECL_SPECIFIER void isl_int_tdiv_q(isl_int r, isl_int i, isl_int j)
+{
+  // FIXME
+  fputs("isl_int_tdiv_q unimplemented", stderr);
+  abort();
+}
+
+ISL_INT_PY_DECL_SPECIFIER void isl_int_cdiv_q(isl_int r, isl_int i, isl_int j)
+{
+  // FIXME
+  fputs("isl_int_cdiv_q unimplemented", stderr);
+  abort();
+}
+
+ISL_INT_PY_THREE_OP_FUNC(fdiv_q, PyNumber_FloorDivide);
+
+ISL_INT_PY_DECL_SPECIFIER void isl_int_fdiv_r(isl_int r, isl_int i, isl_int j)
+{
+  // FIXME: Different behavior for negative j
+  fputs("isl_int_fdiv_r unimplemented", stderr);
+  abort();
+}
+
+ISL_INT_PY_THREE_OP_UI_FUNC(fdiv_q_ui, PyNumber_FloorDivide);
+
+ISL_INT_PY_DECL_SPECIFIER int isl_int_read(isl_int r, char *s)
+{
+  *r = PyLong_FromString(s, NULL, 10);
+  if (!*r)
+  {
+    PyErr_Clear();
+    return -1;
+  }
+  else
+    return 0;
+}
+
+ISL_INT_PY_DECL_SPECIFIER void isl_int_print(FILE *out, isl_int i, int width)
 {
   PyObject *py_str = PyObject_Str(*i);
   if (!py_str)
@@ -201,13 +316,11 @@ inline void isl_int_print(FILE *out, isl_int i, int width)
   Py_DECREF(py_str);
 }
 
-// }}}
-
-// {{{ cmp, sgn
 
 #define isl_int_sgn(i) isl_int_cmp_si(i, 0)
 
-inline int isl_int_cmp(isl_int i, isl_int j)
+
+ISL_INT_PY_DECL_SPECIFIER int isl_int_cmp(isl_int i, isl_int j)
 {
   int res = PyObject_RichCompareBool(*i, *j, Py_GT); \
   if (res == -1)
@@ -222,7 +335,7 @@ inline int isl_int_cmp(isl_int i, isl_int j)
   return -1;
 }
 
-inline int isl_int_cmp_si(isl_int i, long int si)
+ISL_INT_PY_DECL_SPECIFIER int isl_int_cmp_si(isl_int i, long int si)
 {
   PyObject *j = PyLong_FromLong(si);
   if (!j)
@@ -244,8 +357,6 @@ inline int isl_int_cmp_si(isl_int i, long int si)
     return 0;
   return -1;
 }
-
-// }}}
 
 // {{{ "rich" comparisons
 
@@ -299,26 +410,36 @@ ISL_INT_PY_DEFINE_ABS_COMPARISON(ge, GE)
 #define isl_int_is_nonpos(i)    (isl_int_sgn(i) <= 0)
 #define isl_int_is_nonneg(i)    (isl_int_sgn(i) >= 0)
 
-inline bool isl_int_is_divisible_by(isl_int i, isl_int j)
+ISL_INT_PY_DECL_SPECIFIER int isl_int_is_divisible_by(isl_int i, isl_int j)
 {
-  PyObject *remdr = PyNumber_Remainder(*i, *j);
-  if (!remdr)
-    ISL_INT_PY_HANDLE_PY_ERROR(isl_int_is_divisible_by);
-  int remdr_zero = PyObject_Not(remdr);
-  if (remdr_zero == -1)
-    ISL_INT_PY_HANDLE_PY_ERROR(isl_int_is_divisible_by);
-  Py_DECREF(remdr);
-  return remdr_zero == 1;
+  if (PyObject_IsTrue(*j))
+  {
+    /* j != 0 */
+    PyObject *remdr = PyNumber_Remainder(*i, *j);
+    if (!remdr)
+      ISL_INT_PY_HANDLE_PY_ERROR(isl_int_is_divisible_by);
+    int remdr_zero = PyObject_Not(remdr);
+    if (remdr_zero == -1)
+      ISL_INT_PY_HANDLE_PY_ERROR(isl_int_is_divisible_by);
+
+    Py_DECREF(remdr);
+    return remdr_zero == 1;
+  }
+  else
+  {
+    /* j == 0 -- only true if i == 0 as well */
+    return PyObject_Not(*i);
+  }
 }
 
-inline uint32_t isl_int_hash(isl_int v, uint32_t hash)
+ISL_INT_PY_DECL_SPECIFIER uint32_t isl_int_hash(isl_int v, uint32_t hash)
 {
   long py_hash = PyObject_Hash(*v);
   if (py_hash == -1)
     ISL_INT_PY_HANDLE_PY_ERROR(isl_int_hash);
 
   // Likely truncates, oh well.
-  return (uint32_t) py_hash;
+   return (uint32_t) py_hash ^ hash;
 }
 
 #endif
