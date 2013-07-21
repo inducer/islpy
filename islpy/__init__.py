@@ -1,5 +1,5 @@
-from islpy._isl import *
-from islpy.version import *
+from islpy._isl import *  # noqa
+from islpy.version import *  # noqa
 
 
 _CHECK_DIM_TYPES = [
@@ -11,8 +11,9 @@ EXPR_CLASSES = tuple(cls for cls in ALL_CLASSES
 
 _DEFAULT_CONTEXT = Context()
 
+
 def _add_functionality():
-    import islpy._isl as _isl
+    import islpy._isl as _isl  # noqa
 
     # {{{ generic initialization
 
@@ -74,10 +75,17 @@ def _add_functionality():
             cls.__eq__ = obj_eq
             cls.__ne__ = obj_ne
 
-    def obj_lt(self, other): return self.is_strict_subset(other)
-    def obj_le(self, other): return self.is_subset(other)
-    def obj_gt(self, other): return other.is_strict_subset(self)
-    def obj_ge(self, other): return other.is_subset(self)
+    def obj_lt(self, other):
+        return self.is_strict_subset(other)
+
+    def obj_le(self, other):
+        return self.is_subset(other)
+
+    def obj_gt(self, other):
+        return other.is_strict_subset(self)
+
+    def obj_ge(self, other):
+        return other.is_subset(self)
 
     for cls in [BasicSet, BasicMap, Set, Map]:
         cls.__lt__ = obj_lt
@@ -119,7 +127,8 @@ def _add_functionality():
     # {{{ Space
 
     def space_get_var_dict(self, dimtype=None):
-        """Return a dictionary mapping variable names to tuples of (:class:`dim_type`, index).
+        """Return a dictionary mapping variable names to tuples of
+        (:class:`dim_type`, index).
 
         :param dimtype: None to get all variables, otherwise
             one of :class:`dim_type`.
@@ -350,7 +359,8 @@ def _add_functionality():
     # {{{ common functionality
 
     def obj_get_var_dict(self, dimtype=None):
-        """Return a dictionary mapping variable names to tuples of (:class:`dim_type`, index).
+        """Return a dictionary mapping variable names to tuples of
+        (:class:`dim_type`, index).
 
         :param dimtype: None to get all variables, otherwise
             one of :class:`dim_type`.
@@ -369,7 +379,6 @@ def _add_functionality():
 
     # }}}
 
-
     # {{{ PwAff
 
     def pwaff_get_pieces(self):
@@ -378,6 +387,7 @@ def _add_functionality():
         """
 
         result = []
+
         def append_tuple(*args):
             result.append(args)
 
@@ -607,11 +617,7 @@ def _add_functionality():
         c.eliminate_except = obj_eliminate_except
 
 
-
-
 _add_functionality()
-
-
 
 
 def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
@@ -666,8 +672,6 @@ def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
     return obj
 
 
-
-
 def align_spaces(obj, tgt, obj_bigger_ok=False, across_dim_types=False):
     """
     Try to make the space in which *obj* lives the same as that of *tgt* by
@@ -684,11 +688,13 @@ def align_spaces(obj, tgt, obj_bigger_ok=False, across_dim_types=False):
         dim_types = _CHECK_DIM_TYPES
 
     if across_dim_types:
-        obj_names = [obj.get_dim_name(dt, i)
+        obj_names = [
+                obj.get_dim_name(dt, i)
                 for dt in dim_types
                 for i in xrange(obj.dim(dt))
                 ]
-        tgt_names = [tgt.get_dim_name(dt, i)
+        tgt_names = [
+                tgt.get_dim_name(dt, i)
                 for dt in dim_types
                 for i in xrange(tgt.dim(dt))
                 ]
@@ -705,8 +711,6 @@ def align_spaces(obj, tgt, obj_bigger_ok=False, across_dim_types=False):
     return obj
 
 
-
-
 def align_two(obj1, obj2, across_dim_types=False):
     """Align the spaces of two objects, potentially modifying both of them.
 
@@ -718,9 +722,6 @@ def align_two(obj1, obj2, across_dim_types=False):
     obj2 = align_spaces(obj2, obj1, obj_bigger_ok=True,
             across_dim_types=across_dim_types)
     return (obj1, obj2)
-
-
-
 
 
 # vim: foldmethod=marker
