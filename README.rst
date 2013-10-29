@@ -1,3 +1,6 @@
+.. image:: https://badge.fury.io/py/islpy.png
+    :target: http://pypi.python.org/pypi/islpy
+
 islpy is a Python wrapper around Sven Verdoolaege's `isl
 <http://www.kotnet.org/~skimo/isl/>`_, a library for manipulating sets and
 relations of integer points bounded by linear constraints.
