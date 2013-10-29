@@ -127,7 +127,7 @@ def main():
 
           install_requires=[
               "pytest>=2",
-              "gmpy>=1,<2",
+              "gmpy>=1.17,<2",
               # "Mako>=0.3.6",
               ],
           ext_modules=[

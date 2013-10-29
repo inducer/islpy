@@ -1,3 +1,24 @@
+from __future__ import division
+
+
+# {{{ check gmpy version
+
+def _check_gmpy_version():
+    import gmpy
+    gmpy_ver_num = tuple(int(s) for s in gmpy.version().split("."))
+
+    import sys
+    if sys.version_info >= (3,) and gmpy_ver_num < (1, 17):
+        raise ImportError("gmpy 1.17 or newer is required for "
+                "Python 3 support")
+
+try:
+    _check_gmpy_version()
+except ValueError:
+    pass
+
+# }}}
+
 from islpy._isl import *  # noqa
 from islpy.version import *  # noqa
 
