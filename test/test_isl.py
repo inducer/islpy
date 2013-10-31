@@ -1,11 +1,6 @@
 from __future__ import division
 
-
-
-
 import islpy as isl
-
-
 
 
 def test_basics():
@@ -15,20 +10,23 @@ def test_basics():
     space = isl.Space.create_from_names(ctx, set=["a", "b"])
 
     bset = (isl.BasicSet.universe(space)
-            .add_constraint(isl.Constraint.eq_from_names(space, {"a":-1, "b": 2}))
-            .add_constraint(isl.Constraint.ineq_from_names(space, {"a":1, 1:-10}))
-            .add_constraint(isl.Constraint.ineq_from_names(space, {"a":-1, 1: 42}))
+            .add_constraint(isl.Constraint.eq_from_names(
+                space, {"a": -1, "b": 2}))
+            .add_constraint(isl.Constraint.ineq_from_names(
+                space, {"a": 1, 1: -10}))
+            .add_constraint(isl.Constraint.ineq_from_names(
+                space, {"a": -1, 1: 42}))
             .project_out(dt.set, 1, 1))
 
-    bset2 = isl.BasicSet("{[i] : exists (a : i = 2a and i >= 10 and i <= 42)}",
+    bset2 = isl.BasicSet(  # noqa
+            "{[i] : exists (a : i = 2a and i >= 10 and i <= 42)}",
             context=ctx)
 
     points = []
     bset.foreach_point(points.append)
 
     for pt in points:
-        print pt
-
+        print(pt)
 
 
 def test_error_on_invalid_index():
@@ -44,7 +42,6 @@ def test_error_on_invalid_index():
         assert False
 
 
-
 def test_pwqpoly():
     def term_handler(term):
         print(term.get_num())
@@ -54,8 +51,6 @@ def test_pwqpoly():
 
     pwqp = isl.PwQPolynomial('[n] -> { n }')
     pwqp.foreach_piece(piece_handler)
-
-
 
 
 if __name__ == "__main__":
