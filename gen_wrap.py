@@ -672,9 +672,15 @@ def write_wrapper(outf, meth):
                     "%s (:class:`%s`)" % (arg.name, to_py_class(ret_cls)))
 
         elif arg.base_type == "FILE" and arg.ptr == "*":
+            if sys.version_info >= (3,):
+                raise SignatureNotSupported(
+                        "arg type %s %s" % (arg.base_type, arg.ptr))
+
             passed_args.append("PyFile_AsFile(arg_%s.ptr())" % arg.name)
             input_args.append("py::object %s" % ("arg_"+arg.name))
-            docs.append(":param %s: :class:`file`-like" % arg.name)
+            docs.append(":param %s: :class:`file`-like "
+                    "(NOTE: This will cease to be supported in Python 3.)"
+                    % arg.name)
 
         else:
             raise SignatureNotSupported("arg type %s %s" % (arg.base_type, arg.ptr))
