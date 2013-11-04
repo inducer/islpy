@@ -507,6 +507,7 @@ def _add_functionality():
 
     def add_upcasts(basic_class, special_class, upcast_method):
         from functools import update_wrapper
+        from inspect import ismethod
 
         for method_name in dir(special_class):
             # do not overwrite existing methods
@@ -515,15 +516,15 @@ def _add_functionality():
 
             method = getattr(special_class, method_name)
 
-            ismethod = False
+            my_ismethod = ismethod(method)
             for meth_superclass in type(method).__mro__:
                 if "function" in meth_superclass.__name__:
                     # inspect.ismethod does not work on Boost.Py callables in Py3,
                     # hence this hack.
-                    ismethod = True
+                    my_ismethod = True
                     break
 
-            if ismethod:
+            if my_ismethod:
                 def make_wrapper(method, upcast):
                     # This function provides a scope in which method and upcast
                     # are not changed from one iteration of the enclosing for
