@@ -79,6 +79,49 @@ BOOST_PYTHON_MODULE(_isl)
     .ENUM_VALUE(isl_fold_, list)
     ;
 
+  py::enum_<isl_ast_op_type>("ast_op_type")
+    .ENUM_VALUE(isl_ast_op_, error)
+    .ENUM_VALUE(isl_ast_op_, and)
+    .ENUM_VALUE(isl_ast_op_, and_then)
+    .ENUM_VALUE(isl_ast_op_, or)
+    .ENUM_VALUE(isl_ast_op_, or_else)
+    .ENUM_VALUE(isl_ast_op_, max)
+    .ENUM_VALUE(isl_ast_op_, min)
+    .ENUM_VALUE(isl_ast_op_, minus)
+    .ENUM_VALUE(isl_ast_op_, add)
+    .ENUM_VALUE(isl_ast_op_, sub)
+    .ENUM_VALUE(isl_ast_op_, mul)
+    .ENUM_VALUE(isl_ast_op_, div)
+    .ENUM_VALUE(isl_ast_op_, fdiv_q)
+    .ENUM_VALUE(isl_ast_op_, pdiv_q)
+    .ENUM_VALUE(isl_ast_op_, pdiv_r)
+    .ENUM_VALUE(isl_ast_op_, cond)
+    .ENUM_VALUE(isl_ast_op_, select)
+    .ENUM_VALUE(isl_ast_op_, eq)
+    .ENUM_VALUE(isl_ast_op_, le)
+    .ENUM_VALUE(isl_ast_op_, lt)
+    .ENUM_VALUE(isl_ast_op_, ge)
+    .ENUM_VALUE(isl_ast_op_, gt)
+    .ENUM_VALUE(isl_ast_op_, call)
+    .ENUM_VALUE(isl_ast_op_, access)
+    .ENUM_VALUE(isl_ast_op_, member)
+    ;
+
+  py::enum_<isl_ast_expr_type>("ast_expr_type")
+    .ENUM_VALUE(isl_ast_expr_, error)
+    .ENUM_VALUE(isl_ast_expr_, op)
+    .ENUM_VALUE(isl_ast_expr_, id)
+    .ENUM_VALUE(isl_ast_expr_, int)
+    ;
+
+  py::enum_<isl_ast_node_type>("ast_node_type")
+    .ENUM_VALUE(isl_ast_node_, error)
+    .ENUM_VALUE(isl_ast_node_, for)
+    .ENUM_VALUE(isl_ast_node_, if)
+    .ENUM_VALUE(isl_ast_node_, block)
+    .ENUM_VALUE(isl_ast_node_, user)
+    ;
+
 #define FORMAT_ATTR(name) cls_format.attr(#name) = ISL_FORMAT_##name
   py::class_<isl::format> cls_format("format", py::no_init);
   FORMAT_ATTR(ISL);

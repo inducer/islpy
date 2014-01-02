@@ -20,6 +20,7 @@
 #include <isl/band.h>
 #include <isl/schedule.h>
 #include <isl/flow.h>
+#include <isl/ast.h>
 #include <isl/options.h>
 #include <stdexcept>
 #include <boost/python.hpp>
@@ -205,6 +206,10 @@ namespace isl
   WRAP_CLASS(aff_list);
   WRAP_CLASS(pw_aff_list);
   WRAP_CLASS(band_list);
+  WRAP_CLASS(ast_expr_list);
+  WRAP_CLASS(ast_node_list);
+
+  WRAP_CLASS(id_to_ast_expr);
 
   WRAP_CLASS(band);
   WRAP_CLASS(schedule);
@@ -213,6 +218,10 @@ namespace isl
   WRAP_CLASS(access_info);
   WRAP_CLASS(flow);
   WRAP_CLASS(restriction);
+
+  WRAP_CLASS(ast_expr);
+  WRAP_CLASS(ast_node);
+  WRAP_CLASS(ast_print_options);
 
   inline ctx *alloc_ctx()
   {

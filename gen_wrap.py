@@ -88,7 +88,15 @@ PART_TO_CLASSES = {
         # - doc/reference.rst
 
         "part1": [
+            # lists
             "basic_set_list", "set_list", "aff_list", "pw_aff_list", "band_list",
+            "ast_expr_list", "ast_node_list",
+
+            # maps
+            "id_to_ast_expr",
+
+            # others
+
             "printer",  "val", "multi_val", "vec", "mat",
             "aff", "pw_aff",
             "multi_aff", "multi_pw_aff", "pw_multi_aff", "union_pw_multi_aff",
@@ -114,6 +122,8 @@ PART_TO_CLASSES = {
             "band", "schedule", "schedule_constraints",
 
             "access_info", "flow", "restriction",
+
+            "ast_expr", "ast_node", "ast_print_options",
         ]
         }
 CLASSES = []
@@ -126,7 +136,9 @@ CLASS_MAP = {
         "options": "ctx",
         }
 
-ENUMS = ["isl_dim_type", "isl_fold"]
+ENUMS = ["isl_dim_type", "isl_fold",
+        "isl_ast_op_type", "isl_ast_expr_type",
+        "isl_ast_node_type"]
 
 SAFE_TYPES = ENUMS + ["int", "unsigned", "uint32_t", "size_t", "double",
         "long", "unsigned long"]
@@ -362,7 +374,7 @@ class FunctionData:
                 for i in split_at_unparenthesized_commas(decl_match.group(4))]
 
         if c_name in ["ISL_ARG_DECL", "ISL_DECLARE_MULTI",
-                "ISL_DECLARE_LIST"]:
+                "ISL_DECLARE_LIST", "isl_ast_op_type_print_macro"]:
             return
 
         assert c_name.startswith("isl_"), c_name
@@ -442,7 +454,9 @@ def get_callback(cb_name, cb):
 
     for arg in cb.args[:-1]:
         if arg.base_type.startswith("isl_"):
-            assert arg.ptr == "*"
+            if arg.ptr != "*":
+                raise SignatureNotSupported("unsupported callback arg: %s %s" % (
+                    arg.base_type, arg.ptr))
             arg_cls = arg.base_type[4:]
 
             if arg.semantics is not SEM_TAKE:
@@ -1054,6 +1068,7 @@ def gen_wrapper(include_dirs):
     fdata.read_header("isl/schedule.h")
     fdata.read_header("isl/flow.h")
     fdata.read_header("isl/options.h")
+    fdata.read_header("isl/ast.h")
 
     for part, classes in PART_TO_CLASSES.items():
         expf = open("src/wrapper/gen-expose-%s.inc" % part, "wt")

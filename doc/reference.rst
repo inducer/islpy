@@ -109,6 +109,18 @@ Symbolic Constants
     :members:
     :undoc-members:
 
+.. autoclass:: ast_op_type
+    :members:
+    :undoc-members:
+
+.. autoclass:: ast_expr_type
+    :members:
+    :undoc-members:
+
+.. autoclass:: ast_node_type
+    :members:
+    :undoc-members:
+
 Basic Building Blocks
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -356,6 +368,20 @@ Flow
 .. autoclass:: Flow
     :members:
 
+Abstract Syntax Trees
+^^^^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 2014.1
+
+.. autoclass:: AstExpr
+    :members:
+
+.. autoclass:: AstNode
+    :members:
+
+.. autoclass:: AstPrintOptions
+    :members:
+
 Lists
 ^^^^^
 
@@ -369,6 +395,18 @@ Lists
     :members:
 
 .. autoclass:: BandList
+    :members:
+
+.. autoclass:: AstExprList
+    :members:
+
+.. autoclass:: AstNodeList
+    :members:
+
+Maps
+^^^^
+
+.. autoclass:: IdToAstExpr
     :members:
 
 Output

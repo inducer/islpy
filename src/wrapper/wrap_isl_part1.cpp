@@ -30,11 +30,23 @@ void islpy_expose_part1()
     CONST(SCHEDULE_ALGORITHM_FEAUTRIER);
   }
 
+  // {{{ lists
+
   MAKE_WRAP(basic_set_list, BasicSetList);
   MAKE_WRAP(set_list, SetList);
   MAKE_WRAP(aff_list, AffList);
   MAKE_WRAP(pw_aff_list, PwAffList);
   MAKE_WRAP(band_list, BandList);
+  MAKE_WRAP(ast_expr_list, AstExprList);
+  MAKE_WRAP(ast_node_list, AstNodeList);
+
+  // }}}
+
+  // {{{ maps
+
+  MAKE_WRAP(id_to_ast_expr, IdToAstExpr);
+
+  // }}}
 
   MAKE_WRAP(printer, Printer);
   MAKE_WRAP(val, Val);
