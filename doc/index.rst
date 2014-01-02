@@ -61,7 +61,7 @@ package <http://www.kotnet.org/~skimo/barvinok/>`_ is also quite helpful to get
 an idea.
 
 .. toctree::
-    :maxdepth: 3
+    :maxdepth: 2
 
     misc
     reference

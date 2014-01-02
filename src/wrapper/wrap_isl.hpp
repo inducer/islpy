@@ -1,3 +1,7 @@
+// workaround for
+// https://gmplib.org/list-archives/gmp-bugs/2006-November/000627.html
+#include <gmpxx.h>
+
 #include <isl/ctx.h>
 #include <isl/space.h>
 #include <isl/set.h>
@@ -20,7 +24,6 @@
 #include <stdexcept>
 #include <boost/python.hpp>
 #include <boost/unordered_map.hpp>
-#include "gmpy.h"
 #include "wrap_helpers.hpp"
 
 // TODO: flow.h
@@ -36,20 +39,6 @@ namespace isl
       explicit error (const std::string &what)
         : std::runtime_error(what)
       { }
-  };
-
-  struct managed_int
-  {
-    isl_int m_data;
-
-    managed_int()
-    {
-      isl_int_init(m_data);
-    }
-    ~managed_int()
-    {
-      isl_int_clear(m_data);
-    }
   };
 
   struct ctx;
@@ -219,6 +208,7 @@ namespace isl
 
   WRAP_CLASS(band);
   WRAP_CLASS(schedule);
+  WRAP_CLASS(schedule_constraints);
 
   WRAP_CLASS(access_info);
   WRAP_CLASS(flow);
@@ -242,6 +232,11 @@ namespace isl
   }
 
   class format { };
+
+  inline void my_decref(void *user)
+  {
+    Py_DECREF((PyObject *) user);
+  }
 }
 
 

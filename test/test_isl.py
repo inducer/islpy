@@ -44,13 +44,30 @@ def test_error_on_invalid_index():
 
 def test_pwqpoly():
     def term_handler(term):
-        print(term.get_num())
+        print(term.get_coefficient())
 
     def piece_handler(set, qpoly):
         qpoly.foreach_term(term_handler)
 
     pwqp = isl.PwQPolynomial('[n] -> { n }')
     pwqp.foreach_piece(piece_handler)
+
+
+def test_id_user():
+    ctx = isl.Context()
+    foo = isl.Id("foo", context=ctx)  # noqa
+    t = (1, 2)
+    bar = isl.Id("bar", t, context=ctx)
+
+    assert bar.user is t
+
+
+def test_val():
+    for src in [17, "17"]:
+        v = isl.Val(src)
+        print v
+        assert v == 17
+        assert v.to_python() == 17
 
 
 if __name__ == "__main__":

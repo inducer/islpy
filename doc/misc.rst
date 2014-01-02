@@ -52,6 +52,9 @@ OTHER DEALINGS IN THE SOFTWARE.
     isl itself is now also licensed under the `MIT license
     <http://repo.or.cz/w/isl.git/blob/HEAD:/LICENSE>`_.
 
+    GMP, which is a dependency of isl and thus islpy, is licensed under the
+    Lesser GNU Public License.
+
 
 Relation with isl's C interface
 ===============================
@@ -71,13 +74,36 @@ See also :ref:`gen-remarks`.
 User-visible Changes
 ====================
 
-Version 2013.4
+Version 2014.1
 --------------
 
 .. note::
 
     This version is currently in development and can be obtained from
     islpy's version control.
+
+isl's handling of integer's has changed, forcing islpy to make
+incompatible changes as well.
+
+Now :class:`islpy.Val` is used to represent all numbers going
+into and out of :mod:`islpy`. :mod:`gmpy` is no longer a dependency
+of :mod:`islpy`. The following rules apply for this interface change:
+
+* You can pass (up to ``long int``-sized) integers to methods of
+  isl objects without manual conversion to :class:`islpy.Val`.
+  For larger numbers, you need to convert manually for now.
+
+* All numbers returned from :mod:`islpy` will be of type :class:`islpy.Val`.
+  If they are integers, they can be converted
+
+* Since upstream made the decision to make ``isl_XXX_do_something_val``
+  not always semantically equivalent to ``isl_XXX_do_something``, the
+  old functions were removed.
+
+  One example of this is ``isl_aff_get_constant``, which returned just
+  the constant, and ``isl_aff_get_constant_val``, which returns the
+  constant divided by the :class:`islpy.Aff`'s denominator as a rational
+  value.
 
 Version 2011.3
 --------------

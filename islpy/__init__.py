@@ -1,24 +1,6 @@
 from __future__ import division
 
 
-# {{{ check gmpy version
-
-def _check_gmpy_version():
-    import gmpy
-    gmpy_ver_num = tuple(int(s) for s in gmpy.version().split("."))
-
-    import sys
-    if sys.version_info >= (3,) and gmpy_ver_num < (1, 17):
-        raise ImportError("gmpy 1.17 or newer is required for "
-                "Python 3 support")
-
-try:
-    _check_gmpy_version()
-except ValueError:
-    pass
-
-# }}}
-
 from islpy._isl import *  # noqa
 from islpy.version import *  # noqa
 
@@ -230,7 +212,7 @@ def _add_functionality():
             New for :class:`Aff`
         """
         for i, coeff in enumerate(args):
-            self = self.set_coefficient(dim_tp, i, coeff)
+            self = self.set_coefficient_val(dim_tp, i, coeff)
 
         return self
 
@@ -257,7 +239,7 @@ def _add_functionality():
                 self = self.set_constant(coeff)
             else:
                 tp, idx = name_to_dim[name]
-                self = self.set_coefficient(tp, idx, coeff)
+                self = self.set_coefficient_val(tp, idx, coeff)
 
         return self
 
@@ -297,6 +279,26 @@ def _add_functionality():
         coeff_class.set_coefficients = obj_set_coefficients
         coeff_class.set_coefficients_by_name = obj_set_coefficients_by_name
         coeff_class.get_coefficients_by_name = obj_get_coefficients_by_name
+
+    # }}}
+
+    # {{{ Id
+
+    def id_new(cls, name, user=None, context=None):
+        if context is None:
+            context = _DEFAULT_CONTEXT
+
+        result = cls.alloc(context, name, user)
+        result._made_from_python = True
+        return result
+
+    def id_bogus_init(self, name, user=None, context=None):
+        assert self._made_from_python
+        del self._made_from_python
+
+    Id.__new__ = staticmethod(id_new)
+    Id.__init__ = id_bogus_init
+    Id.user = property(Id.get_user)
 
     # }}}
 
@@ -435,7 +437,7 @@ def _add_functionality():
 
     def _number_to_aff(template, num):
         number_aff = Aff.zero_on_domain(template.get_domain_space())
-        number_aff = number_aff.set_constant(num)
+        number_aff = number_aff.set_constant_val(num)
 
         if isinstance(template, PwAff):
             result = PwAff.empty(template.get_space())
@@ -480,7 +482,7 @@ def _add_functionality():
             return NotImplemented
 
     def aff_flordiv(self, other):
-        return self.scale_down(other).floor()
+        return self.scale_down_val(other).floor()
 
     for aff_class in [Aff, PwAff]:
         aff_class.__add__ = aff_add
@@ -490,8 +492,68 @@ def _add_functionality():
         aff_class.__mul__ = aff_mul
         aff_class.__rmul__ = aff_mul
         aff_class.__neg__ = aff_class.neg
-        aff_class.__mod__ = aff_class.mod
+        aff_class.__mod__ = aff_class.mod_val
         aff_class.__floordiv__ = aff_flordiv
+
+    # }}}
+
+    # {{{ Val
+
+    def val_new(cls, src, context=None):
+        if context is None:
+            context = _DEFAULT_CONTEXT
+
+        if isinstance(src, (str, unicode)):
+            result = cls.read_from_str(context, src)
+        elif isinstance(src, (int, long)):
+            result = cls.int_from_si(context, src)
+        else:
+            raise TypeError("'src' must be int or string")
+
+        result._made_from_python = True
+        return result
+
+    def val_bogus_init(self, src, context=None):
+        assert self._made_from_python
+        del self._made_from_python
+
+    def val_rsub(self, other):
+        return -self + other
+
+    def val_nonzero(self):
+        return not self.is_zero()
+
+    def val_repr(self):
+        return "%s(\"%s\")" % (type(self).__name__, self.to_str())
+
+    def val_to_python(self):
+        if not self.is_int():
+            raise ValueError("can only convert integer Val to python")
+
+        return long(self.to_str())
+
+    Val.__new__ = staticmethod(val_new)
+    Val.__init__ = val_bogus_init
+    Val.__add__ = Val.add
+    Val.__radd__ = Val.add
+    Val.__sub__ = Val.sub
+    Val.__rsub__ = val_rsub
+    Val.__mul__ = Val.mul
+    Val.__rmul__ = Val.mul
+    Val.__neg__ = Val.neg
+    Val.__mod__ = Val.mod
+    Val.__bool__ = Val.__nonzero__ = val_nonzero
+
+    Val.__lt__ = Val.lt
+    Val.__gt__ = Val.gt
+    Val.__le__ = Val.le
+    Val.__ge__ = Val.ge
+    Val.__eq__ = Val.eq
+    Val.__ne__ = Val.ne
+
+    Val.__repr__ = val_repr
+    Val.__str__ = Val.to_str
+    Val.to_python = val_to_python
 
     # }}}
 

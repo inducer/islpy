@@ -31,8 +31,6 @@ BOOST_PYTHON_MODULE(_isl)
 
   py::docstring_options doc_opt(true, false, false);
 
-  import_gmpy();
-
   /*
   {
     typedef isl_options cls;
@@ -101,5 +99,4 @@ BOOST_PYTHON_MODULE(_isl)
   py::implicitly_convertible<isl::map, isl::union_map>();
   py::implicitly_convertible<isl::space, isl::local_space>();
   py::implicitly_convertible<isl::aff, isl::pw_aff>();
-
 }

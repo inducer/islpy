@@ -9,8 +9,6 @@ namespace isl
 
 void islpy_expose_part1()
 {
-  import_gmpy();
-
   {
     typedef isl::ctx cls;
     py::class_<cls, boost::shared_ptr<cls>, boost::noncopyable>
@@ -43,7 +41,6 @@ void islpy_expose_part1()
   MAKE_WRAP(multi_val, MultiVal);
   MAKE_WRAP(vec, Vec);
   MAKE_WRAP(mat, Mat);
-  MAKE_WRAP(id, Id);
 
   MAKE_WRAP(aff, Aff);
   MAKE_WRAP(pw_aff, PwAff);
@@ -52,6 +49,7 @@ void islpy_expose_part1()
   MAKE_WRAP(pw_multi_aff, PwMultiAff);
   MAKE_WRAP(union_pw_multi_aff, UnionPwMultiAff);
 
+  MAKE_WRAP(id, Id);
   MAKE_WRAP(constraint, Constraint);
   MAKE_WRAP(space, Space);
   MAKE_WRAP(local_space, LocalSpace);

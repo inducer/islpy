@@ -7,8 +7,6 @@ namespace isl
 
 void islpy_expose_part2()
 {
-  import_gmpy();
-
   MAKE_WRAP(basic_set, BasicSet);
   MAKE_WRAP(basic_map, BasicMap);
   MAKE_WRAP(set, Set);

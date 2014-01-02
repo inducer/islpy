@@ -6,6 +6,17 @@ Reference guide
 
 .. _gen-remarks:
 
+Table of Contents
+^^^^^^^^^^^^^^^^^
+
+.. toctree::
+    :maxdepth: 3
+
+    reference
+
+.. Referring to this document makes sphinx spew 'circular reference' warnings.
+.. "self" would apparently be the correct way, but it does not work.
+
 General Remarks
 ^^^^^^^^^^^^^^^
 
@@ -106,6 +117,12 @@ Context
 
 .. class:: Context()
 
+Id
+--
+
+.. autoclass:: Id
+    :members:
+
 Space
 -----
 
@@ -124,6 +141,18 @@ Constraints
 -----------
 
 .. autoclass:: Constraint
+    :members:
+
+Value
+-----
+
+.. autoclass:: Val
+    :members:
+
+Multi-Value
+-----------
+
+.. autoclass:: MultiVal
     :members:
 
 Vector
@@ -243,6 +272,12 @@ Union of Piecewise Multiply Affine Expression
 Quasipolynomials
 ^^^^^^^^^^^^^^^^
 
+Term
+----
+
+.. autoclass:: Term
+    :members:
+
 QPolynomial
 -----------
 
@@ -292,6 +327,12 @@ Schedule
 --------
 
 .. autoclass:: Schedule
+    :members:
+
+ScheduleConstraints
+-------------------
+
+.. autoclass:: ScheduleConstraints
     :members:
 
 Dataflow

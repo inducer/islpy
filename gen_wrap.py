@@ -25,6 +25,8 @@ def       for       lambda    try
 """.split()
 
 
+# {{{ data model
+
 class Argument:
     def __init__(self, name, semantics, base_type, ptr):
         self.name = name
@@ -76,33 +78,42 @@ class Method:
     def __repr__(self):
         return "<method %s>" % self.c_name
 
+# }}}
+
 
 PART_TO_CLASSES = {
-        "part1": [
-        "basic_set_list", "set_list", "aff_list", "pw_aff_list", "band_list",
-        "printer",  "val", "multi_val", "vec", "mat", "id",
-        "aff", "pw_aff",
-        "multi_aff", "multi_pw_aff", "pw_multi_aff", "union_pw_multi_aff",
+        # If you change this, change:
+        # - src/wrapper/wrap_isl.hpp to add WRAP_CLASS(...)
+        # - src/wrapper/wrap_isl_partN.hpp to add MAKE_WRAP(...)
+        # - doc/reference.rst
 
-        "constraint", "space", "local_space",
+        "part1": [
+            "basic_set_list", "set_list", "aff_list", "pw_aff_list", "band_list",
+            "printer",  "val", "multi_val", "vec", "mat",
+            "aff", "pw_aff",
+            "multi_aff", "multi_pw_aff", "pw_multi_aff", "union_pw_multi_aff",
+
+            "id",
+            "constraint", "space", "local_space",
         ],
 
         "part2": [
-        "basic_set", "basic_map",
-        "set", "map",
-        "union_map", "union_set",
-        "point", "vertex", "cell", "vertices",
+            "basic_set", "basic_map",
+            "set", "map",
+            "union_map", "union_set",
+            "point", "vertex", "cell", "vertices",
         ],
 
         "part3": [
-        "qpolynomial_fold", "pw_qpolynomial_fold",
-        "union_pw_qpolynomial_fold",
-        "union_pw_qpolynomial", "term",
-        "qpolynomial", "pw_qpolynomial",
+            "qpolynomial_fold", "pw_qpolynomial_fold",
+            "union_pw_qpolynomial_fold",
+            "union_pw_qpolynomial",
+            "qpolynomial", "pw_qpolynomial",
+            "term",
 
-        "band", "schedule",
+            "band", "schedule", "schedule_constraints",
 
-        "access_info", "flow", "restriction",
+            "access_info", "flow", "restriction",
         ]
         }
 CLASSES = []
@@ -117,8 +128,11 @@ CLASS_MAP = {
 
 ENUMS = ["isl_dim_type", "isl_fold"]
 
-SAFE_TYPES = ENUMS + ["int", "unsigned", "uint32_t", "size_t"]
+SAFE_TYPES = ENUMS + ["int", "unsigned", "uint32_t", "size_t", "double",
+        "long", "unsigned long"]
 SAFE_IN_TYPES = SAFE_TYPES + ["const char *", "char *"]
+
+# {{{ parser
 
 DECL_RE = re.compile(r"""
     ((?:\w+\s+)*) (\**) \s* (?# return type)
@@ -363,6 +377,16 @@ class FunctionData:
         if found_class:
             name = name[len(cls)+1:]
 
+        # Don't be tempted to chop off "_val"--the "_val" versions of
+        # some methods are incompatible with the isl_int ones.
+        #
+        # (For example, isl_aff_get_constant() returns just the constant,
+        # but isl_aff_get_constant_val() returns the constant divided by
+        # the denominator.)
+        #
+        # To avoid breaking user code in non-obvious ways, the new
+        # names are carried over to the Python level.
+
         if not found_class:
             for fake_cls, cls in CLASS_MAP.items():
                 if name.startswith(fake_cls):
@@ -406,6 +430,8 @@ class FunctionData:
                 cls, name, c_name,
                 return_semantics, return_base_type, return_ptr,
                 args, is_exported=is_exported, is_constructor=is_constructor))
+
+# }}}
 
 
 def get_callback(cb_name, cb):
@@ -477,6 +503,8 @@ def get_callback(cb_name, cb):
                 passed_args=", ".join(passed_args))
 
 
+# {{{ wrapper generator
+
 def write_wrapper(outf, meth):
     body = []
     checks = []
@@ -547,43 +575,91 @@ def write_wrapper(outf, meth):
             else:
                 raise SignatureNotSupported("int *")
 
-        elif arg.base_type == "isl_int" and arg.ptr == "*":
-            # assume it's meant as a return value
-            body.append("""
-                py::object arg_%(name)s(py::handle<>((PyObject *) Pympz_new()));
-                managed_int arg_mi_%(name)s;
+        elif arg.base_type == "isl_val" and arg.ptr == "*" and arg_idx > 0:
+            # {{{ val input argument
 
-                """ % dict(name=arg.name))
-            passed_args.append("&arg_mi_%s.m_data" % arg.name)
-            post_call.append("""
-                isl_int_get_gmp(
-                    arg_mi_%(name)s.m_data,
-                    Pympz_AS_MPZ(arg_%(name)s.ptr()));
-                """ % dict(name=arg.name))
-
-            extra_ret_vals.append("arg_%s" % arg.name)
-            extra_ret_descrs.append("%s (integer)" % arg.name)
-
-            arg_names.pop()
-
-        elif arg.base_type == "isl_int" and not arg.ptr:
-            input_args.append("py::object %s" % ("arg_"+arg.name))
+            arg_descr = ":param %s: :class:`Val`" % arg.name
+            input_args.append("py::object py_%s" % arg.name)
             checks.append("""
-                managed_int arg_mi_%(name)s;
-                {
-                  PyObject *converted;
-                  if (Pympz_convert_arg(arg_%(name)s.ptr(), &converted) == 0)
-                    throw py::error_already_set();
-                  py::handle<> converted_arg_%(name)s = py::handle<>(converted);
-                  isl_int_set_gmp(arg_mi_%(name)s.m_data,
-                    Pympz_AS_MPZ(converted_arg_%(name)s.get()));
-                }
-                """ % dict(name=arg.name, meth="%s_%s" % (meth.cls, meth.name)))
-            passed_args.append("arg_mi_%s.m_data" % arg.name)
+                std::auto_ptr<val> auto_arg_%(name)s;
+                py::extract<val *> ex_%(name)s(py_%(name)s);
+                isl_ctx *ctx_for_%(name)s =
+                    %(first_arg_base_type)s_get_ctx(arg_%(first_arg)s.m_data);
 
-            docs.append(":param %s: integer" % arg.name)
+                if (ex_%(name)s.check())
+                {
+                  val *arg_%(name)s = ex_%(name)s();
+                  if (!auto_arg_%(name)s->is_valid())
+                    throw isl::error(
+                      "passed invalid val for %(name)s");
+
+                  isl_val *tmp_ptr = isl_val_copy(arg_%(name)s->m_data);
+                  if (!tmp_ptr)
+                      throw isl::error("failed to copy arg %(name)s");
+                  auto_arg_%(name)s = std::auto_ptr<val>(new val(tmp_ptr));
+                }
+                else if (PyLong_Check(py_%(name)s.ptr()))
+                {
+                  int overflow;
+
+                  long value = PyLong_AsLongAndOverflow(
+                    py_%(name)s.ptr(), &overflow);
+
+                  if (overflow)
+                  {
+                      throw isl::error(
+                        "overflow on conversion of long for %(name)s");
+                  }
+
+                  isl_val *tmp_ptr = isl_val_int_from_si(ctx_for_%(name)s, value);
+                  if (!tmp_ptr)
+                      throw isl::error("failed to create arg %(name)s from integer");
+                  auto_arg_%(name)s = std::auto_ptr<val>(new val(tmp_ptr));
+                }
+                """ % dict(
+                    name=arg.name,
+                    first_arg_base_type=meth.args[0].base_type,
+                    first_arg=meth.args[0].name,
+                    ))
+
+            if sys.version_info < (3,):
+                checks.append("""
+                    else if (PyInt_Check(py_%(name)s.ptr()))
+                    {
+                      isl_val *tmp_ptr = isl_val_int_from_si(ctx_for_%(name)s,
+                          PyInt_AsLong(py_%(name)s.ptr()));
+                      if (!tmp_ptr)
+                          throw isl::error("failed to create arg "
+                              "%(name)s from integer");
+                      auto_arg_%(name)s = std::auto_ptr<val>(new val(tmp_ptr));
+                    }
+                    """ % dict(
+                        name=arg.name,
+                        ))
+
+            checks.append("""
+                else
+                {
+                  throw isl::error("unrecognized argument for %(name)s");
+                }
+                """ % dict(
+                    name=arg.name,
+                    ))
+
+            if arg.semantics is None and arg.base_type != "isl_ctx":
+                raise Undocumented(meth)
+
+            if arg.semantics is SEM_TAKE:
+                post_call.append("auto_arg_%s.release();" % arg.name)
+
+            passed_args.append("auto_arg_%s->m_data" % arg.name)
+            docs.append(arg_descr)
+
+            # }}}
 
         elif arg.base_type.startswith("isl_") and arg.ptr == "*":
+            # {{{ isl types input arguments
+
             need_nonconst = False
 
             arg_cls = arg.base_type[4:]
@@ -645,7 +721,11 @@ def write_wrapper(outf, meth):
 
             docs.append(arg_descr)
 
+            # }}}
+
         elif arg.base_type.startswith("isl_") and arg.ptr == "**":
+            # {{{ isl types output arguments
+
             if arg.semantics is not SEM_GIVE:
                 raise SignatureNotSupported("non-give secondary ptr return value")
 
@@ -671,6 +751,8 @@ def write_wrapper(outf, meth):
             extra_ret_descrs.append(
                     "%s (:class:`%s`)" % (arg.name, to_py_class(ret_cls)))
 
+            # }}}
+
         elif arg.base_type == "FILE" and arg.ptr == "*":
             if sys.version_info >= (3,):
                 raise SignatureNotSupported(
@@ -681,6 +763,17 @@ def write_wrapper(outf, meth):
             docs.append(":param %s: :class:`file`-like "
                     "(NOTE: This will cease to be supported in Python 3.)"
                     % arg.name)
+
+        elif (arg.base_type == "void"
+                and arg.ptr == "*"
+                and arg.name == "user"):
+            body.append("Py_INCREF(arg_%s.ptr());" % arg.name)
+            passed_args.append("arg_%s.ptr()" % arg.name)
+            input_args.append("py::object %s" % ("arg_"+arg.name))
+            post_call.append("""
+                isl_{cls}_set_free_user(result, my_decref);
+                """.format(cls=meth.cls))
+            docs.append(":param %s: a user-specified Python object" % arg.name)
 
         else:
             raise SignatureNotSupported("arg type %s %s" % (arg.base_type, arg.ptr))
@@ -700,6 +793,8 @@ def write_wrapper(outf, meth):
         result_capture, meth.c_name, ", ".join(passed_args)))
 
     body += post_call
+
+    # {{{ return value processing
 
     if meth.return_base_type == "int" and not meth.return_ptr:
         body.append("""
@@ -804,6 +899,16 @@ def write_wrapper(outf, meth):
 
         ret_descr = "string"
 
+    elif (meth.return_base_type == "void"
+            and meth.return_ptr == "*"
+            and meth.name == "get_user"):
+
+        body.append("""
+            return py::object(py::handle<>(py::borrowed((PyObject *) result)));
+            """)
+        ret_descr = "a user-specified python object"
+        processed_return_type = "py::object"
+
     elif meth.return_base_type == "void" and not meth.return_ptr:
         if extra_ret_vals:
             processed_return_type = "py::object"
@@ -820,6 +925,8 @@ def write_wrapper(outf, meth):
     else:
         raise SignatureNotSupported("ret type: %s %s in %s" % (
             meth.return_base_type, meth.return_ptr, meth))
+
+    # }}}
 
     outf.write("""
         %s
@@ -839,6 +946,10 @@ def write_wrapper(outf, meth):
 
     return arg_names, "\n".join(docs)
 
+# }}}
+
+
+# {{{ exposer generator
 
 def write_exposer(outf, meth, arg_names, doc_str, static_decls):
     func_name = "isl::%s_%s" % (meth.cls, meth.name)
@@ -873,18 +984,31 @@ def write_exposer(outf, meth, arg_names, doc_str, static_decls):
             static_decls.append("wrap_%s.staticmethod(\"%s\");\n" % (
                 wrap_class, exp_py_name))
 
+# }}}
+
 
 def write_wrappers(expf, wrapf, methods):
     undoc = []
     static_decls = []
 
     for meth in methods:
-        if meth.name.endswith("_si") or meth.name.endswith("_ui") \
-                and len([
-                    meth2.name == meth.name[:-3]
-                    for meth2 in methods]):
-            # no need to expose C integer versions of things
-            continue
+        #print "TRY_WRAP:", meth
+        if meth.name.endswith("_si") or meth.name.endswith("_ui"):
+            val_versions = [
+                    meth2
+                    for meth2 in methods
+                    if meth2.cls == meth.cls
+                    and (
+                        meth2.name == meth.name[:-3]
+                        or meth2.name == meth.name[:-3] + "_val"
+                        )
+                    ]
+
+            if val_versions:
+                # no need to expose C integer versions of things
+                print("SKIP (val version available): %s -> %s"
+                        % (meth, ", ".join(str(s) for s in val_versions)))
+                continue
 
         try:
             arg_names, doc_str = write_wrapper(wrapf, meth)
@@ -910,6 +1034,7 @@ def write_wrappers(expf, wrapf, methods):
 def gen_wrapper(include_dirs):
     fdata = FunctionData(["."] + include_dirs)
     fdata.read_header("isl_list.h")
+    fdata.read_header("isl/id.h")
     fdata.read_header("isl/space.h")
     fdata.read_header("isl/set.h")
     fdata.read_header("isl/map.h")
@@ -946,3 +1071,5 @@ def gen_wrapper(include_dirs):
 if __name__ == "__main__":
     from os.path import expanduser
     gen_wrapper([expanduser("isl/include")])
+
+# vim: foldmethod=marker
