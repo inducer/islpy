@@ -236,7 +236,7 @@ def _add_functionality():
 
         for name, coeff in iterable:
             if name == 1:
-                self = self.set_constant(coeff)
+                self = self.set_constant_val(coeff)
             else:
                 tp, idx = name_to_dim[name]
                 self = self.set_coefficient_val(tp, idx, coeff)

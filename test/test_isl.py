@@ -35,7 +35,7 @@ def test_error_on_invalid_index():
                    "and k >=0 and k <= 2 }", context=ctx)
     p = my_set.sample_point()
     try:
-        p.get_coordinate(isl.dim_type.set, 99999999)
+        p.get_coordinate_val(isl.dim_type.set, 99999999)
     except RuntimeError:
         pass
     else:
@@ -44,7 +44,7 @@ def test_error_on_invalid_index():
 
 def test_pwqpoly():
     def term_handler(term):
-        print(term.get_coefficient())
+        print(term.get_coefficient_val())
 
     def piece_handler(set, qpoly):
         qpoly.foreach_term(term_handler)
