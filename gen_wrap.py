@@ -786,8 +786,8 @@ def write_wrapper(outf, meth):
             passed_args.append("arg_%s.ptr()" % arg.name)
             input_args.append("py::object %s" % ("arg_"+arg.name))
             post_call.append("""
-                isl_{cls}_set_free_user(result, my_decref);
-                """.format(cls=meth.cls))
+                isl_%s_set_free_user(result, my_decref);
+                """ % meth.cls)
             docs.append(":param %s: a user-specified Python object" % arg.name)
 
         else:

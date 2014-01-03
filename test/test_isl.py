@@ -65,7 +65,7 @@ def test_id_user():
 def test_val():
     for src in [17, "17"]:
         v = isl.Val(src)
-        print v
+        print(v)
         assert v == 17
         assert v.to_python() == 17
 
