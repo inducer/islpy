@@ -27,6 +27,7 @@ void islpy_expose_part3()
 
   MAKE_WRAP(ast_expr, AstExpr);
   MAKE_WRAP(ast_node, AstNode);
+  MAKE_WRAP(ast_build, AstBuild);
   MAKE_WRAP(ast_print_options, AstPrintOptions);
 
 #include "gen-expose-part3.inc"

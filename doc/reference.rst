@@ -379,11 +379,17 @@ Abstract Syntax Trees
 .. autoclass:: AstNode
     :members:
 
+.. autoclass:: AstBuild
+    :members:
+
 .. autoclass:: AstPrintOptions
     :members:
 
 Lists
 ^^^^^
+
+.. autoclass:: IdList
+    :members:
 
 .. autoclass:: BasicSetList
     :members:
@@ -403,8 +409,8 @@ Lists
 .. autoclass:: AstNodeList
     :members:
 
-Maps
-^^^^
+Dictionaries
+^^^^^^^^^^^^
 
 .. autoclass:: IdToAstExpr
     :members:

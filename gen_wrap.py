@@ -89,6 +89,7 @@ PART_TO_CLASSES = {
 
         "part1": [
             # lists
+            "id_list",
             "basic_set_list", "set_list", "aff_list", "pw_aff_list", "band_list",
             "ast_expr_list", "ast_node_list",
 
@@ -96,7 +97,6 @@ PART_TO_CLASSES = {
             "id_to_ast_expr",
 
             # others
-
             "printer",  "val", "multi_val", "vec", "mat",
             "aff", "pw_aff",
             "multi_aff", "multi_pw_aff", "pw_multi_aff", "union_pw_multi_aff",
@@ -124,6 +124,7 @@ PART_TO_CLASSES = {
             "access_info", "flow", "restriction",
 
             "ast_expr", "ast_node", "ast_print_options",
+            "ast_build",
         ]
         }
 CLASSES = []
@@ -1069,6 +1070,7 @@ def gen_wrapper(include_dirs):
     fdata.read_header("isl/flow.h")
     fdata.read_header("isl/options.h")
     fdata.read_header("isl/ast.h")
+    fdata.read_header("isl/ast_build.h")
 
     for part, classes in PART_TO_CLASSES.items():
         expf = open("src/wrapper/gen-expose-%s.inc" % part, "wt")

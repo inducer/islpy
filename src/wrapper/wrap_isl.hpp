@@ -21,6 +21,7 @@
 #include <isl/schedule.h>
 #include <isl/flow.h>
 #include <isl/ast.h>
+#include <isl/ast_build.h>
 #include <isl/options.h>
 #include <stdexcept>
 #include <boost/python.hpp>
@@ -201,6 +202,7 @@ namespace isl
   WRAP_CLASS(union_pw_qpolynomial_fold);
   WRAP_CLASS(term);
 
+  WRAP_CLASS(id_list);
   WRAP_CLASS(basic_set_list);
   WRAP_CLASS(set_list);
   WRAP_CLASS(aff_list);
@@ -221,6 +223,7 @@ namespace isl
 
   WRAP_CLASS(ast_expr);
   WRAP_CLASS(ast_node);
+  WRAP_CLASS(ast_build);
   WRAP_CLASS(ast_print_options);
 
   inline ctx *alloc_ctx()

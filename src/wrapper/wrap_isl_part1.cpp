@@ -32,6 +32,7 @@ void islpy_expose_part1()
 
   // {{{ lists
 
+  MAKE_WRAP(id_list, IdList);
   MAKE_WRAP(basic_set_list, BasicSetList);
   MAKE_WRAP(set_list, SetList);
   MAKE_WRAP(aff_list, AffList);
