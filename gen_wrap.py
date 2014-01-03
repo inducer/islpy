@@ -615,16 +615,9 @@ def write_wrapper(outf, meth):
                 }
                 else if (PyLong_Check(py_%(name)s.ptr()))
                 {
-                  int overflow;
-
-                  long value = PyLong_AsLongAndOverflow(
-                    py_%(name)s.ptr(), &overflow);
-
-                  if (overflow)
-                  {
-                      throw isl::error(
-                        "overflow on conversion of long for %(name)s");
-                  }
+                  long value = PyLong_AsLong(py_%(name)s.ptr());
+                  if (PyErr_Occurred())
+                    throw py::error_already_set();
 
                   isl_val *tmp_ptr = isl_val_int_from_si(ctx_for_%(name)s, value);
                   if (!tmp_ptr)
