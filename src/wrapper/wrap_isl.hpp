@@ -1,7 +1,3 @@
-// workaround for
-// https://gmplib.org/list-archives/gmp-bugs/2006-November/000627.html
-#include <gmpxx.h>
-
 #include <isl/ctx.h>
 #include <isl/space.h>
 #include <isl/set.h>
