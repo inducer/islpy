@@ -11,6 +11,7 @@ def get_config_schema():
 
         Switch("USE_SHIPPED_BOOST", True, "Use included Boost library"),
         Switch("USE_SHIPPED_ISL", True, "Use included copy of isl"),
+        Switch("USE_SHIPPED_MINI_GMP", True, "Use included (mini) copy of GMP"),
 
         IncludeDir("GMP", []),
         LibraryDir("GMP", []),
@@ -76,9 +77,13 @@ def main():
 
     INCLUDE_DIRS.extend(conf["ISL_INC_DIR"])
 
-    INCLUDE_DIRS.extend(conf["GMP_INC_DIR"])
-    LIBRARY_DIRS.extend(conf["GMP_LIB_DIR"])
-    LIBRARIES.extend(conf["GMP_LIBNAME"])
+    if conf["USE_SHIPPED_MINI_GMP"]:
+        INCLUDE_DIRS.append("mini-gmp")
+        EXTRA_OBJECTS.append("mini-gmp/mini-gmp.c")
+    else:
+        INCLUDE_DIRS.extend(conf["GMP_INC_DIR"])
+        LIBRARY_DIRS.extend(conf["GMP_LIB_DIR"])
+        LIBRARIES.extend(conf["GMP_LIBNAME"])
 
     init_filename = "islpy/version.py"
     exec(compile(open(init_filename, "r").read(), init_filename, "exec"), conf)
