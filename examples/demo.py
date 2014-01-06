@@ -8,16 +8,16 @@ bset = (isl.BasicSet.universe(space)
         .add_constraint(isl.Constraint.ineq_from_names(space, {1: 5, "x": -1}))
         .add_constraint(isl.Constraint.ineq_from_names(space, {1: -1, "y": 1}))
         .add_constraint(isl.Constraint.ineq_from_names(space, {1: 5, "y": -1})))
-print "set 1:", bset
+print("set 1 %s:" % bset)
 
 bset2 = isl.BasicSet("{[x, y] : x >= 0 and x < 5 and y >= 0 and y < x+4 }")
-print "set 2:", bset2
+print("set 2: %s" % bset2)
 
 bsets_in_union = []
-bset.union(bset2).coalesce().foreach_basic_set(bsets_in_union.append)
-print bsets_in_union
+bset.union(bset2).convex_hull().foreach_basic_set(bsets_in_union.append)
+print(bsets_in_union)
 union, = bsets_in_union
-print "union:", union
+print("union: %s" % union)
 # ENDEXAMPLE
 
 import matplotlib.pyplot as pt
@@ -38,7 +38,8 @@ def plot_basic_set(bset, *args, **kwargs):
         isl.Set.from_basic_set(v.get_expr()).foreach_point(points.append)
         point, = points
         vertex_pts.append([
-            int(point.get_coordinate(isl.dim_type.set, i)) for i in range(2)])
+            point.get_coordinate_val(isl.dim_type.set, i).to_python()
+            for i in range(2)])
 
     import numpy as np
     vertex_pts = np.array(vertex_pts)
@@ -47,7 +48,7 @@ def plot_basic_set(bset, *args, **kwargs):
 
     from math import atan2
     vertex_pts = np.array(
-            sorted(vertex_pts, key=lambda (x, y): atan2(y-center[0], x-center[1])))
+            sorted(vertex_pts, key=lambda x, y: atan2(y-center[0], x-center[1])))
 
     if plot_vert:
         pt.plot(vertex_pts[:, 0], vertex_pts[:, 1], "o")

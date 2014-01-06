@@ -34,20 +34,17 @@ This prints the following::
 
 With some hacky plotting code (not shown), you can actually see what this
 example just did. We gave it the two polyhedra on the left, asked it to compute
-the union, and furthermore to try and coalesce this union back into a basic
-polyhedron:
+the union, and computed the convex hull:
 
 +-------------------------------------+-------------------------------------+
 | .. image:: images/before-union.png  | .. image:: images/after-union.png   |
 +-------------------------------------+-------------------------------------+
 
-You can convince yourself by looking at the grid intersections that indeed no
-integer points were added to the polyhedron during this process.  (A "basic
-polyhedron", really an :class:`islpy.BasicSet`, is expressible through a
-conjunction of constraints.)
-
 See :download:`example/demo.py <../examples/demo.py>` to see the full example,
 including the less-than-perfect plotting code. :)
+
+Note that far better plotting of isl(py) sets is available by installing Tobias
+Grosser's `islplot package <https://github.com/tobig/islplot>`_.
 
 Overview
 --------
