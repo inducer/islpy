@@ -129,6 +129,33 @@ def _add_functionality():
 
     # {{{ Space
 
+    def space_get_id_dict(self, dimtype=None):
+        """Return a dictionary mapping variable :class:`Id` instances to tuples
+        of (:class:`dim_type`, index).
+
+        :param dimtype: None to get all variables, otherwise
+            one of :class:`dim_type`.
+        """
+        result = {}
+
+        def set_dim_name(name, tp, idx):
+            if name in result:
+                raise RuntimeError("non-unique var id '%s' encountered" % name)
+            result[name] = tp, idx
+
+        if dimtype is None:
+            types = _CHECK_DIM_TYPES
+        else:
+            types = [dimtype]
+
+        for tp in types:
+            for i in range(self.dim(tp)):
+                name = self.get_dim_id(tp, i)
+                if name is not None:
+                    set_dim_id(name, tp, i)
+
+        return result
+
     def space_get_var_dict(self, dimtype=None):
         """Return a dictionary mapping variable names to tuples of
         (:class:`dim_type`, index).
@@ -198,6 +225,7 @@ def _add_functionality():
 
     Space.create_from_names = staticmethod(space_create_from_names)
     Space.get_var_dict = space_get_var_dict
+    Space.get_id_dict = space_get_id_dict
 
     # }}}
 
@@ -381,6 +409,15 @@ def _add_functionality():
 
     # {{{ common functionality
 
+    def obj_get_id_dict(self, dimtype=None):
+        """Return a dictionary mapping :class:`Id` instances to tuples of
+        (:class:`dim_type`, index).
+
+        :param dimtype: None to get all variables, otherwise
+            one of :class:`dim_type`.
+        """
+        return self.get_space().get_id_dict(dimtype)
+
     def obj_get_var_dict(self, dimtype=None):
         """Return a dictionary mapping variable names to tuples of
         (:class:`dim_type`, index).
@@ -390,13 +427,19 @@ def _add_functionality():
         """
         return self.get_space().get_var_dict(dimtype)
 
+    def obj_get_var_ids(self, dimtype):
+        """Return a list of :class:`Id` instances for :class:`dim_type` *dimtype*."""
+        return [self.get_dim_name(dimtype, i) for i in xrange(self.dim(dimtype))]
+
     def obj_get_var_names(self, dimtype):
         """Return a list of dim names (in order) for :class:`dim_type` *dimtype*."""
         return [self.get_dim_name(dimtype, i) for i in xrange(self.dim(dimtype))]
 
     for cls in ALL_CLASSES:
         if hasattr(cls, "get_space") and cls is not Space:
+            cls.get_id_dict = obj_get_id_dict
             cls.get_var_dict = obj_get_var_dict
+            cls.get_var_ids = obj_get_var_ids
             cls.get_var_names = obj_get_var_names
             cls.space = property(cls.get_space)
 

@@ -7,6 +7,19 @@ namespace isl
   class constants { };
 }
 
+namespace islpy
+{
+  bool id_eq(isl::id const *self, isl::id const *other)
+  {
+    return self == other;
+  }
+
+  bool id_ne(isl::id const *self, isl::id const *other)
+  {
+    return self != other;
+  }
+}
+
 void islpy_expose_part1()
 {
   {
@@ -63,6 +76,17 @@ void islpy_expose_part1()
   MAKE_WRAP(union_pw_multi_aff, UnionPwMultiAff);
 
   MAKE_WRAP(id, Id);
+  wrap_id.def("__eq__", islpy::id_eq, py::args("self", "other"),
+      "__eq__(self, other)\n\n"
+      ":param self: :class:`Id`\n"
+      ":param other: :class:`Id`\n"
+      ":return: bool ");
+  wrap_id.def("__ne__", islpy::id_ne, py::args("self", "other"),
+      "__ne__(self, other)\n\n"
+      ":param self: :class:`Id`\n"
+      ":param other: :class:`Id`\n"
+      ":return: bool ");
+
   MAKE_WRAP(constraint, Constraint);
   MAKE_WRAP(space, Space);
   MAKE_WRAP(local_space, LocalSpace);
