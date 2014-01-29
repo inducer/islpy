@@ -197,8 +197,8 @@ htmlhelp_basename = 'islpydoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'islpy.tex', u'islpy Documentation',
-   u'Andreas Kloeckner', 'manual'),
+    ('index', 'islpy.tex', u'islpy Documentation',
+    u'Andreas Kloeckner', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -238,6 +238,7 @@ man_pages = [
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
 
+
 def autodoc_process_signature(app, what, name, obj, options, signature,
         return_annotation):
     from inspect import ismethod
@@ -253,13 +254,15 @@ def autodoc_process_signature(app, what, name, obj, options, signature,
 
     return (signature, return_annotation)
 
+
 def autodoc_process_docstring(app, what, name, obj, options, lines):
     from inspect import isclass, isroutine, ismethod
-    UNDERSCORE_WHITELIST = ["__len__", "__hash__", "__eq__"]
+    UNDERSCORE_WHITELIST = ["__len__", "__hash__", "__eq__", "__ne__"]
     if isclass(obj) and obj.__name__[0].isupper():
         methods = [nm for nm in dir(obj)
                 if isroutine(getattr(obj, nm))
                 and (not nm.startswith("_") or nm in UNDERSCORE_WHITELIST)]
+
         def gen_method_string(meth):
             result = ":meth:`%s`" % meth
             if not ismethod(getattr(obj, meth)):
@@ -269,7 +272,9 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
 
         if methods:
             lines[:] = [".. hlist::", "  :columns: 3", ""] + [
-                    "  * "+gen_method_string(meth)  for meth in methods] + lines
+                    "  * "+gen_method_string(meth)
+                    for meth in methods] + lines
+
 
 def setup(app):
     app.connect("autodoc-process-docstring", autodoc_process_docstring)
