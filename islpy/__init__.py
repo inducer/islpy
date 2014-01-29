@@ -327,6 +327,7 @@ def _add_functionality():
     Id.__new__ = staticmethod(id_new)
     Id.__init__ = id_bogus_init
     Id.user = property(Id.get_user)
+    Id.name = property(Id.get_name)
 
     # }}}
 
@@ -770,7 +771,8 @@ def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
 
     tgt_idx = 0
     while tgt_idx < tgt.dim(tgt_dt):
-        tgt_name = tgt.get_dim_name(tgt_dt, tgt_idx)
+        tgt_id = tgt.get_dim_id(tgt_dt, tgt_idx)
+        tgt_name = tgt_id.name
 
         if tgt_name in names_in_both:
             if (obj.dim(tgt_dt) > tgt_idx
@@ -797,7 +799,7 @@ def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
                 tgt_idx += 1
         else:
             obj = obj.insert_dims(tgt_dt, tgt_idx, 1)
-            obj = obj.set_dim_name(tgt_dt, tgt_idx, tgt_name)
+            obj = obj.set_dim_id(tgt_dt, tgt_idx, tgt_id)
             tgt_idx += 1
 
     if tgt_idx < obj.dim(tgt_dt) and not obj_bigger_ok:
