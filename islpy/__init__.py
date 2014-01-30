@@ -817,7 +817,10 @@ def align_spaces(obj, tgt, obj_bigger_ok=False, across_dim_types=False):
         has more dimensions than *tgt*.
     """
 
-    have_any_param_domains = obj.is_params() or tgt.is_params()
+    have_any_param_domains = (
+            isinstance(obj, (Set, BasicSet))
+            and isinstance(tgt, (Set, BasicSet))
+            and (obj.is_params() or tgt.is_params()))
     if have_any_param_domains:
         if obj.is_params():
             obj = type(obj).from_params(obj)
