@@ -64,16 +64,23 @@ void islpy_expose_part1()
 
   MAKE_WRAP(printer, Printer);
   MAKE_WRAP(val, Val);
+
   MAKE_WRAP(multi_val, MultiVal);
   MAKE_WRAP(vec, Vec);
   MAKE_WRAP(mat, Mat);
 
   MAKE_WRAP(aff, Aff);
+  wrap_aff.enable_pickling();
   MAKE_WRAP(pw_aff, PwAff);
+  wrap_pw_aff.enable_pickling();
   MAKE_WRAP(multi_aff, MultiAff);
+  wrap_multi_aff.enable_pickling();
   MAKE_WRAP(multi_pw_aff, MultiPwAff);
+  wrap_multi_pw_aff.enable_pickling();
   MAKE_WRAP(pw_multi_aff, PwMultiAff);
+  wrap_pw_multi_aff.enable_pickling();
   MAKE_WRAP(union_pw_multi_aff, UnionPwMultiAff);
+  wrap_union_pw_multi_aff.enable_pickling();
 
   MAKE_WRAP(id, Id);
   wrap_id.def("__eq__", islpy::id_eq, py::args("self", "other"),
@@ -88,6 +95,7 @@ void islpy_expose_part1()
       ":return: bool ");
 
   MAKE_WRAP(constraint, Constraint);
+  wrap_constraint.enable_pickling();
   MAKE_WRAP(space, Space);
   MAKE_WRAP(local_space, LocalSpace);
 

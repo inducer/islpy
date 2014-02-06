@@ -18,7 +18,7 @@ _DEFAULT_CONTEXT = Context()
 def _add_functionality():
     import islpy._isl as _isl  # noqa
 
-    # {{{ generic initialization
+    # {{{ generic initialization, pickling
 
     def obj_new_from_string(cls, s, context=None):
         """Construct a new object from :class:`str` s.
@@ -38,10 +38,16 @@ def _add_functionality():
         assert self._made_from_string
         del self._made_from_string
 
+    def generic_getinitargs(self):
+        prn = Printer.to_str(self.get_ctx())
+        getattr(prn, "print_"+self._base_name)(self)
+        return (prn.get_str(),)
+
     for cls in ALL_CLASSES:
         if hasattr(cls, "read_from_str"):
             cls.__new__ = staticmethod(obj_new_from_string)
             cls.__init__ = obj_bogus_init
+            cls.__getinitargs__ = generic_getinitargs
 
     # }}}
 

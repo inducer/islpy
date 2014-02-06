@@ -70,6 +70,23 @@ def test_val():
         assert v.to_python() == 17
 
 
+def test_pickling():
+    instances = [
+            isl.Aff("[n] -> { [(-1 - floor((-n)/4))] }"),
+            isl.PwAff("[n] -> { [(0)] : n <= 4 and n >= 1; "
+                "[(-1 + n - floor((3n)/4))] : n >= 5 }"),
+            isl.BasicSet("[n] -> {[i,j,k]: i<=j + k and (exists m: m=j+k) "
+                "and n mod 5 = 17}"),
+            isl.Set("[n] -> {[i,j,k]: (i<=j + k and (exists m: m=j+k)) or (k=j)}")
+            ]
+
+    from pickle import dumps, loads
+    for inst in instances:
+        inst2 = loads(dumps(inst))
+
+        assert inst.plain_is_equal(inst2)
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
