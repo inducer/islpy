@@ -4,6 +4,29 @@ namespace isl
 {
 #include "gen-wrap-part1.inc"
 
+  py::object multi_aff_get_ctx(multi_aff const &arg_self)
+  {
+
+    if (!arg_self.is_valid())
+      throw isl::error(
+          "passed invalid arg to isl_multi_aff_get_ctx for self");
+
+    isl_ctx *result = isl_multi_aff_get_ctx(arg_self.m_data);
+
+    if (result)
+    {
+      try
+      { return py::object(handle_from_new_ptr(new ctx(result))); }
+      catch (...)
+      {
+        isl_ctx_free(result);
+        throw;
+      }
+    }
+    else
+      throw isl::error("call to isl_multi_aff_get_ctx failed");
+  }
+
   class constants { };
 }
 
@@ -73,8 +96,12 @@ void islpy_expose_part1()
   wrap_aff.enable_pickling();
   MAKE_WRAP(pw_aff, PwAff);
   wrap_pw_aff.enable_pickling();
+
   MAKE_WRAP(multi_aff, MultiAff);
   wrap_multi_aff.enable_pickling();
+  wrap_multi_aff.def("get_ctx", isl::multi_aff_get_ctx, py::args("self"),
+      "get_ctx(self)\n\n:param self: :class:`MultiAff`\n:return: :class:`Context`");
+
   MAKE_WRAP(multi_pw_aff, MultiPwAff);
   wrap_multi_pw_aff.enable_pickling();
   MAKE_WRAP(pw_multi_aff, PwMultiAff);
