@@ -5,7 +5,7 @@ include isl/include/isl/deprecated/*.h
 include isl-supplementary/isl/*.h
 include isl-supplementary/*.h
 
-include isl_list.h
+include isl_declaration_macros_expanded.h
 include src/wrapper/*.h
 include src/wrapper/*.hpp
 include src/wrapper/*.cpp

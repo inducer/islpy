@@ -198,14 +198,20 @@ namespace isl
   WRAP_CLASS(union_pw_qpolynomial_fold);
   WRAP_CLASS(term);
 
-  WRAP_CLASS(id_list);
-  WRAP_CLASS(basic_set_list);
-  WRAP_CLASS(set_list);
+  // matches order in isl_declaration_macros.h
+  WRAP_CLASS(val_list);
   WRAP_CLASS(aff_list);
   WRAP_CLASS(pw_aff_list);
-  WRAP_CLASS(band_list);
   WRAP_CLASS(ast_expr_list);
   WRAP_CLASS(ast_node_list);
+
+  WRAP_CLASS(id_list);
+  WRAP_CLASS(band_list);
+  WRAP_CLASS(constraint_list);
+
+  WRAP_CLASS(basic_set_list);
+  WRAP_CLASS(set_list);
+  // end match
 
   WRAP_CLASS(id_to_ast_expr);
 

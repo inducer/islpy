@@ -279,6 +279,7 @@ class FunctionData:
     def __init__(self, include_dirs):
         self.classes_to_methods = {}
         self.include_dirs = include_dirs
+        self.seen_c_names = set()
 
     def read_header(self, fname):
         from os.path import join
@@ -439,10 +440,16 @@ class FunctionData:
         return_base_type = " ".join(words)
 
         cls_meth_list = self.classes_to_methods.setdefault(cls, [])
+
+        if c_name in self.seen_c_names:
+            return
+
         cls_meth_list.append(Method(
                 cls, name, c_name,
                 return_semantics, return_base_type, return_ptr,
                 args, is_exported=is_exported, is_constructor=is_constructor))
+
+        self.seen_c_names.add(c_name)
 
 # }}}
 
@@ -545,7 +552,8 @@ def write_wrapper(outf, meth):
 
             arg_names.pop()
             arg_idx += 1
-            assert meth.args[arg_idx].name == "user"
+            if meth.args[arg_idx].name != "user":
+                raise SignatureNotSupported("unexpected callback signature")
 
             cb_name = "cb_%s_%s_%s" % (meth.cls, meth.name, arg.name)
 
@@ -1041,7 +1049,7 @@ def write_wrappers(expf, wrapf, methods):
 
 def gen_wrapper(include_dirs):
     fdata = FunctionData(["."] + include_dirs)
-    fdata.read_header("isl_list.h")
+    fdata.read_header("isl_declaration_macros_expanded.h")
     fdata.read_header("isl/id.h")
     fdata.read_header("isl/space.h")
     fdata.read_header("isl/set.h")
