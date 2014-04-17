@@ -87,6 +87,10 @@ def test_pickling():
         assert inst.plain_is_equal(inst2)
 
 
+def test_get_id_dict():
+    print(isl.Set("[a] -> {[b]}").get_id_dict(isl.dim_type.param))
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:

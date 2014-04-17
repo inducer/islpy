@@ -144,7 +144,7 @@ def _add_functionality():
         """
         result = {}
 
-        def set_dim_name(name, tp, idx):
+        def set_dim_id(name, tp, idx):
             if name in result:
                 raise RuntimeError("non-unique var id '%s' encountered" % name)
             result[name] = tp, idx
