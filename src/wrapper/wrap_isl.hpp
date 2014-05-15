@@ -1,3 +1,4 @@
+#include "wrap_helpers.hpp"
 #include <isl/ctx.h>
 #include <isl/space.h>
 #include <isl/set.h>
@@ -22,7 +23,6 @@
 #include <stdexcept>
 #include <boost/python.hpp>
 #include <boost/unordered_map.hpp>
-#include "wrap_helpers.hpp"
 
 // TODO: flow.h
 // TODO: better error reporting
