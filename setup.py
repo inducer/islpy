@@ -11,6 +11,7 @@ def get_config_schema():
 
         Switch("USE_SHIPPED_BOOST", True, "Use included Boost library"),
         Switch("USE_SHIPPED_ISL", True, "Use included copy of isl"),
+        Switch("USE_SHIPPED_IMATH", True, "Use included copy of imath in isl"),
 
         IncludeDir("GMP", []),
         LibraryDir("GMP", []),
@@ -60,6 +61,13 @@ def main():
             elif "piplib" in fn:
                 blacklisted = True
 
+            if "gmp" in fn:
+                if conf["USE_SHIPPED_IMATH"]:
+                    continue
+            if "imath" in fn:
+                if not conf["USE_SHIPPED_IMATH"]:
+                    continue
+
             inf = open(fn, "rt")
             try:
                 contents = inf.read()
@@ -70,15 +78,29 @@ def main():
                 EXTRA_OBJECTS.append(fn)
 
         conf["ISL_INC_DIR"] = ["isl-supplementary", "isl/include",  "isl"]
+
+        if conf["USE_SHIPPED_IMATH"]:
+            EXTRA_OBJECTS.extend([
+                "isl/imath/imath.c",
+                "isl/imath/imrat.c",
+                "isl/imath/gmp_compat.c",
+                ])
+            EXTRA_DEFINES["USE_IMATH_FOR_MP"] = 1
+
+            conf["ISL_INC_DIR"].append("isl/imath")
+        else:
+            EXTRA_DEFINES["USE_GMP_FOR_MP"] = 1
+
     else:
         LIBRARY_DIRS.extend(conf["ISL_LIB_DIR"])
         LIBRARIES.extend(conf["ISL_LIBNAME"])
 
     INCLUDE_DIRS.extend(conf["ISL_INC_DIR"])
 
-    INCLUDE_DIRS.extend(conf["GMP_INC_DIR"])
-    LIBRARY_DIRS.extend(conf["GMP_LIB_DIR"])
-    LIBRARIES.extend(conf["GMP_LIBNAME"])
+    if not (conf["USE_SHIPPED_ISL"] and conf["USE_SHIPPED_IMATH"]):
+        INCLUDE_DIRS.extend(conf["GMP_INC_DIR"])
+        LIBRARY_DIRS.extend(conf["GMP_LIB_DIR"])
+        LIBRARIES.extend(conf["GMP_LIBNAME"])
 
     init_filename = "islpy/version.py"
     exec(compile(open(init_filename, "r").read(), init_filename, "exec"), conf)
@@ -132,12 +154,12 @@ def main():
           ext_modules=[
               Extension(
                   "islpy._isl",
-                  [
+                  EXTRA_OBJECTS + [
                       "src/wrapper/wrap_isl.cpp",
                       "src/wrapper/wrap_isl_part1.cpp",
                       "src/wrapper/wrap_isl_part2.cpp",
                       "src/wrapper/wrap_isl_part3.cpp",
-                      ] + EXTRA_OBJECTS,
+                      ],
                   include_dirs=INCLUDE_DIRS,
                   library_dirs=LIBRARY_DIRS,
                   libraries=LIBRARIES,
