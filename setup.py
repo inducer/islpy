@@ -37,7 +37,7 @@ def main():
     check_git_submodules()
 
     hack_distutils(what_opt=None)
-    conf = get_config(get_config_schema())
+    conf = get_config(get_config_schema(), warn_about_no_config=False)
 
     EXTRA_OBJECTS, EXTRA_DEFINES = set_up_shipped_boost_if_requested("islpy", conf)
 
@@ -67,6 +67,8 @@ def main():
             if "imath" in fn:
                 if not conf["USE_SHIPPED_IMATH"]:
                     continue
+            if "isl_ast_int.c" in fn and conf["USE_SHIPPED_IMATH"]:
+                continue
 
             inf = open(fn, "rt")
             try:
