@@ -54,8 +54,7 @@ Integers
 --------
 
 Whenever an integer argument is required, :mod:`islpy` supports regular Python
-integers, Python long integers, and :mod:`gmpy` integers. It will return
-:mod:`gmpy` integers.
+integers and Python :class:`long` integers. It will return Python long integers.
 
 .. _automatic-casts:
 

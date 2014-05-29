@@ -22,8 +22,6 @@ bounds on piecewise step-polynomials.
 
 Islpy comes with comprehensive `documentation <http://documen.tician.de/islpy>`_.
 
-*Requirements:* Only the `GNU Multiprecision Library <http://gmplib.org/>`_
-and its Python wrapper `gmpy <https://code.google.com/p/gmpy/>`_ (Version 1.x)
-are required. A version of isl is shipped with islpy, but optionally
-a system-wide one may also be used.
+*Requirements:* islpy needs a C++ compiler to build. GMP, which used to be
+a dependency, is no longer required.
 

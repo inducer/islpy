@@ -1,16 +1,29 @@
-Obtaining :mod:`islpy`
-======================
+Installation
+============
 
-islpy may be downloaded from the page for `islpy at the Python package index
-<http://pypi.python.org/pypi/islpy>`_.
+This command should install :mod:`islpy`::
+
+    pip install islpy
+
+You may need to run this with :command:`sudo`.
+If you don't already have `pip <https://pypi.python.org/pypi/pip>`_,
+run this beforehand::
+
+    curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
+    python get-pip.py
+
+For a more manual installation, `download the source
+<http://pypi.python.org/pypi/islpy>`_, unpack it, and say::
+
+    python setup.py install
 
 You may also clone its git repository::
 
     git clone --recursive http://git.tiker.net/trees/islpy.git
     git clone --recursive git://github.com/inducer/islpy
 
-Wiki, FAQ, Installation Instructions
-====================================
+Wiki and FAQ
+============
 
 A `wiki page <http://wiki.tiker.net/IslPy>`_ is also available, where install
 instructions and an FAQ will grow over time.
@@ -49,12 +62,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 .. note::
 
-    isl itself is now also licensed under the `MIT license
-    <http://repo.or.cz/w/isl.git/blob/HEAD:/LICENSE>`_.
+    * isl and imath, which islpy depends on, are also licensed under the `MIT
+      license <http://repo.or.cz/w/isl.git/blob/HEAD:/LICENSE>`_.
 
-    GMP, which is a dependency of isl and thus islpy, is licensed under the
-    Lesser GNU Public License.
-
+    * GMP, which used to be a dependency of isl and thus islpy, is no longer
+      required. (but building against it can optionally be requested)
 
 Relation with isl's C interface
 ===============================
@@ -74,13 +86,27 @@ See also :ref:`gen-remarks`.
 User-visible Changes
 ====================
 
-Version 2014.1
+Version 2014.3
 --------------
 
 .. note::
 
     This version is currently in development and can be obtained from
     islpy's version control.
+
+Version 2014.2
+--------------
+
+* A large number of previously unavailable functions are now exposed.
+
+* Sebastian Pop's `imath <https://github.com/creachadair/imath>`_ support has
+  been merged into the version of isl that ships with :mod:`islpy`. This means
+  that unless a user specifically requests a build against GMP, :mod:`islpy`
+  is (a) entirely self-contained and depends only on a C++ compiler and
+  (b) is entirely MIT-licensed by default.
+
+Version 2014.1
+--------------
 
 * Many classes are now picklable.
 
