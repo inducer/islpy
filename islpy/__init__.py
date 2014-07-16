@@ -294,7 +294,7 @@ def _add_functionality():
         result = {}
         for tp in types:
             for i in range(self.get_space().dim(tp)):
-                coeff = self.get_coefficient(tp, i)
+                coeff = self.get_coefficient_val(tp, i)
                 if coeff:
                     if dim_to_name is None:
                         name = self.get_dim_name(tp, i)
@@ -303,7 +303,7 @@ def _add_functionality():
 
                     result[name] = coeff
 
-        const = self.get_constant()
+        const = self.get_constant_val()
         if const:
             result[1] = const
 

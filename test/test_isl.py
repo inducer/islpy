@@ -91,6 +91,14 @@ def test_get_id_dict():
     print(isl.Set("[a] -> {[b]}").get_id_dict(isl.dim_type.param))
 
 
+def test_get_coefficients_by_name():
+    my_set = isl.BasicSet("{ [k, l] : 3l >= -k and 3l <= 10 - k "
+                   "and k >=0 and k <= 2 }")
+
+    for c in my_set.get_constraints():
+        print c.get_coefficients_by_name()
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
