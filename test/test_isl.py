@@ -96,7 +96,7 @@ def test_get_coefficients_by_name():
                    "and k >=0 and k <= 2 }")
 
     for c in my_set.get_constraints():
-        print c.get_coefficients_by_name()
+        print(c.get_coefficients_by_name())
 
 
 if __name__ == "__main__":
