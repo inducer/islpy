@@ -553,7 +553,13 @@ def _add_functionality():
         if context is None:
             context = _DEFAULT_CONTEXT
 
-        if isinstance(src, (str, unicode)):
+        import sys
+        if sys.version_info >= (3,):
+            string_types = str
+        else:
+            string_types = basestring
+
+        if isinstance(src, string_types):
             result = cls.read_from_str(context, src)
         elif isinstance(src, (int, long)):
             result = cls.int_from_si(context, src)
