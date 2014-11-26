@@ -556,12 +556,14 @@ def _add_functionality():
         import sys
         if sys.version_info >= (3,):
             string_types = str
+            int_types = int
         else:
             string_types = basestring
+            int_types = (int, long)
 
         if isinstance(src, string_types):
             result = cls.read_from_str(context, src)
-        elif isinstance(src, (int, long)):
+        elif isinstance(src, int_types):
             result = cls.int_from_si(context, src)
         else:
             raise TypeError("'src' must be int or string")
