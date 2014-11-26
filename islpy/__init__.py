@@ -588,7 +588,11 @@ def _add_functionality():
         if not self.is_int():
             raise ValueError("can only convert integer Val to python")
 
-        return long(self.to_str())
+        import sys
+        if sys.version_info >= (3,):
+            return int(self.to_str())
+        else:
+            return long(self.to_str())
 
     Val.__new__ = staticmethod(val_new)
     Val.__init__ = val_bogus_init
