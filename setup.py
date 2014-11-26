@@ -107,12 +107,6 @@ def main():
     init_filename = "islpy/version.py"
     exec(compile(open(init_filename, "r").read(), init_filename, "exec"), conf)
 
-    try:
-        from distutils.command.build_py import build_py_2to3 as build_py
-    except ImportError:
-        # 2.x
-        from distutils.command.build_py import build_py
-
     from gen_wrap import gen_wrapper
     gen_wrapper(conf["ISL_INC_DIR"])
 
@@ -169,11 +163,7 @@ def main():
                   extra_compile_args=conf["CXXFLAGS"],
                   extra_link_args=conf["LDFLAGS"],
                   ),
-              ],
-
-          # 2to3 invocation
-          cmdclass={'build_py': build_py},
-          )
+              ])
 
 
 if __name__ == '__main__':

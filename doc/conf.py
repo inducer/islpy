@@ -49,7 +49,7 @@ copyright = u'2011, Andreas Kloeckner'
 #
 # The short X.Y version.
 ver_dic = {}
-execfile("../islpy/version.py", ver_dic)
+exec(compile(open("../islpy/version.py").read(), "../islpy/version.py", 'exec'), ver_dic)
 version = ".".join(str(x) for x in ver_dic["VERSION"])
 # The full version, including alpha/beta/rc tags.
 release = ver_dic["VERSION_TEXT"]
