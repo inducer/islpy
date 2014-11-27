@@ -146,6 +146,7 @@ def main():
           install_requires=[
               "pytest>=2",
               # "Mako>=0.3.6",
+              "six",
               ],
           ext_modules=[
               Extension(

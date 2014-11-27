@@ -556,17 +556,9 @@ def _add_functionality():
         if context is None:
             context = _DEFAULT_CONTEXT
 
-        import sys
-        if sys.version_info >= (3,):
-            string_types = str
-            int_types = int
-        else:
-            string_types = six.string_types
-            int_types = six.integer_types
-
-        if isinstance(src, string_types):
+        if isinstance(src, six.string_types):
             result = cls.read_from_str(context, src)
-        elif isinstance(src, int_types):
+        elif isinstance(src, six.integer_types):
             result = cls.int_from_si(context, src)
         else:
             raise TypeError("'src' must be int or string")
