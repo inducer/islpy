@@ -94,6 +94,11 @@ Version 2014.3
     This version is currently in development and can be obtained from
     islpy's version control.
 
+Version 2014.2.1
+----------------
+
+* :mod:`islpy` now avoids using 2to3 for Python 3 compatibility.
+
 Version 2014.2
 --------------
 
