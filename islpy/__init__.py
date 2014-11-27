@@ -1,8 +1,11 @@
 from __future__ import division
+from __future__ import absolute_import
 
 
 from islpy._isl import *  # noqa
 from islpy.version import *  # noqa
+import six
+from six.moves import range
 
 
 _CHECK_DIM_TYPES = [
@@ -261,7 +264,7 @@ def _add_functionality():
             New for :class:`Aff`
         """
         try:
-            iterable = iterable.items()
+            iterable = list(iterable.items())
         except AttributeError:
             pass
 
@@ -436,11 +439,11 @@ def _add_functionality():
 
     def obj_get_var_ids(self, dimtype):
         """Return a list of :class:`Id` instances for :class:`dim_type` *dimtype*."""
-        return [self.get_dim_name(dimtype, i) for i in xrange(self.dim(dimtype))]
+        return [self.get_dim_name(dimtype, i) for i in range(self.dim(dimtype))]
 
     def obj_get_var_names(self, dimtype):
         """Return a list of dim names (in order) for :class:`dim_type` *dimtype*."""
-        return [self.get_dim_name(dimtype, i) for i in xrange(self.dim(dimtype))]
+        return [self.get_dim_name(dimtype, i) for i in range(self.dim(dimtype))]
 
     for cls in ALL_CLASSES:
         if hasattr(cls, "get_space") and cls is not Space:
@@ -558,8 +561,8 @@ def _add_functionality():
             string_types = str
             int_types = int
         else:
-            string_types = basestring
-            int_types = (int, long)
+            string_types = six.string_types
+            int_types = six.integer_types
 
         if isinstance(src, string_types):
             result = cls.read_from_str(context, src)
@@ -592,7 +595,7 @@ def _add_functionality():
         if sys.version_info >= (3,):
             return int(self.to_str())
         else:
-            return long(self.to_str())
+            return int(self.to_str())
 
     Val.__new__ = staticmethod(val_new)
     Val.__init__ = val_bogus_init
@@ -696,7 +699,7 @@ def _add_functionality():
                 space = obj.get_space()
                 var_dict = space.get_var_dict(tp)
 
-                all_indices = set(xrange(space.dim(tp)))
+                all_indices = set(range(space.dim(tp)))
                 leftover_indices = set(var_dict[name][1] for name in names
                         if name in var_dict)
                 project_indices = all_indices-leftover_indices
@@ -730,7 +733,7 @@ def _add_functionality():
             space = obj.get_space()
             var_dict = space.get_var_dict(tp)
             to_eliminate = (
-                    set(xrange(space.dim(tp)))
+                    set(range(space.dim(tp)))
                     - set(var_dict[name][1] for name in names
                         if name in var_dict))
 
@@ -742,7 +745,7 @@ def _add_functionality():
 
                 obj = obj.eliminate(tp, min_index, count)
 
-                to_eliminate -= set(xrange(min_index, min_index+count))
+                to_eliminate -= set(range(min_index, min_index+count))
 
         return obj
 
@@ -855,20 +858,20 @@ def align_spaces(obj, tgt, obj_bigger_ok=False, across_dim_types=False):
         obj_names = [
                 obj.get_dim_name(dt, i)
                 for dt in dim_types
-                for i in xrange(obj.dim(dt))
+                for i in range(obj.dim(dt))
                 ]
         tgt_names = [
                 tgt.get_dim_name(dt, i)
                 for dt in dim_types
-                for i in xrange(tgt.dim(dt))
+                for i in range(tgt.dim(dt))
                 ]
 
         for dt in dim_types:
             obj = _align_dim_type(dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names)
     else:
         for dt in dim_types:
-            obj_names = [obj.get_dim_name(dt, i) for i in xrange(obj.dim(dt))]
-            tgt_names = [tgt.get_dim_name(dt, i) for i in xrange(tgt.dim(dt))]
+            obj_names = [obj.get_dim_name(dt, i) for i in range(obj.dim(dt))]
+            tgt_names = [tgt.get_dim_name(dt, i) for i in range(tgt.dim(dt))]
 
             obj = _align_dim_type(dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names)
 
