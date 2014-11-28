@@ -573,7 +573,7 @@ def _add_functionality():
     def val_rsub(self, other):
         return -self + other
 
-    def val_nonzero(self):
+    def val_bool(self):
         return not self.is_zero()
 
     def val_repr(self):
@@ -599,7 +599,7 @@ def _add_functionality():
     Val.__rmul__ = Val.mul
     Val.__neg__ = Val.neg
     Val.__mod__ = Val.mod
-    Val.__bool__ = Val.__nonzero__ = val_nonzero
+    Val.__bool__ = Val.__nonzero__ = val_bool
 
     Val.__lt__ = Val.lt
     Val.__gt__ = Val.gt
