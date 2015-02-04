@@ -4,3 +4,6 @@
 [submodule "bpl-subset"]
 	path = bpl-subset
 	url = git://github.com/inducer/bpl-subset
+[submodule "barvinok"]
+	path = barvinok
+	url = git://repo.or.cz/barvinok.git

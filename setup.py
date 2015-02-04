@@ -13,6 +13,9 @@ def get_config_schema():
         Switch("USE_SHIPPED_ISL", True, "Use included copy of isl"),
         Switch("USE_SHIPPED_IMATH", True, "Use included copy of imath in isl"),
 
+        Switch("INCLUDE_BARVINOK", True, "Build the included barvinok "
+            "and include it in the wrapper"),
+
         IncludeDir("GMP", []),
         LibraryDir("GMP", []),
         Libraries("GMP", ["gmp"]),
@@ -44,6 +47,8 @@ def main():
     INCLUDE_DIRS = conf["BOOST_INC_DIR"] + ["src/wrapper"]
     LIBRARY_DIRS = conf["BOOST_LIB_DIR"]
     LIBRARIES = conf["BOOST_PYTHON_LIBNAME"]
+
+    # {{{ configure isl build
 
     if conf["USE_SHIPPED_ISL"]:
         from glob import glob
@@ -98,6 +103,41 @@ def main():
         LIBRARIES.extend(conf["ISL_LIBNAME"])
 
     INCLUDE_DIRS.extend(conf["ISL_INC_DIR"])
+
+    # }}}
+
+    # {{{ configure barvinok build
+
+    if conf["INCLUDE_BARVINOK"]:
+        from glob import glob
+
+        BARVINOK_BLACKLIST = []
+
+        for fn in glob("barvinok/*.c"):
+            blacklisted = False
+            for bl in BARVINOK_BLACKLIST:
+                if bl in fn:
+                    blacklisted = True
+                    break
+
+            if "polylib" in fn:
+                blacklisted = True
+
+            inf = open(fn, "rt")
+            try:
+                contents = inf.read()
+            finally:
+                inf.close()
+
+            if "int main(" not in contents and not blacklisted:
+                EXTRA_OBJECTS.append(fn)
+
+        INCLUDE_DIRS.extend([
+            "barvinok",
+            "barvinok/polylib/include",
+            ])
+
+    # }}}
 
     if not (conf["USE_SHIPPED_ISL"] and conf["USE_SHIPPED_IMATH"]):
         INCLUDE_DIRS.extend(conf["GMP_INC_DIR"])
@@ -169,3 +209,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# vim: foldmethod=marker
