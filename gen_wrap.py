@@ -90,7 +90,8 @@ PART_TO_CLASSES = {
         "part1": [
             # lists
             "id_list",
-            "basic_set_list", "set_list", "aff_list", "pw_aff_list", "band_list",
+            "basic_set_list", "basic_map_list", "set_list",
+            "aff_list", "pw_aff_list", "band_list",
             "ast_expr_list", "ast_node_list",
 
             # maps
@@ -98,8 +99,9 @@ PART_TO_CLASSES = {
 
             # others
             "printer",  "val", "multi_val", "vec", "mat",
-            "aff", "pw_aff",
+            "aff", "pw_aff", "union_pw_aff",
             "multi_aff", "multi_pw_aff", "pw_multi_aff", "union_pw_multi_aff",
+            "multi_union_pw_aff",
 
             "id",
             "constraint", "space", "local_space",
@@ -375,8 +377,16 @@ class FunctionData:
         args = [i.strip()
                 for i in split_at_unparenthesized_commas(decl_match.group(4))]
 
-        if c_name in ["ISL_ARG_DECL", "ISL_DECLARE_MULTI",
-                "ISL_DECLARE_LIST", "isl_ast_op_type_print_macro"]:
+        if c_name in [
+                "ISL_ARG_DECL",
+                "ISL_DECLARE_LIST",
+                "ISL_DECLARE_LIST_FN",
+                "isl_ast_op_type_print_macro",
+                "ISL_DECLARE_MULTI",
+                "ISL_DECLARE_MULTI_NEG",
+                "ISL_DECLARE_MULTI_DIMS",
+                "ISL_DECLARE_MULTI_WITH_DOMAIN",
+                ]:
             return
 
         assert c_name.startswith("isl_"), c_name
@@ -518,9 +528,9 @@ def get_callback(cb_name, cb):
         """ % dict(
                 ret_type="%s %s" % (cb.return_base_type, cb.return_ptr),
                 cb_name=cb_name,
-                input_args=
-                ", ".join("%s %sc_arg_%s" % (arg.base_type, arg.ptr, arg.name)
-                    for arg in cb.args),
+                input_args=(
+                    ", ".join("%s %sc_arg_%s" % (arg.base_type, arg.ptr, arg.name)
+                        for arg in cb.args)),
                 body="\n".join(body),
                 passed_args=", ".join(passed_args))
 
@@ -983,7 +993,7 @@ def write_exposer(outf, meth, arg_names, doc_str, static_decls):
     extra_py_names = []
 
     #if meth.is_static:
-        #doc_str = "(static method)\n" + doc_str
+    #    doc_str = "(static method)\n" + doc_str
 
     doc_str_arg = ", \"%s\"" % doc_str.replace("\n", "\\n")
 

@@ -259,6 +259,19 @@ Piecewise Quasi-Affine Expression
 .. autoclass:: PwAff
     :members:
 
+Union of Piecewise Quasi-Affine Expressions
+-------------------------------------------
+
+.. autoclass:: UnionPwAff
+    :members:
+
+Multiple Union of Piecewise Quasi-Affine Expressions
+----------------------------------------------------
+
+.. autoclass:: MultiUnionPwAff
+    :members:
+
+
 Multiply Affine Expressions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -274,8 +287,8 @@ Piecewise Multiply Affine Expression
 .. autoclass:: PwMultiAff
     :members:
 
-Union of Piecewise Multiply Affine Expression
----------------------------------------------
+Union of Piecewise Multiply Affine Expressions
+----------------------------------------------
 
 .. autoclass:: UnionPwMultiAff
     :members:
@@ -390,14 +403,28 @@ Lists
 .. autoclass:: IdList
     :members:
 
+.. autoclass:: ValList
+    :members:
+
+
 .. autoclass:: BasicSetList
+    :members:
+
+.. autoclass:: BasicMapList
     :members:
 
 .. autoclass:: SetList
     :members:
 
+.. autoclass:: MapList
+    :members:
+
+.. autoclass:: UnionSetList
+    :members:
+
 .. autoclass:: AffList
     :members:
+
 
 .. autoclass:: BandList
     :members:

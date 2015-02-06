@@ -47,7 +47,15 @@ def main():
 
     if conf["USE_SHIPPED_ISL"]:
         from glob import glob
-        ISL_BLACKLIST = ["_templ.c", "mp_get"]
+        ISL_BLACKLIST = [
+                "_templ.c", "mp_get",
+                "isl_multi_templ.c",
+                "isl_multi_apply_set.c",
+                "isl_multi_gist.c",
+                "isl_multi_intersect.c",
+                "isl_multi_floor.c",
+                "isl_multi_apply_union_set.c",
+                ]
 
         for fn in glob("isl/*.c"):
             blacklisted = False
@@ -86,6 +94,9 @@ def main():
                 "isl/imath/imath.c",
                 "isl/imath/imrat.c",
                 "isl/imath/gmp_compat.c",
+                "isl/imath_wrap/imath.c",
+                "isl/imath_wrap/imrat.c",
+                "isl/imath_wrap/gmp_compat.c",
                 ])
             EXTRA_DEFINES["USE_IMATH_FOR_MP"] = 1
 
