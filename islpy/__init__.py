@@ -134,7 +134,7 @@ def _add_functionality():
         cls.__rand__ = obj_and
         cls.__sub__ = obj_sub
 
-    #}}}
+    # }}}
 
     # {{{ Space
 
@@ -470,7 +470,20 @@ def _add_functionality():
         self.foreach_piece(append_tuple)
         return result
 
-    def pwaff_get_aggregate_domain(self):
+    def pwqpolynomial_get_pieces(self):
+        """
+        :return: list of (:class:`Set`, :class:`QPolynomial`)
+        """
+
+        result = []
+
+        def append_tuple(*args):
+            result.append(args)
+
+        self.foreach_piece(append_tuple)
+        return result
+
+    def pw_get_aggregate_domain(self):
         """
         :return: a :class:`Set` that is the union of the domains of all pieces
         """
@@ -481,72 +494,91 @@ def _add_functionality():
 
         return result
 
-    PwAff.get_aggregate_domain = pwaff_get_aggregate_domain
     PwAff.get_pieces = pwaff_get_pieces
+    PwAff.get_aggregate_domain = pw_get_aggregate_domain
+
+    PwQPolynomial.get_pieces = pwqpolynomial_get_pieces
+    PwQPolynomial.get_aggregate_domain = pw_get_aggregate_domain
 
     # }}}
 
-    # {{{ aff arithmetic
+    # {{{ arithmetic
 
-    def _number_to_aff(template, num):
+    def _number_to_expr_like(template, num):
         number_aff = Aff.zero_on_domain(template.get_domain_space())
         number_aff = number_aff.set_constant_val(num)
 
+        if isinstance(template, Aff):
+            return number_aff
+        if isinstance(template, QPolynomial):
+            return QPolynomial.from_aff(number_aff)
+
+        # everything else is piecewise
+
+        number_pw_aff = PwAff.empty(template.get_space())
+        for set, _ in template.get_pieces():
+            number_pw_aff = set.indicator_function().cond(
+                    number_aff, number_pw_aff)
+
         if isinstance(template, PwAff):
-            result = PwAff.empty(template.get_space())
-            for set, _ in template.get_pieces():
-                result = set.indicator_function().cond(number_aff, result)
-            return result
+            return number_pw_aff
 
         else:
-            return number_aff
+            return PwQPolynomial.from_pw_aff(number_pw_aff)
 
-    def aff_add(self, other):
-        if not isinstance(other, (Aff, PwAff)):
-            other = _number_to_aff(self, other)
+    ARITH_CLASSES = (Aff, PwAff, QPolynomial, PwQPolynomial)
+
+    def expr_like_add(self, other):
+        if not isinstance(other, ARITH_CLASSES):
+            other = _number_to_expr_like(self, other)
 
         try:
             return self.add(other)
         except TypeError:
             return NotImplemented
 
-    def aff_sub(self, other):
-        if not isinstance(other, (Aff, PwAff)):
-            other = _number_to_aff(self, other)
+    def expr_like_sub(self, other):
+        if not isinstance(other, ARITH_CLASSES):
+            other = _number_to_expr_like(self, other)
 
         try:
             return self.sub(other)
         except TypeError:
             return NotImplemented
 
-    def aff_rsub(self, other):
-        if not isinstance(other, (Aff, PwAff)):
-            other = _number_to_aff(self, other)
+    def expr_like_rsub(self, other):
+        if not isinstance(other, ARITH_CLASSES):
+            other = _number_to_expr_like(self, other)
 
         return -self + other
 
-    def aff_mul(self, other):
-        if not isinstance(other, (Aff, PwAff)):
-            other = _number_to_aff(self, other)
+    def expr_like_mul(self, other):
+        if not isinstance(other, ARITH_CLASSES):
+            other = _number_to_expr_like(self, other)
 
         try:
             return self.mul(other)
         except TypeError:
             return NotImplemented
 
-    def aff_flordiv(self, other):
+    def expr_like_floordiv(self, other):
         return self.scale_down_val(other).floor()
 
+    for expr_like_class in ARITH_CLASSES:
+        expr_like_class.__add__ = expr_like_add
+        expr_like_class.__radd__ = expr_like_add
+        expr_like_class.__sub__ = expr_like_sub
+        expr_like_class.__rsub__ = expr_like_rsub
+        expr_like_class.__mul__ = expr_like_mul
+        expr_like_class.__rmul__ = expr_like_mul
+        expr_like_class.__neg__ = expr_like_class.neg
+
+    for qpoly_class in [QPolynomial, PwQPolynomial]:
+        expr_like_class.__pow__ = expr_like_class.pow
+
     for aff_class in [Aff, PwAff]:
-        aff_class.__add__ = aff_add
-        aff_class.__radd__ = aff_add
-        aff_class.__sub__ = aff_sub
-        aff_class.__rsub__ = aff_rsub
-        aff_class.__mul__ = aff_mul
-        aff_class.__rmul__ = aff_mul
-        aff_class.__neg__ = aff_class.neg
         aff_class.__mod__ = aff_class.mod_val
-        aff_class.__floordiv__ = aff_flordiv
+        aff_class.__floordiv__ = expr_like_floordiv
 
     # }}}
 
