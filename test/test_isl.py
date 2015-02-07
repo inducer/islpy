@@ -99,6 +99,25 @@ def test_get_coefficients_by_name():
         print(c.get_coefficients_by_name())
 
 
+def test_count_brick_ish():
+    a = isl.BasicSet("[n] -> {[i,j]: 0<= i < n and 0<= j < n and j<= i}")
+
+    def count(bset):
+        result = 1
+
+        for i in range(bset.dim(isl.dim_type.set)):
+            dmax = bset.dim_max(i)
+            dmin = bset.dim_min(i)
+
+            length = isl.PwQPolynomial.from_pw_aff(dmax - dmin + 1)
+
+            result = result * length
+
+        return result
+
+    print count(a)
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:

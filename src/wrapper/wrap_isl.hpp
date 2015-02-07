@@ -145,10 +145,13 @@ namespace isl
     MAKE_CAST_CTOR(pw_aff, aff, isl_pw_aff_from_aff);
   };
 
+  WRAP_CLASS(union_pw_aff);
+
   WRAP_CLASS(multi_aff);
   WRAP_CLASS(multi_pw_aff);
   WRAP_CLASS(pw_multi_aff);
   WRAP_CLASS(union_pw_multi_aff);
+  WRAP_CLASS(multi_union_pw_aff);
 
   WRAP_CLASS(constraint);
   WRAP_CLASS(space);
@@ -199,18 +202,24 @@ namespace isl
   WRAP_CLASS(term);
 
   // matches order in isl_declaration_macros.h
+
+  WRAP_CLASS(id_list);
+
   WRAP_CLASS(val_list);
   WRAP_CLASS(aff_list);
   WRAP_CLASS(pw_aff_list);
-  WRAP_CLASS(ast_expr_list);
-  WRAP_CLASS(ast_node_list);
-
-  WRAP_CLASS(id_list);
-  WRAP_CLASS(band_list);
   WRAP_CLASS(constraint_list);
 
   WRAP_CLASS(basic_set_list);
+  WRAP_CLASS(basic_map_list);
   WRAP_CLASS(set_list);
+  WRAP_CLASS(map_list);
+  WRAP_CLASS(union_set_list);
+
+  WRAP_CLASS(ast_expr_list);
+  WRAP_CLASS(ast_node_list);
+  WRAP_CLASS(band_list);
+
   // end match
 
   WRAP_CLASS(id_to_ast_expr);

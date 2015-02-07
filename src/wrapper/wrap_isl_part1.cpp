@@ -46,13 +46,20 @@ void islpy_expose_part1()
   // {{{ lists
 
   MAKE_WRAP(id_list, IdList);
-  MAKE_WRAP(basic_set_list, BasicSetList);
-  MAKE_WRAP(set_list, SetList);
+
+  MAKE_WRAP(val_list, ValList);
   MAKE_WRAP(aff_list, AffList);
   MAKE_WRAP(pw_aff_list, PwAffList);
-  MAKE_WRAP(band_list, BandList);
+
+  MAKE_WRAP(basic_set_list, BasicSetList);
+  MAKE_WRAP(basic_map_list, BasicMapList);
+  MAKE_WRAP(set_list, SetList);
+  MAKE_WRAP(map_list, MapList);
+  MAKE_WRAP(union_set_list, UnionSetList);
+
   MAKE_WRAP(ast_expr_list, AstExprList);
   MAKE_WRAP(ast_node_list, AstNodeList);
+  MAKE_WRAP(band_list, BandList);
 
   // }}}
 
@@ -73,6 +80,8 @@ void islpy_expose_part1()
   wrap_aff.enable_pickling();
   MAKE_WRAP(pw_aff, PwAff);
   wrap_pw_aff.enable_pickling();
+  MAKE_WRAP(union_pw_aff, UnionPwAff);
+  wrap_union_pw_aff.enable_pickling();
   MAKE_WRAP(multi_aff, MultiAff);
   wrap_multi_aff.enable_pickling();
   MAKE_WRAP(multi_pw_aff, MultiPwAff);
@@ -81,6 +90,8 @@ void islpy_expose_part1()
   wrap_pw_multi_aff.enable_pickling();
   MAKE_WRAP(union_pw_multi_aff, UnionPwMultiAff);
   wrap_union_pw_multi_aff.enable_pickling();
+  MAKE_WRAP(multi_union_pw_aff, MultiUnionPwAff);
+  wrap_multi_union_pw_aff.enable_pickling();
 
   MAKE_WRAP(id, Id);
   wrap_id.def("__eq__", islpy::id_eq, py::args("self", "other"),
