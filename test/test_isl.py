@@ -1,4 +1,4 @@
-from __future__ import division
+from __future__ import division, print_function
 
 import islpy as isl
 
@@ -115,7 +115,7 @@ def test_count_brick_ish():
 
         return result
 
-    print count(a)
+    print(count(a))
 
 
 if __name__ == "__main__":
