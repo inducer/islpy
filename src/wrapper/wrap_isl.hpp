@@ -20,9 +20,15 @@
 #include <isl/ast.h>
 #include <isl/ast_build.h>
 #include <isl/options.h>
+
+#ifdef ISLPY_INCLUDE_BARVINOK
+#include <barvinok/isl.h>
+#endif
+
 #include <stdexcept>
 #include <boost/python.hpp>
 #include <boost/unordered_map.hpp>
+
 
 // TODO: flow.h
 // TODO: better error reporting
@@ -145,13 +151,17 @@ namespace isl
     MAKE_CAST_CTOR(pw_aff, aff, isl_pw_aff_from_aff);
   };
 
+#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
   WRAP_CLASS(union_pw_aff);
+#endif
 
   WRAP_CLASS(multi_aff);
   WRAP_CLASS(multi_pw_aff);
   WRAP_CLASS(pw_multi_aff);
   WRAP_CLASS(union_pw_multi_aff);
+#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
   WRAP_CLASS(multi_union_pw_aff);
+#endif
 
   WRAP_CLASS(constraint);
   WRAP_CLASS(space);
@@ -211,10 +221,14 @@ namespace isl
   WRAP_CLASS(constraint_list);
 
   WRAP_CLASS(basic_set_list);
+#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
   WRAP_CLASS(basic_map_list);
+#endif
   WRAP_CLASS(set_list);
+#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
   WRAP_CLASS(map_list);
   WRAP_CLASS(union_set_list);
+#endif
 
   WRAP_CLASS(ast_expr_list);
   WRAP_CLASS(ast_node_list);

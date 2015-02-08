@@ -52,10 +52,14 @@ void islpy_expose_part1()
   MAKE_WRAP(pw_aff_list, PwAffList);
 
   MAKE_WRAP(basic_set_list, BasicSetList);
+#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
   MAKE_WRAP(basic_map_list, BasicMapList);
+#endif
   MAKE_WRAP(set_list, SetList);
+#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
   MAKE_WRAP(map_list, MapList);
   MAKE_WRAP(union_set_list, UnionSetList);
+#endif
 
   MAKE_WRAP(ast_expr_list, AstExprList);
   MAKE_WRAP(ast_node_list, AstNodeList);
@@ -80,8 +84,10 @@ void islpy_expose_part1()
   wrap_aff.enable_pickling();
   MAKE_WRAP(pw_aff, PwAff);
   wrap_pw_aff.enable_pickling();
+#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
   MAKE_WRAP(union_pw_aff, UnionPwAff);
   wrap_union_pw_aff.enable_pickling();
+#endif
   MAKE_WRAP(multi_aff, MultiAff);
   wrap_multi_aff.enable_pickling();
   MAKE_WRAP(multi_pw_aff, MultiPwAff);
@@ -90,8 +96,10 @@ void islpy_expose_part1()
   wrap_pw_multi_aff.enable_pickling();
   MAKE_WRAP(union_pw_multi_aff, UnionPwMultiAff);
   wrap_union_pw_multi_aff.enable_pickling();
+#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
   MAKE_WRAP(multi_union_pw_aff, MultiUnionPwAff);
   wrap_multi_union_pw_aff.enable_pickling();
+#endif
 
   MAKE_WRAP(id, Id);
   wrap_id.def("__eq__", islpy::id_eq, py::args("self", "other"),

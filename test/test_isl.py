@@ -116,6 +116,8 @@ def test_count_brick_ish():
         return result
 
     print(count(a))
+    if hasattr(a, "card"):
+        print(a.card())
 
 
 if __name__ == "__main__":

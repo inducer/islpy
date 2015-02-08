@@ -1057,9 +1057,22 @@ def write_wrappers(expf, wrapf, methods):
     print("SKIP (%d undocumented methods): %s" % (len(undoc), ", ".join(undoc)))
 
 
-def gen_wrapper(include_dirs):
+ADD_VERSIONS = {
+        "union_pw_aff": 15,
+        "multi_union_pw_aff": 15,
+        "basic_map_list": 15,
+        "map_list": 15,
+        "union_set_list": 15,
+        }
+
+
+def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
     fdata = FunctionData(["."] + include_dirs)
-    fdata.read_header("isl_declaration_macros_expanded.h")
+    if isl_version is None:
+        fdata.read_header("isl_declaration_macros_expanded.h")
+    else:
+        fdata.read_header("isl_declaration_macros_expanded_v%d.h"
+                % isl_version)
     fdata.read_header("isl/id.h")
     fdata.read_header("isl/space.h")
     fdata.read_header("isl/set.h")
@@ -1083,9 +1096,19 @@ def gen_wrapper(include_dirs):
     fdata.read_header("isl/ast.h")
     fdata.read_header("isl/ast_build.h")
 
+    if include_barvinok:
+        fdata.read_header("barvinok/isl.h")
+
     for part, classes in PART_TO_CLASSES.items():
         expf = open("src/wrapper/gen-expose-%s.inc" % part, "wt")
         wrapf = open("src/wrapper/gen-wrap-%s.inc" % part, "wt")
+
+        classes = [
+                cls
+                for cls in classes
+                if isl_version is None
+                or ADD_VERSIONS.get(cls) is None
+                or ADD_VERSIONS.get(cls) <= isl_version]
 
         write_wrappers(expf, wrapf, [
             meth

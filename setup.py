@@ -12,6 +12,7 @@ def get_config_schema():
         Switch("USE_SHIPPED_BOOST", True, "Use included Boost library"),
         Switch("USE_SHIPPED_ISL", True, "Use included copy of isl"),
         Switch("USE_SHIPPED_IMATH", True, "Use included copy of imath in isl"),
+        Switch("USE_BARVINOK", False, "Include wrapper for Barvinok"),
 
         IncludeDir("GMP", []),
         LibraryDir("GMP", []),
@@ -20,6 +21,10 @@ def get_config_schema():
         IncludeDir("ISL", []),
         LibraryDir("ISL", []),
         Libraries("ISL", ["isl"]),
+
+        IncludeDir("BARVINOK", []),
+        LibraryDir("BARVINOK", []),
+        Libraries("BARVINOK", ["barvinok"]),
 
         StringListOption("CXXFLAGS", [],
             help="Any extra C++ compiler options to include"),
@@ -108,6 +113,29 @@ def main():
         LIBRARY_DIRS.extend(conf["ISL_LIB_DIR"])
         LIBRARIES.extend(conf["ISL_LIBNAME"])
 
+    wrapper_dirs = conf["ISL_INC_DIR"][:]
+
+    # {{{ configure barvinok
+
+    if conf["USE_BARVINOK"]:
+        if conf["USE_SHIPPED_ISL"]:
+            raise RuntimeError("barvinok wrapper is not compatible with using "
+                    "shipped isl")
+        if conf["USE_SHIPPED_IMATH"]:
+            raise RuntimeError("barvinok wrapper is not compatible with using "
+                    "shipped imath")
+
+        INCLUDE_DIRS.extend(conf["BARVINOK_INC_DIR"])
+        LIBRARY_DIRS.extend(conf["BARVINOK_LIB_DIR"])
+        LIBRARIES.extend(conf["BARVINOK_LIBNAME"])
+
+        wrapper_dirs.extend(conf["BARVINOK_INC_DIR"])
+
+        EXTRA_DEFINES["ISLPY_ISL_VERSION"] = 14
+        EXTRA_DEFINES["ISLPY_INCLUDE_BARVINOK"] = 1
+
+    # }}}
+
     INCLUDE_DIRS.extend(conf["ISL_INC_DIR"])
 
     if not (conf["USE_SHIPPED_ISL"] and conf["USE_SHIPPED_IMATH"]):
@@ -119,7 +147,8 @@ def main():
     exec(compile(open(init_filename, "r").read(), init_filename, "exec"), conf)
 
     from gen_wrap import gen_wrapper
-    gen_wrapper(conf["ISL_INC_DIR"])
+    gen_wrapper(wrapper_dirs, include_barvinok=conf["USE_BARVINOK"],
+            isl_version=EXTRA_DEFINES.get("ISLPY_ISL_VERSION"))
 
     setup(name="islpy",
           version=conf["VERSION_TEXT"],

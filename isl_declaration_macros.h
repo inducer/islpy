@@ -14,10 +14,14 @@ ISL_DECLARE_LIST(pw_aff)
 ISL_DECLARE_LIST(constraint)
 
 ISL_DECLARE_LIST(basic_set)
+#if ISLPY_ISL_VERSION >= 15
 ISL_DECLARE_LIST(basic_map)
+#endif
 ISL_DECLARE_LIST(set)
+#if ISLPY_ISL_VERSION >= 15
 ISL_DECLARE_LIST(map)
 ISL_DECLARE_LIST(union_set)
+#endif
 
 ISL_DECLARE_LIST(ast_expr)
 ISL_DECLARE_LIST(ast_node)
