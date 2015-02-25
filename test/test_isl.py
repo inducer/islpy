@@ -115,9 +115,22 @@ def test_count_brick_ish():
 
         return result
 
-    print(count(a))
+    counts = [count(a)]
+
     if hasattr(a, "card"):
-        print(a.card())
+        counts.append(a.card())
+
+    for pwq in counts:
+        print("EVAL", pwq, "=", pwq.eval_with_dict(dict(n=10)))
+
+
+def test_eval_pw_qpolynomial():
+    pwaff = isl.PwAff("[n] -> { [(0)] : n <= 4 and n >= 1; "
+        "[(-1 + n - floor((3n)/4))] : n >= 5 }")
+
+    pwq = isl.PwQPolynomial.from_pw_aff(pwaff)
+
+    pwq.eval_with_dict(dict(n=10))
 
 
 if __name__ == "__main__":

@@ -455,7 +455,7 @@ def _add_functionality():
 
     # }}}
 
-    # {{{ PwAff
+    # {{{ piecewise
 
     def pwaff_get_pieces(self):
         """
@@ -499,6 +499,26 @@ def _add_functionality():
 
     PwQPolynomial.get_pieces = pwqpolynomial_get_pieces
     PwQPolynomial.get_aggregate_domain = pw_get_aggregate_domain
+
+    # }}}
+
+    # {{{ PwQPolynomial
+
+    def pwqpolynomial_eval_with_dict(self, value_dict):
+        """Evaluates *self* for the parameters specified by
+        *value_dict*, which maps parameter names to their values.
+        """
+
+        pt = Point.zero(self.space.params())
+
+        for i in range(self.space.dim(dim_type.param)):
+            par_name = self.space.get_dim_name(dim_type.param, i)
+            pt = pt.set_coordinate_val(
+                dim_type.param, i, value_dict[par_name])
+
+        return self.eval(pt).to_python()
+
+    PwQPolynomial.eval_with_dict = pwqpolynomial_eval_with_dict
 
     # }}}
 
