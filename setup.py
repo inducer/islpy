@@ -24,7 +24,7 @@ def get_config_schema():
 
         IncludeDir("BARVINOK", []),
         LibraryDir("BARVINOK", []),
-        Libraries("BARVINOK", ["barvinok"]),
+        Libraries("BARVINOK", ["barvinok", "polylibgmp"]),
 
         StringListOption("CXXFLAGS", [],
             help="Any extra C++ compiler options to include"),
