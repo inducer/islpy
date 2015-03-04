@@ -821,6 +821,15 @@ _add_functionality()
 
 
 def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
+    if tgt_dt == dim_type.param:
+        if not isinstance(tgt, Space):
+            tgt_space = tgt.space
+        else:
+            tgt_space = tgt
+        if (not obj_bigger_ok
+                or obj.space.dim(dim_type.param) == tgt_space.dim(dim_type.param)):
+            return obj.align_params(tgt_space)
+
     if None in tgt_names:
         all_nones = [None] * len(tgt_names)
         if tgt_names == all_nones and obj_names == all_nones:
