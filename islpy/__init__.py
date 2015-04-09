@@ -820,6 +820,19 @@ def _add_functionality():
 _add_functionality()
 
 
+def _back_to_basic(new_obj, old_obj):
+    # Work around set_dim_id not being available for Basic{Set,Map}
+    if isinstance(old_obj, BasicSet) and isinstance(new_obj, Set):
+        bset, = new_obj.get_basic_sets()
+        return bset
+
+    if isinstance(old_obj, BasicMap) and isinstance(new_obj, Map):
+        bmap, = new_obj.get_basic_maps()
+        return bmap
+
+    return new_obj
+
+
 def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
     if tgt_dt == dim_type.param:
         if not isinstance(tgt, Space):
@@ -873,7 +886,10 @@ def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
                 tgt_idx += 1
         else:
             obj = obj.insert_dims(tgt_dt, tgt_idx, 1)
-            obj = obj.set_dim_id(tgt_dt, tgt_idx, tgt_id)
+            obj = _back_to_basic(
+                    obj.set_dim_id(tgt_dt, tgt_idx, tgt_id),
+                    obj)
+
             tgt_idx += 1
 
     if tgt_idx < obj.dim(tgt_dt) and not obj_bigger_ok:
