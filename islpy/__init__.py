@@ -546,7 +546,7 @@ def _add_functionality():
         else:
             return PwQPolynomial.from_pw_aff(number_pw_aff)
 
-    ARITH_CLASSES = (Aff, PwAff, QPolynomial, PwQPolynomial)
+    ARITH_CLASSES = (Aff, PwAff, QPolynomial, PwQPolynomial)  # noqa
 
     def expr_like_add(self, other):
         if not isinstance(other, ARITH_CLASSES):
