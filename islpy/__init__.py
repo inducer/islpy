@@ -823,11 +823,23 @@ _add_functionality()
 def _back_to_basic(new_obj, old_obj):
     # Work around set_dim_id not being available for Basic{Set,Map}
     if isinstance(old_obj, BasicSet) and isinstance(new_obj, Set):
-        bset, = new_obj.get_basic_sets()
+        bsets = new_obj.get_basic_sets()
+
+        if len(bsets) == 0:
+            bset = BasicSet.universe(new_obj.space).complement()
+        else:
+            bset, = bsets
+
         return bset
 
     if isinstance(old_obj, BasicMap) and isinstance(new_obj, Map):
-        bmap, = new_obj.get_basic_maps()
+        bmaps = new_obj.get_basic_maps()
+
+        if len(bmaps) == 0:
+            bmap = BasicMap.universe(new_obj.space).complement()
+        else:
+            bmap, = bmaps
+
         return bmap
 
     return new_obj
