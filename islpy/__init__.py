@@ -845,8 +845,16 @@ def _back_to_basic(new_obj, old_obj):
     return new_obj
 
 
+def _set_dim_id(obj, dt, idx, id):
+    return _back_to_basic(obj.set_dim_id(dt, idx, id), obj)
+
+
 def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
-    if tgt_dt == dim_type.param:
+    # The technique below will not work for PwAff et al, because there is *only*
+    # the 'param' dim_type, and we are not allowed to move dims around in there.
+    # We'll make isl do the work, using align_params.
+
+    if tgt_dt == dim_type.param and isinstance(obj, (Aff, PwAff)):
         if not isinstance(tgt, Space):
             tgt_space = tgt.space
         else:
@@ -876,7 +884,8 @@ def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
         if tgt_name in names_in_both:
             if (obj.dim(tgt_dt) > tgt_idx
                     and tgt_name == obj.get_dim_name(tgt_dt, tgt_idx)):
-                tgt_idx += 1
+                pass
+
             else:
                 src_dt, src_idx = obj.get_var_dict()[tgt_name]
 
@@ -895,12 +904,13 @@ def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
                 else:
                     obj = obj.move_dims(tgt_dt, tgt_idx, src_dt, src_idx, 1)
 
-                tgt_idx += 1
+            # names are same, make Ids the same, too
+            obj = _set_dim_id(obj, tgt_dt, tgt_idx, tgt_id)
+
+            tgt_idx += 1
         else:
             obj = obj.insert_dims(tgt_dt, tgt_idx, 1)
-            obj = _back_to_basic(
-                    obj.set_dim_id(tgt_dt, tgt_idx, tgt_id),
-                    obj)
+            obj = _set_dim_id(obj, tgt_dt, tgt_idx, tgt_id)
 
             tgt_idx += 1
 
