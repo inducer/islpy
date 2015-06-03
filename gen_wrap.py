@@ -507,7 +507,13 @@ def get_callback(cb_name, cb):
               %(body)s
               py::object retval = py_cb(%(passed_args)s);
               if (retval.ptr() == Py_None)
-                return isl_stat_ok;
+              {
+                #if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
+                  return isl_stat_ok;
+                #else
+                  return 0;
+                #endif
+              }
               else
                 return py::extract<%(ret_type)s>(retval);
             }
@@ -516,7 +522,11 @@ def get_callback(cb_name, cb):
               std::cout << "[islpy warning] A Python exception occurred in "
                 "a call back function, ignoring:" << std::endl;
               PyErr_Print();
-              return isl_stat_error;
+              #if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
+                return isl_stat_error;
+              #else
+                return -1;
+              #endif
             }
             catch (std::exception &e)
             {
@@ -524,7 +534,11 @@ def get_callback(cb_name, cb):
                 "a Python callback query:" << std::endl
                 << e.what() << std::endl;
               std::cout << "[islpy] Aborting now." << std::endl;
-              return isl_stat_error;
+              #if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
+                return isl_stat_error;
+              #else
+                return -1;
+              #endif
             }
         }
         """ % dict(
@@ -826,7 +840,11 @@ def write_wrapper(outf, meth):
 
     if meth.return_base_type in ["int", "isl_stat"] and not meth.return_ptr:
         body.append("""
-            if (result == isl_stat_error)
+            #if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
+              if (result == isl_stat_error)
+            #else
+              if (result == -1)
+            #endif
             {
               throw isl::error("call to isl_%(cls)s_%(name)s failed");
             }""" % {"cls": meth.cls, "name": meth.name})

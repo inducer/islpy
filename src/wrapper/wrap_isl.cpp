@@ -54,6 +54,7 @@ BOOST_PYTHON_MODULE(_isl)
   }
   */
 
+#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
   py::enum_<isl_error>("error")
     .ENUM_VALUE(isl_error_, none)
     .ENUM_VALUE(isl_error_, abort)
@@ -67,6 +68,7 @@ BOOST_PYTHON_MODULE(_isl)
     .ENUM_VALUE(isl_stat_, error)
     .ENUM_VALUE(isl_stat_, ok)
     ;
+#endif
 
   py::enum_<isl_dim_type>("dim_type")
     .ENUM_VALUE(isl_dim_, cst)
