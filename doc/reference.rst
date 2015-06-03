@@ -353,6 +353,9 @@ Schedule
 .. autoclass:: Schedule
     :members:
 
+.. autoclass:: ScheduleNode
+    :members:
+
 ScheduleConstraints
 -------------------
 
@@ -367,6 +370,8 @@ Access Info
 
 .. autoclass:: AccessInfo
     :members:
+.. autoclass:: UnionAccessInfo
+    :members:
 
 Restriction
 -----------
@@ -378,6 +383,8 @@ Flow
 ----
 
 .. autoclass:: Flow
+    :members:
+.. autoclass:: UnionFlow
     :members:
 
 Abstract Syntax Trees

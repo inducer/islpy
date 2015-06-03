@@ -191,12 +191,12 @@ def main():
           ext_modules=[
               Extension(
                   "islpy._isl",
-                  EXTRA_OBJECTS + [
+                  [
                       "src/wrapper/wrap_isl.cpp",
                       "src/wrapper/wrap_isl_part1.cpp",
                       "src/wrapper/wrap_isl_part2.cpp",
                       "src/wrapper/wrap_isl_part3.cpp",
-                      ],
+                      ] + EXTRA_OBJECTS,
                   include_dirs=INCLUDE_DIRS,
                   library_dirs=LIBRARY_DIRS,
                   libraries=LIBRARIES,

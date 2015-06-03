@@ -122,8 +122,10 @@ PART_TO_CLASSES = {
             "term",
 
             "band", "schedule", "schedule_constraints",
+            "schedule_node",
 
             "access_info", "flow", "restriction",
+            "union_access_info", "union_flow",
 
             "ast_expr", "ast_node", "ast_print_options",
             "ast_build",
@@ -141,7 +143,7 @@ CLASS_MAP = {
 
 ENUMS = ["isl_dim_type", "isl_fold",
         "isl_ast_op_type", "isl_ast_expr_type",
-        "isl_ast_node_type"]
+        "isl_ast_node_type", "isl_stat"]
 
 SAFE_TYPES = ENUMS + ["int", "unsigned", "uint32_t", "size_t", "double",
         "long", "unsigned long"]
@@ -505,7 +507,7 @@ def get_callback(cb_name, cb):
               %(body)s
               py::object retval = py_cb(%(passed_args)s);
               if (retval.ptr() == Py_None)
-                return 0;
+                return isl_stat_ok;
               else
                 return py::extract<%(ret_type)s>(retval);
             }
@@ -514,7 +516,7 @@ def get_callback(cb_name, cb):
               std::cout << "[islpy warning] A Python exception occurred in "
                 "a call back function, ignoring:" << std::endl;
               PyErr_Print();
-              return -1;
+              return isl_stat_error;
             }
             catch (std::exception &e)
             {
@@ -522,7 +524,7 @@ def get_callback(cb_name, cb):
                 "a Python callback query:" << std::endl
                 << e.what() << std::endl;
               std::cout << "[islpy] Aborting now." << std::endl;
-              return -1;
+              return isl_stat_error;
             }
         }
         """ % dict(
@@ -557,7 +559,7 @@ def write_wrapper(outf, meth):
         arg_names.append(arg.name)
 
         if isinstance(arg, CallbackArgument):
-            if not (arg.return_base_type in SAFE_IN_TYPES and not arg.return_ptr):
+            if arg.return_base_type not in SAFE_IN_TYPES or arg.return_ptr:
                 raise SignatureNotSupported("non-int callback")
 
             arg_names.pop()
@@ -822,9 +824,9 @@ def write_wrapper(outf, meth):
 
     # {{{ return value processing
 
-    if meth.return_base_type == "int" and not meth.return_ptr:
+    if meth.return_base_type in ["int", "isl_stat"] and not meth.return_ptr:
         body.append("""
-            if (result == -1)
+            if (result == isl_stat_error)
             {
               throw isl::error("call to isl_%(cls)s_%(name)s failed");
             }""" % {"cls": meth.cls, "name": meth.name})
@@ -845,6 +847,21 @@ def write_wrapper(outf, meth):
                 ret_descr = "tuple: (%s)" % (", ".join(extra_ret_descrs))
         else:
             body.append("return result;")
+
+    elif meth.return_base_type == "isl_bool" and not meth.return_ptr:
+        if extra_ret_vals:
+            raise NotImplementedError("extra ret val with isl_bool")
+
+        body.append("""
+            if (result == isl_bool_error)
+            {
+              throw isl::error("call to isl_%(cls)s_%(name)s failed");
+            }""" % {"cls": meth.cls, "name": meth.name})
+
+        processed_return_type = "bool"
+        ret_descr = "bool"
+
+        body.append("return result;")
 
     elif meth.return_base_type in SAFE_TYPES and not meth.return_ptr:
         if extra_ret_vals:

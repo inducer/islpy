@@ -16,6 +16,7 @@
 #include <isl/vertices.h>
 #include <isl/band.h>
 #include <isl/schedule.h>
+#include <isl/schedule_node.h>
 #include <isl/flow.h>
 #include <isl/ast.h>
 #include <isl/ast_build.h>
@@ -241,10 +242,17 @@ namespace isl
   WRAP_CLASS(band);
   WRAP_CLASS(schedule);
   WRAP_CLASS(schedule_constraints);
+#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
+  WRAP_CLASS(schedule_node);
+#endif
 
   WRAP_CLASS(access_info);
   WRAP_CLASS(flow);
   WRAP_CLASS(restriction);
+#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
+  WRAP_CLASS(union_access_info);
+  WRAP_CLASS(union_flow);
+#endif
 
   WRAP_CLASS(ast_expr);
   WRAP_CLASS(ast_node);

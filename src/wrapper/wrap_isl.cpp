@@ -63,6 +63,11 @@ BOOST_PYTHON_MODULE(_isl)
     .ENUM_VALUE(isl_error_, unsupported)
     ;
 
+  py::enum_<isl_stat>("stat")
+    .ENUM_VALUE(isl_stat_, error)
+    .ENUM_VALUE(isl_stat_, ok)
+    ;
+
   py::enum_<isl_dim_type>("dim_type")
     .ENUM_VALUE(isl_dim_, cst)
     .ENUM_VALUE(isl_dim_, param)
