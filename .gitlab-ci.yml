@@ -1,6 +1,5 @@
-py2.7:
+Python 2.7:
   script:
-  - git submodule update --init
   - py_version=2.7
   - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
   - ". ./build-and-test-py-project.sh"
@@ -8,9 +7,8 @@ py2.7:
   - python2.7
   except:
   - tags
-py3.4:
+Python 3.4:
   script:
-  - git submodule update --init
   - py_version=3.4
   - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
   - ". ./build-and-test-py-project.sh"
@@ -18,9 +16,8 @@ py3.4:
   - python3.4
   except:
   - tags
-py2.6:
+Python 2.6:
   script:
-  - git submodule update --init
   - py_version=2.6
   - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
   - ". ./build-and-test-py-project.sh"
