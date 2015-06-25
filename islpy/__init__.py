@@ -108,12 +108,30 @@ EXPR_CLASSES = tuple(cls for cls in ALL_CLASSES
 
 
 def _add_functionality():
+    # {{{ Context
+
     def context_init(self):
         new_ctx = Context.alloc()
         self._setup(new_ctx.data)
         new_ctx._release()
 
+    def context_getstate(self):
+        if self.data == _DEFAULT_CONTEXT.data:
+            return ("default",)
+        else:
+            return (None,)
+
+    def context_setstate(self, data):
+        if data[0] == "default":
+            self._setup(_DEFAULT_CONTEXT.data)
+        else:
+            context_init(self)
+
     Context.__init__ = context_init
+    Context.__getstate__ = context_getstate
+    Context.__setstate__ = context_setstate
+
+    # }}}
 
     # {{{ generic initialization, pickling
 
@@ -135,22 +153,21 @@ def _add_functionality():
         assert self._made_from_string
         del self._made_from_string
 
-    def generic_getnewargs(self):
-        prn = Printer.to_str(self.get_ctx())
-        getattr(prn, "print_"+self._base_name)(self)
-        return (prn.get_str(),)
-
     def generic_getstate(self):
-        return {}
+        ctx = self.get_ctx()
+        prn = Printer.to_str(ctx)
+        getattr(prn, "print_"+self._base_name)(self)
+        return (ctx, prn.get_str())
 
-    def generic_setstate(self):
-        pass
+    def generic_setstate(self, data):
+        ctx, new_str = data
+        new_inst = self.read_from_str(ctx, new_str)
+        self._setup(new_inst._release())
 
     for cls in ALL_CLASSES:
         if hasattr(cls, "read_from_str"):
             cls.__new__ = staticmethod(obj_new_from_string)
             cls.__init__ = obj_bogus_init
-            cls.__getnewargs__ = generic_getnewargs
             cls.__getstate__ = generic_getstate
             cls.__setstate__ = generic_setstate
 

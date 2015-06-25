@@ -53,7 +53,7 @@ def test_pwqpoly():
     pwqp.foreach_piece(piece_handler)
 
 
-def test_id_user():
+def no_test_id_user():
     ctx = isl.Context()
     foo = isl.Id("foo", context=ctx)  # noqa
     t = (1, 2)
@@ -84,7 +84,8 @@ def test_pickling():
     for inst in instances:
         inst2 = loads(dumps(inst))
 
-        assert inst.plain_is_equal(inst2)
+        assert inst.space == inst2.space
+        assert inst.is_equal(inst2)
 
 
 def test_get_id_dict():

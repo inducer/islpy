@@ -1075,15 +1075,18 @@ def write_method_wrapper(gen, cls_name, meth):
         elif (arg.base_type == "void"
                 and arg.ptr == "*"
                 and arg.name == "user"):
-            raise SignatureNotSupported("void user")
 
-            # body.append("Py_INCREF(arg_%s.ptr());" % arg.name)
-            # passed_args.append("arg_%s.ptr()" % arg.name)
-            # input_args.append("py::object %s" % ("arg_"+arg.name))
-            # post_call.append("""
-            #     isl_%s_set_free_user(result, my_decref);
-            #     """ % meth.cls)
-            # docs.append(":param %s: a user-specified Python object" % arg.name)
+            passed_args.append("ffi.NULL")
+            input_args.append(arg.name)
+
+            pre_call("""
+                if {name} is not None:
+                    raise Error("passing non-None arguments for '{name}' "
+                        "is not yet supported")
+                """
+                .format(name=arg.name))
+
+            docs.append(":param %s: None" % arg.name)
 
         else:
             raise SignatureNotSupported("arg type %s %s" % (arg.base_type, arg.ptr))
