@@ -2,14 +2,11 @@
 
 
 def get_config_schema():
-    from aksetup_helper import ConfigSchema, \
-            IncludeDir, LibraryDir, Libraries, BoostLibraries, \
-            Switch, StringListOption, make_boost_base_options
+    from aksetup_helper import (ConfigSchema,
+            IncludeDir, LibraryDir, Libraries,
+            Switch, StringListOption)
 
-    return ConfigSchema(make_boost_base_options() + [
-        BoostLibraries("python"),
-
-        Switch("USE_SHIPPED_BOOST", True, "Use included Boost library"),
+    return ConfigSchema([
         Switch("USE_SHIPPED_ISL", True, "Use included copy of isl"),
         Switch("USE_SHIPPED_IMATH", True, "Use included copy of imath in isl"),
         Switch("USE_BARVINOK", False, "Include wrapper for Barvinok"),
@@ -36,7 +33,6 @@ def get_config_schema():
 def main():
     from aksetup_helper import (hack_distutils,
             get_config, setup, Extension,
-            set_up_shipped_boost_if_requested,
             check_git_submodules)
 
     check_git_submodules()
@@ -44,15 +40,15 @@ def main():
     hack_distutils(what_opt=None)
     conf = get_config(get_config_schema(), warn_about_no_config=False)
 
-    EXTRA_OBJECTS, EXTRA_DEFINES = set_up_shipped_boost_if_requested("islpy", conf)
-
-    INCLUDE_DIRS = conf["BOOST_INC_DIR"] + ["src/wrapper"]
-    LIBRARY_DIRS = conf["BOOST_LIB_DIR"]
-    LIBRARIES = conf["BOOST_PYTHON_LIBNAME"]
+    EXTRA_OBJECTS = []  # noqa
+    EXTRA_DEFINES = []  # noqa
+    INCLUDE_DIRS = conf["BOOST_INC_DIR"] + ["src/wrapper"]  # noqa
+    LIBRARY_DIRS = conf["BOOST_LIB_DIR"]  # noqa
+    LIBRARIES = conf["BOOST_PYTHON_LIBNAME"]  # noqa
 
     if conf["USE_SHIPPED_ISL"]:
         from glob import glob
-        ISL_BLACKLIST = [
+        isl_blacklist = [
                 "_templ.c", "mp_get",
                 "isl_multi_templ.c",
                 "isl_multi_apply_set.c",
@@ -64,7 +60,7 @@ def main():
 
         for fn in glob("isl/*.c"):
             blacklisted = False
-            for bl in ISL_BLACKLIST:
+            for bl in isl_blacklist:
                 if bl in fn:
                     blacklisted = True
                     break
@@ -167,12 +163,13 @@ def main():
               'Natural Language :: English',
               'Programming Language :: C++',
               'Programming Language :: Python',
-              'Programming Language :: Python :: 2.5',
               'Programming Language :: Python :: 2.6',
               'Programming Language :: Python :: 2.7',
               'Programming Language :: Python :: 3',
-              'Programming Language :: Python :: 3.2',
               'Programming Language :: Python :: 3.3',
+              'Programming Language :: Python :: 3.4',
+              'Programming Language :: Python :: Implementation :: CPython'
+              'Programming Language :: Python :: Implementation :: PyPy'
               'Topic :: Multimedia :: Graphics :: 3D Modeling',
               'Topic :: Scientific/Engineering',
               'Topic :: Scientific/Engineering :: Mathematics',
@@ -183,8 +180,11 @@ def main():
 
           packages=["islpy"],
 
+          setup_requires=["cffi>=1.1.0"],
+          cffi_modules=["simple_example_build.py:ffi"],
           install_requires=[
               "pytest>=2",
+              "cffi>=1.1.0",
               # "Mako>=0.3.6",
               "six",
               ],

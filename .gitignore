@@ -48,3 +48,7 @@ setuptools-*.tar.gz
 core
 src/wrapper/gen-*
 .dirty-git-ok
+wrapped-functions.h
+_isl_cffi.py
+_isl.py
+class_list.py
