@@ -285,15 +285,10 @@ class Error(RuntimeError):
 
 _context_use_map = {}
 
-def _ref_ctx(ctx_data):
-    iptr = int(ffi.cast("intptr_t", ctx_data))
-    _context_use_map[iptr] = _context_use_map.get(iptr, 0) + 1
-
-def _deref_ctx(ctx_data):
-    iptr = int(ffi.cast("intptr_t", ctx_data))
-    _context_use_map[iptr] -= 1
-    if not _context_use_map[iptr]:
-        del _context_use_map[iptr]
+def _deref_ctx(ctx_data, ctx_iptr):
+    _context_use_map[ctx_iptr] -= 1
+    if not _context_use_map[ctx_iptr]:
+        del _context_use_map[ctx_iptr]
         lib.isl_ctx_free(ctx_data)
 
 
@@ -303,22 +298,39 @@ class _ISLObjectBase(object):
         assert isinstance(data, ffi.CData)
         self.data =  data
 
-        _ref_ctx(self._get_ctx_data())
+        self._set_ctx_data()
+        iptr = self._ctx_iptr
+        _context_use_map[iptr] = _context_use_map.get(iptr, 0) + 1
 
     def _reset(self, data):
         assert self.data is not None
         assert isinstance(data, ffi.CData)
 
-        _deref_ctx(self._get_ctx_data())
+        _deref_ctx(self._ctx_data, self._ctx_iptr)
         self.data = data
-        _ref_ctx(self._get_ctx_data())
+
+        self._set_ctx_data()
+        iptr = self._ctx_iptr
+        _context_use_map[iptr] = _context_use_map.get(iptr, 0) + 1
+
+    def _set_ctx_data(self):
+        self._ctx_data = self._get_ctx_data()
+        self._ctx_iptr = int(ffi.cast("intptr_t", self._get_ctx_data()))
 
     def _release(self):
         if self.data is None:
             raise Error("cannot release already-released object")
 
         data = self.data
-        _deref_ctx(self._get_ctx_data())
+        if _deref_ctx is not None:
+            _deref_ctx(self._ctx_data, self._ctx_iptr)
+        else:
+            # This can happen if we're called super-late in cleanup.
+            # Since everything else is already mopped up, we really
+            # can't do what it takes to mop up this context.
+            # So we leak it (i.e. leave it for the OS to clean up.)
+            pass
+
         self.data = None
         return data
 
@@ -746,6 +758,7 @@ def write_classes_to_wrapper(wrapper_f):
                         if self.data is not None:
                             self._release()
                     """)
+                gen("")
 
             else:
                 gen("""
@@ -754,11 +767,13 @@ def write_classes_to_wrapper(wrapper_f):
 
                     def __del__(self):
                         if self.data is not None:
-                            lib.isl_{cls}_free(self._release())
+                            lib.isl_{cls}_free(self.data)
+                            _deref_ctx(self._ctx_data, self._ctx_iptr)
                     """
                     .format(cls=cls_name))
+                gen("")
 
-            if cls_name not in NON_COPYABLE_WITH_ISL_PREFIX:
+            if cls_name not in NON_COPYABLE:
                 gen("""
                     def _copy(self):
                         assert self.data is not None
@@ -797,6 +812,72 @@ def gen_conversions(gen, tgt_cls, name):
                 conversion_method=conversion_method))
 
 
+def gen_callback_wrapper(gen, cb, func_name):
+    passed_args = []
+    input_args = []
+
+    assert cb.args[-1].name == "user"
+
+    pre_call = PythonCodeGenerator()
+    post_call = PythonCodeGenerator()
+
+    for arg in cb.args[:-1]:
+        if arg.base_type.startswith("isl_") and arg.ptr == "*":
+            input_args.append(arg.name)
+            passed_args.append("_py_%s" % arg.name)
+
+            pre_call(
+                    "_py_{name} = _instantiate({py_cls}, {name})"
+                    .format(
+                        name=arg.name,
+                        py_cls=isl_class_to_py_class(arg.base_type)))
+
+            if arg.semantics is SEM_TAKE:
+                pass
+            elif arg.semantics is SEM_KEEP:
+                post_call("_py_{name}._release()".format(name=arg.name))
+            else:
+                raise SignatureNotSupported(
+                        "callback arg semantics not understood: %s" % arg.semantics)
+
+        else:
+            raise SignatureNotSupported("unsupported callback arg: %s %s" % (
+                arg.base_type, arg.ptr))
+
+    input_args.append("user")
+
+    gen(
+            "def {func_name}({input_args}):"
+            .format(
+                func_name=func_name,
+                input_args=", ".join(input_args)))
+
+    with Indentation(gen):
+        gen("try:")
+        with Indentation(gen):
+            gen.extend(pre_call)
+
+            gen(
+                    "_result = {name}({passed_args})"
+                    .format(name=cb.name, passed_args=", ".join(passed_args)))
+
+            gen("return lib.isl_stat_ok")
+            gen("")
+
+        gen("""
+            except Exception as e:
+                import sys
+                print("[WARNING] An exception occurred in a callback function."
+                    "This exception was ignored.", file=sys.stderr)
+                import traceback
+                traceback.print_exc()
+
+                return lib.isl_stat_error
+            """)
+
+    gen("")
+
+
 def write_method_wrapper(gen, cls_name, meth):
     pre_call = PythonCodeGenerator()
     post_call = PythonCodeGenerator()
@@ -813,7 +894,6 @@ def write_method_wrapper(gen, cls_name, meth):
         arg = meth.args[arg_idx]
 
         if isinstance(arg, CallbackArgument):
-            raise SignatureNotSupported("callback")
             if arg.return_base_type not in SAFE_IN_TYPES or arg.return_ptr:
                 raise SignatureNotSupported("non-int callback")
 
@@ -821,11 +901,20 @@ def write_method_wrapper(gen, cls_name, meth):
             if meth.args[arg_idx].name != "user":
                 raise SignatureNotSupported("unexpected callback signature")
 
-            cb_name = "cb_%s_%s_%s" % (meth.cls, meth.name, arg.name)
+            cb_wrapper_name = "_cb_wrapper_"+arg.name
 
-            input_args.append("py::object py_%s" % arg.name)
-            passed_args.append(cb_name)
-            passed_args.append("&py_%s" % arg.name)
+            gen_callback_wrapper(pre_call, arg, cb_wrapper_name)
+
+            pre_call(
+                '_cb_{name} = ffi.callback("{cb_decl}")({cb_wrapper_name})'
+                .format(
+                    name=arg.name, cb_decl=arg.c_declarator(),
+                    cb_wrapper_name=cb_wrapper_name
+                    ))
+            input_args.append(arg.name)
+
+            passed_args.append("_cb_"+arg.name)
+            passed_args.append("ffi.NULL")
 
             docs.append(":param %s: callback(%s)"
                     % (arg.name, ", ".join(
@@ -988,13 +1077,13 @@ def write_method_wrapper(gen, cls_name, meth):
                 and arg.name == "user"):
             raise SignatureNotSupported("void user")
 
-            body.append("Py_INCREF(arg_%s.ptr());" % arg.name)
-            passed_args.append("arg_%s.ptr()" % arg.name)
-            input_args.append("py::object %s" % ("arg_"+arg.name))
-            post_call.append("""
-                isl_%s_set_free_user(result, my_decref);
-                """ % meth.cls)
-            docs.append(":param %s: a user-specified Python object" % arg.name)
+            # body.append("Py_INCREF(arg_%s.ptr());" % arg.name)
+            # passed_args.append("arg_%s.ptr()" % arg.name)
+            # input_args.append("py::object %s" % ("arg_"+arg.name))
+            # post_call.append("""
+            #     isl_%s_set_free_user(result, my_decref);
+            #     """ % meth.cls)
+            # docs.append(":param %s: a user-specified Python object" % arg.name)
 
         else:
             raise SignatureNotSupported("arg type %s %s" % (arg.base_type, arg.ptr))
@@ -1082,10 +1171,10 @@ def write_method_wrapper(gen, cls_name, meth):
             and meth.name == "get_user"):
 
         raise SignatureNotSupported("get_user")
-        body.append("""
-            return py::object(py::handle<>(py::borrowed((PyObject *) _result)));
-            """)
-        ret_descr = "a user-specified python object"
+        # body.append("""
+        #     return py::object(py::handle<>(py::borrowed((PyObject *) _result)));
+        #     """)
+        # ret_descr = "a user-specified python object"
 
     elif meth.return_base_type == "void" and not meth.return_ptr:
         pass

@@ -135,16 +135,24 @@ def _add_functionality():
         assert self._made_from_string
         del self._made_from_string
 
-    def generic_getinitargs(self):
+    def generic_getnewargs(self):
         prn = Printer.to_str(self.get_ctx())
         getattr(prn, "print_"+self._base_name)(self)
         return (prn.get_str(),)
+
+    def generic_getstate(self):
+        return {}
+
+    def generic_setstate(self):
+        pass
 
     for cls in ALL_CLASSES:
         if hasattr(cls, "read_from_str"):
             cls.__new__ = staticmethod(obj_new_from_string)
             cls.__init__ = obj_bogus_init
-            cls.__getinitargs__ = generic_getinitargs
+            cls.__getnewargs__ = generic_getnewargs
+            cls.__getstate__ = generic_getstate
+            cls.__setstate__ = generic_setstate
 
     # }}}
 
