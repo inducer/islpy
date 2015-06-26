@@ -130,10 +130,13 @@ EXPR_CLASSES = tuple(cls for cls in ALL_CLASSES
 def _add_functionality():
     # {{{ Context
 
-    def context_init(self):
-        new_ctx = Context.alloc()
-        self._setup(new_ctx.data)
-        new_ctx._release()
+    def context_init(self, _data=None):
+        if _data is not None:
+            super(Context, self).__init__(_data)
+        else:
+            new_ctx = Context.alloc()
+            self._setup(new_ctx.data)
+            new_ctx._release()
 
     def context_getstate(self):
         if self.data == _DEFAULT_CONTEXT.data:
@@ -155,18 +158,27 @@ def _add_functionality():
 
     # {{{ generic initialization, pickling
 
-    def obj_init(self, s, context=None):
+    def obj_init(self, s=None, context=None, _data=None):
         """Construct a new object from :class:`str` s.
 
         :arg context: a :class:`islpy.Context` to use. If not supplied, use a
             global default context.
         """
 
-        if context is None:
-            context = _DEFAULT_CONTEXT
+        if _data is not None:
+            if s is not None:
+                raise TypeError("may not pass _data and string at the same time")
 
-        new_me = self.read_from_str(context, s)
-        self._setup(new_me._release())
+            _isl._ISLObjectBase.__init__(self, _data)
+        else:
+            if s is None:
+                raise TypeError("'s' argument not supplied")
+
+            if context is None:
+                context = _DEFAULT_CONTEXT
+
+            new_me = self.read_from_str(context, s)
+            self._setup(new_me._release())
 
     def generic_getstate(self):
         ctx = self.get_ctx()
@@ -454,20 +466,24 @@ def _add_functionality():
 
     # {{{ Id
 
-    def id_new(cls, name, user=None, context=None):
+    def id_init(self, name=None, user=None, context=None, _data=None):
+        if _data is not None:
+            if name is not None:
+                raise TypeError("may not pass _data and name at the same time")
+
+            _isl._ISLObjectBase.__init__(self, _data)
+            return
+
+        if name is None:
+            raise TypeError("'name' argument not supplied")
+
         if context is None:
             context = _DEFAULT_CONTEXT
 
-        result = cls.alloc(context, name, user)
-        result._made_from_python = True
-        return result
+        new_me = cls.alloc(context, name, user)
+        self._setup(new_me._release())
 
-    def id_bogus_init(self, name, user=None, context=None):
-        assert self._made_from_python
-        del self._made_from_python
-
-    Id.__new__ = staticmethod(id_new)
-    Id.__init__ = id_bogus_init
+    Id.__init__ = id_init
     #Id.user = property(Id.get_user)  # FIXME: reenable
     Id.name = property(Id.get_name)
 
@@ -737,23 +753,28 @@ def _add_functionality():
 
     # {{{ Val
 
-    def val_new(cls, src, context=None):
+    def val_init(self, src=None, context=None, _data=None):
+        if _data is not None:
+            if src is not None:
+                raise TypeError("may not pass _data and src at the same time")
+
+            _isl._ISLObjectBase.__init__(self, _data)
+            return
+
+        if src is None:
+            raise TypeError("'src' argument not supplied")
+
         if context is None:
             context = _DEFAULT_CONTEXT
 
         if isinstance(src, six.string_types):
-            result = cls.read_from_str(context, src)
+            new_me = Val.read_from_str(context, src)
         elif isinstance(src, six.integer_types):
-            result = cls.int_from_si(context, src)
+            new_me = Val.int_from_si(context, src)
         else:
             raise TypeError("'src' must be int or string")
 
-        result._made_from_python = True
-        return result
-
-    def val_bogus_init(self, src, context=None):
-        assert self._made_from_python
-        del self._made_from_python
+        self._setup(new_me._release())
 
     def val_rsub(self, other):
         return -self + other
@@ -774,8 +795,7 @@ def _add_functionality():
         else:
             return int(self.to_str())
 
-    Val.__new__ = staticmethod(val_new)
-    Val.__init__ = val_bogus_init
+    Val.__init__ = val_init
     Val.__add__ = Val.add
     Val.__radd__ = Val.add
     Val.__sub__ = Val.sub

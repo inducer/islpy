@@ -329,6 +329,9 @@ def _deref_ctx(ctx_data, ctx_iptr):
 
 
 class _ISLObjectBase(object):
+    def __init__(self, _data):
+        self._setup(_data)
+
     def _setup(self, data):
         assert not hasattr(self, "data")
         assert isinstance(data, ffi.CData)
@@ -369,13 +372,6 @@ class _ISLObjectBase(object):
 
         self.data = None
         return data
-
-
-def _instantiate(cls, data):
-    result = _ISLObjectBase.__new__(_ISLObjectBase)
-    result.__class__ = cls
-    result._setup(data)
-    return result
 
 
 class _ManagedCString(object):
@@ -879,7 +875,7 @@ def write_classes_to_wrapper(wrapper_f):
                         if data == ffi.NULL:
                             raise Error("failed to copy instance of {py_cls}")
 
-                        return _instantiate({py_cls}, data)
+                        return {py_cls}(_data=data)
                     """
                     .format(cls=cls_name, py_cls=py_cls))
 
@@ -924,7 +920,7 @@ def gen_callback_wrapper(gen, cb, func_name):
             passed_args.append("_py_%s" % arg.name)
 
             pre_call(
-                    "_py_{name} = _instantiate({py_cls}, {name})"
+                    "_py_{name} = {py_cls}(_data={name})"
                     .format(
                         name=arg.name,
                         py_cls=isl_class_to_py_class(arg.base_type)))
@@ -1076,7 +1072,7 @@ def write_method_wrapper(gen, cls_name, meth):
                     if _cdata_{name} == ffi.NULL:
                         raise Error("isl_val_int_from_si failed")
 
-                    {val_name} = _instantiate(Val, _cdata_{name})
+                    {val_name} = Val(_data=_cdata_{name})
 
                 else:
                     raise IslTypeError("{name} is a %s and cannot "
@@ -1164,7 +1160,7 @@ def write_method_wrapper(gen, cls_name, meth):
                 if _retptr_{name} == ffi.NULL:
                     _ret_{name} = None
                 else:
-                    _ret_{name} = _instantiate({py_cls}, _retptr_{name})
+                    _ret_{name} = {py_cls}(_data=_retptr_{name})
                 """
                 .format(name=arg.name, cls=arg.base_type, py_cls=py_cls))
 
@@ -1252,7 +1248,7 @@ def write_method_wrapper(gen, cls_name, meth):
                         .format(meth.c_name))
 
             py_ret_cls = isl_class_to_py_class(ret_cls)
-            ret_vals.insert(0, "_instantiate({}, _result)".format(py_ret_cls))
+            ret_vals.insert(0, "{}(_data=_result)".format(py_ret_cls))
             ret_descrs.insert(0,  ":class:`%s`" % py_ret_cls)
 
     elif meth.return_base_type in ["const char", "char"] and meth.return_ptr == "*":
