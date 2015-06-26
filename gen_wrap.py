@@ -982,6 +982,10 @@ def write_method_wrapper(gen, cls_name, meth):
                         raise Error("isl_val_int_from_si failed")
 
                     {val_name} = _instantiate(Val, _cdata_{name})
+
+                else:
+                    raise IslTypeError("{name} is a %s and cannot "
+                        "be cast to a Val" % type({name}))
                 """
                 .format(
                     arg0_name=meth.args[0].name,
