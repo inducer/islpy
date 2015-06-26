@@ -85,10 +85,6 @@ Error Reporting
 Symbolic Constants
 ^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: format
-    :members:
-    :undoc-members:
-
 .. autoclass:: error
     :members:
     :undoc-members:
@@ -103,10 +99,6 @@ Symbolic Constants
     :members:
     :undoc-members:
     :exclude-members: names, values
-
-.. autoclass:: constants
-    :members:
-    :undoc-members:
 
 .. autoclass:: ast_op_type
     :members:

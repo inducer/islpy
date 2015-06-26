@@ -294,8 +294,6 @@ typedef isl_restriction *(*isl_access_restrict)(
 """
 
 PY_PREAMBLE = """
-from __future__ import print_function
-
 import six
 
 
@@ -927,9 +925,9 @@ def gen_callback_wrapper(gen, cb, func_name, has_userptr):
                         py_cls=isl_class_to_py_class(arg.base_type)))
 
             if arg.semantics is SEM_TAKE:
-                pass
-            elif arg.semantics is SEM_KEEP:
                 post_call("_py_{name}._release()".format(name=arg.name))
+            elif arg.semantics is SEM_KEEP:
+                pass
             else:
                 raise SignatureNotSupported(
                         "callback arg semantics not understood: %s" % arg.semantics)
@@ -953,7 +951,7 @@ def gen_callback_wrapper(gen, cb, func_name, has_userptr):
         failure_return = "ffi.NULL"
 
         ret_py_cls = isl_class_to_py_class(cb.return_base_type)
-        pre_call("""
+        post_call("""
             if not isinstance(_result, {py_cls}):
                 raise IslTypeError("return value is not a {py_cls}")
             """
@@ -994,8 +992,10 @@ def gen_callback_wrapper(gen, cb, func_name, has_userptr):
         gen("""
             except Exception as e:
                 import sys
-                print("[WARNING] An exception occurred in a callback function."
-                    "This exception was ignored.", file=sys.stderr)
+                sys.stderr.write("[WARNING] An exception occurred "
+                    "in a callback function."
+                    "This exception was ignored.\\n")
+                sys.stderr.flush()
                 import traceback
                 traceback.print_exc()
 
