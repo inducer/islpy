@@ -272,22 +272,22 @@ Multiple Union of Piecewise Quasi-Affine Expressions
     :members:
 
 
-Multiply Affine Expressions
+Multiple Affine Expressions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Multiply Affine Expression
+Multiple Affine Expression
 --------------------------
 
 .. autoclass:: MultiAff
     :members:
 
-Piecewise Multiply Affine Expression
+Piecewise Multiple Affine Expression
 ------------------------------------
 
 .. autoclass:: PwMultiAff
     :members:
 
-Union of Piecewise Multiply Affine Expressions
+Union of Piecewise Multiple Affine Expressions
 ----------------------------------------------
 
 .. autoclass:: UnionPwMultiAff
