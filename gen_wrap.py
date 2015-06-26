@@ -310,7 +310,7 @@ libc_ffi.cdef('''
 libc = libc_ffi.dlopen(None)
 
 
-class Error(StandardError):
+class Error(Exception):
     pass
 
 
