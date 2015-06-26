@@ -278,10 +278,12 @@ libc_ffi.cdef('''
 libc = libc_ffi.dlopen(None)
 
 
-class Error(RuntimeError):
+class Error(StandardError):
     pass
 
 
+class IslTypeError(Error, TypeError):
+    pass
 
 _context_use_map = {}
 
@@ -1006,7 +1008,7 @@ def write_method_wrapper(gen, cls_name, meth):
                     .format(
                         name=arg.name, py_cls=arg_py_cls))
             with Indentation(pre_call):
-                pre_call('raise Error("{name} is not a {py_cls}")'
+                pre_call('raise IslTypeError("{name} is not a {py_cls}")'
                     .format(
                         name=arg.name, py_cls=arg_py_cls))
 
