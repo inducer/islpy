@@ -35,7 +35,9 @@ def plot_basic_set(bset, *args, **kwargs):
 
     for v in vertices:
         points = []
-        isl.Set.from_basic_set(v.get_expr()).foreach_point(points.append)
+        myset = (isl.Map.from_basic_map(isl.BasicMap.from_multi_aff(v.get_expr()))
+                .range())
+        myset.foreach_point(points.append)
         point, = points
         vertex_pts.append([
             point.get_coordinate_val(isl.dim_type.set, i).to_python()
@@ -48,7 +50,7 @@ def plot_basic_set(bset, *args, **kwargs):
 
     from math import atan2
     vertex_pts = np.array(
-            sorted(vertex_pts, key=lambda x, y: atan2(y-center[0], x-center[1])))
+            sorted(vertex_pts, key=lambda x: atan2(x[1]-center[1], x[0]-center[0])))
 
     if plot_vert:
         pt.plot(vertex_pts[:, 0], vertex_pts[:, 1], "o")
@@ -56,7 +58,7 @@ def plot_basic_set(bset, *args, **kwargs):
     import matplotlib.path as mpath
     import matplotlib.patches as mpatches
 
-    Path = mpath.Path
+    Path = mpath.Path  # noqa
 
     codes = [Path.LINETO] * len(vertex_pts)
     codes[0] = Path.MOVETO
