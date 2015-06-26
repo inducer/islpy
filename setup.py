@@ -204,7 +204,9 @@ def main():
         LIBRARIES.extend(conf["GMP_LIBNAME"])
 
     init_filename = "islpy/version.py"
-    exec(compile(open(init_filename, "r").read(), init_filename, "exec"), conf)
+    with open(init_filename, "r") as version_f:
+        version_py = version_f.read()
+    exec(compile(version_py, init_filename, "exec"), conf)
 
     from gen_wrap import gen_wrapper
     headers = gen_wrapper(wrapper_dirs, include_barvinok=conf["USE_BARVINOK"],
@@ -221,10 +223,13 @@ def main():
             LDFLAGS=conf["LDFLAGS"]
             )
 
+    with open("README.rst", "rt") as readme_f:
+        readme = readme_f.read()
+
     setup(name="islpy",
           version=conf["VERSION_TEXT"],
           description="Wrapper around isl, an integer set library",
-          long_description=open("README.rst", "rt").read(),
+          long_description=readme,
           author="Andreas Kloeckner",
           author_email="inform@tiker.net",
           license="MIT",

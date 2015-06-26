@@ -831,19 +831,32 @@ def _add_functionality():
 
     def add_upcasts(basic_class, special_class, upcast_method):
         from functools import update_wrapper
-        from inspect import ismethod
+
+        def my_ismethod(class_, method_name):
+            if method_name.startswith("_"):
+                return False
+
+            method = getattr(class_, method_name)
+
+            if not callable(method):
+                return False
+
+            if hasattr(class_, "_%s_is_static" % method_name):
+                return False
+
+            return True
 
         for method_name in dir(special_class):
             special_method = getattr(special_class, method_name)
 
-            if not ismethod(special_method):
+            if not my_ismethod(special_class, method_name):
                 continue
 
             if hasattr(basic_class, method_name):
                 # method already exists in basic class
                 basic_method = getattr(basic_class, method_name)
 
-                if not ismethod(basic_method):
+                if not my_ismethod(basic_class, method_name):
                     continue
 
                 wrapper = make_existing_upcast_wrapper(

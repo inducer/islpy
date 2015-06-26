@@ -38,6 +38,8 @@ ISL_SEM_TO_SEM = {
     "__isl_null": SEM_NULL,
     }
 
+PY3 = sys.version_info >= (3,)
+
 NON_COPYABLE = ["ctx", "printer", "access_info"]
 NON_COPYABLE_WITH_ISL_PREFIX = ["isl_"+i for i in NON_COPYABLE]
 
@@ -1261,7 +1263,10 @@ def write_method_wrapper(gen, cls_name, meth):
         with Indentation(post_call):
             post_call("_str_ret = None")
 
-        ret_vals.insert(0, "_str_ret")
+        if PY3:
+            ret_vals.insert(0, "_str_ret.decode()")
+        else:
+            ret_vals.insert(0, "_str_ret")
 
         if meth.return_semantics is SEM_GIVE:
             post_call("libc.free(_result)")
@@ -1325,6 +1330,13 @@ def write_method_wrapper(gen, cls_name, meth):
                 name=meth.name,
                 method_val=method_val))
     gen("")
+
+    if meth.is_static:
+        gen("{py_cls}._{name}_is_static = True"
+                .format(
+                    py_cls=isl_class_to_py_class(meth.cls),
+                    name=meth.name))
+        gen("")
 
 # }}}
 
