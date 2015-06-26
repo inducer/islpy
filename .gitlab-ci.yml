@@ -1,6 +1,6 @@
 Python 2.7:
   script:
-  - py_version=2.7
+  - export PY_EXE=python2.7
   - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
   - ". ./build-and-test-py-project.sh"
   tags:
@@ -9,7 +9,7 @@ Python 2.7:
   - tags
 Python 3.4:
   script:
-  - py_version=3.4
+  - export PY_EXE=python3.4
   - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
   - ". ./build-and-test-py-project.sh"
   tags:
@@ -18,10 +18,19 @@ Python 3.4:
   - tags
 Python 2.6:
   script:
-  - py_version=2.6
+  - export PY_EXE=python2.6
   - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
   - ". ./build-and-test-py-project.sh"
   tags:
   - python2.6
+  except:
+  - tags
+PyPy:
+  script:
+  - export PY_EXE=pypy
+  - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
+  - ". ./build-and-test-py-project.sh"
+  tags:
+  - pypy
   except:
   - tags
