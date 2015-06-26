@@ -1,4 +1,27 @@
 from __future__ import print_function
+
+__copyright__ = "Copyright (C) 2011-15 Andreas Kloeckner"
+
+__license__ = """
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+"""
+
 import re
 import sys
 from py_codegen import PythonCodeGenerator, Indentation
@@ -32,29 +55,36 @@ def       for       lambda    try
 # {{{ data model
 
 class Argument:
-    def __init__(self, name, semantics, base_type, ptr):
+    def __init__(self, name, semantics, decl_words, base_type, ptr):
         self.name = name
         self.semantics = semantics
+        assert isinstance(decl_words, list)
+        self.decl_words = decl_words
         self.base_type = base_type
         self.ptr = ptr
 
     def c_declarator(self):
-        return "{type} {ptr}{name}".format(
+        return "{decl_words} {type} {ptr}{name}".format(
+                decl_words=" ".join(self.decl_words),
                 type=self.base_type,
                 ptr=self.ptr,
                 name=self.name)
 
 
 class CallbackArgument:
-    def __init__(self, name, return_semantics, return_base_type, return_ptr, args):
+    def __init__(self, name,
+            return_semantics, return_decl_words, return_base_type, return_ptr, args):
         self.name = name
         self.return_semantics = return_semantics
+        assert isinstance(return_decl_words, list)
+        self.return_decl_words = return_decl_words
         self.return_base_type = return_base_type
         self.return_ptr = return_ptr
         self.args = args
 
     def c_declarator(self):
-        return "{type} {ptr}(*{name})({args})".format(
+        return "{decl_words} {type} {ptr}(*{name})({args})".format(
+                decl_words=" ".join(self.return_decl_words),
                 type=self.return_base_type,
                 ptr=self.return_ptr,
                 name=self.name,
@@ -63,12 +93,13 @@ class CallbackArgument:
 
 class Method:
     def __init__(self, cls, name, c_name,
-            return_semantics, return_base_type, return_ptr,
+            return_semantics, return_decl_words, return_base_type, return_ptr,
             args, is_exported, is_constructor):
         self.cls = cls
         self.name = name
         self.c_name = c_name
         self.return_semantics = return_semantics
+        self.return_decl_words = return_decl_words
         self.return_base_type = return_base_type
         self.return_ptr = return_ptr
         self.args = args
@@ -144,6 +175,8 @@ CLASSES = [
         "ast_build",
         ]
 
+UNTYPEDEFD_CLASSES = ["options"]
+
 
 IMPLICIT_CONVERSIONS = {
     "isl_set": [("isl_basic_set", "from_basic_set")],
@@ -155,44 +188,41 @@ IMPLICIT_CONVERSIONS = {
     }
 
 
-HEADER_PREAMBLE = """
-// ctx.h
-typedef enum {
-        isl_error_none = 0,
+ENUMS = {
+    # ctx.h
+    "isl_error": """
+        isl_error_none,
         isl_error_abort,
         isl_error_alloc,
         isl_error_unknown,
         isl_error_internal,
         isl_error_invalid,
         isl_error_quota,
-        isl_error_unsupported
-} isl_error;
-
-typedef enum {
-        isl_stat_error = -1,
-        isl_stat_ok = 0,
-} isl_stat;
-
-typedef enum {
-        isl_bool_error = -1,
-        isl_bool_false = 0,
-        isl_bool_true = 1
-} isl_bool;
-
-// space.h
-typedef enum {
+        isl_error_unsupported,
+    """,
+    "isl_stat": """
+        isl_stat_error,
+        isl_stat_ok,
+    """,
+    "isl_bool": """
+        isl_bool_error,
+        isl_bool_false,
+        isl_bool_true,
+    """,
+    # space.h
+    "isl_dim_type": """
         isl_dim_cst,
         isl_dim_param,
         isl_dim_in,
         isl_dim_out,
-        isl_dim_set = isl_dim_out,
+        isl_dim_set,
         isl_dim_div,
-        isl_dim_all
-} isl_dim_type;
+        isl_dim_all,
+    """,
 
-// ast_type.h
-typedef enum {
-        isl_ast_op_error = -1,
+    # ast_type.h
+    "isl_ast_op_type": """
+        isl_ast_op_error,
         isl_ast_op_and,
         isl_ast_op_and_then,
         isl_ast_op_or,
@@ -204,10 +234,10 @@ typedef enum {
         isl_ast_op_sub,
         isl_ast_op_mul,
         isl_ast_op_div,
-        isl_ast_op_fdiv_q,      /* Round towards -infty */
-        isl_ast_op_pdiv_q,      /* Dividend is non-negative */
-        isl_ast_op_pdiv_r,      /* Dividend is non-negative */
-        isl_ast_op_zdiv_r,      /* Result only compared against zero */
+        isl_ast_op_fdiv_q,
+        isl_ast_op_pdiv_q,
+        isl_ast_op_pdiv_r,
+        isl_ast_op_zdiv_r,
         isl_ast_op_cond,
         isl_ast_op_select,
         isl_ast_op_eq,
@@ -218,45 +248,47 @@ typedef enum {
         isl_ast_op_call,
         isl_ast_op_access,
         isl_ast_op_member,
-        isl_ast_op_address_of
-} isl_ast_op_type;
-
-typedef enum {
-        isl_ast_expr_error = -1,
+        isl_ast_op_address_of,
+    """,
+    "isl_ast_expr_type": """
+        isl_ast_expr_error,
         isl_ast_expr_op,
         isl_ast_expr_id,
-        isl_ast_expr_int
-} isl_ast_expr_type ;
-
-typedef enum {
-        isl_ast_node_error = -1,
-        isl_ast_node_for = 1,
+        isl_ast_expr_int,
+    """,
+    "isl_ast_node_type": """
+        isl_ast_node_error,
+        isl_ast_node_for,
         isl_ast_node_if,
         isl_ast_node_block,
         isl_ast_node_mark,
-        isl_ast_node_user
-} isl_ast_node_type;
-
-typedef enum {
-        isl_ast_loop_error = -1,
-        isl_ast_loop_default = 0,
+        isl_ast_node_user,
+    """,
+    "isl_ast_loop_type": """
+        isl_ast_loop_error,
+        isl_ast_loop_default,
         isl_ast_loop_atomic,
         isl_ast_loop_unroll,
-        isl_ast_loop_separate
-} isl_ast_loop_type;
+        isl_ast_loop_separate,
+    """,
 
+    # polynomial_type.h
+    "isl_fold": """
+        isl_fold_min,
+        isl_fold_max,
+        isl_fold_list,
+    """
+    }
+
+TYPEDEFD_ENUMS = ["isl_stat", "isl_bool"]
+
+HEADER_PREAMBLE = """
 // flow.h
 typedef int (*isl_access_level_before)(void *first, void *second);
 typedef isl_restriction *(*isl_access_restrict)(
         isl_map *source_map, isl_set *sink,
         void *source_user, void *user);
 
-// polynomial_type.h
-typedef enum {
-        isl_fold_min,
-        isl_fold_max,
-        isl_fold_list
-} isl_fold;
 """
 
 PY_PREAMBLE = """
@@ -266,7 +298,7 @@ import six
 
 
 from islpy._isl_cffi import ffi
-lib = ffi.dlopen("libisl.so.13")
+lib = ffi.dlopen(None)
 
 from cffi import FFI
 libc_ffi = FFI()
@@ -368,11 +400,7 @@ CLASS_MAP = {
         "options": "ctx",
         }
 
-ENUMS = ["isl_dim_type", "isl_fold",
-        "isl_ast_op_type", "isl_ast_expr_type",
-        "isl_ast_node_type", "isl_stat", "isl_error"]
-
-SAFE_TYPES = ENUMS + ["int", "unsigned", "uint32_t", "size_t", "double",
+SAFE_TYPES = list(ENUMS) + ["int", "unsigned", "uint32_t", "size_t", "double",
         "long", "unsigned long"]
 SAFE_IN_TYPES = SAFE_TYPES + ["const char *", "char *"]
 
@@ -476,8 +504,8 @@ def parse_arg(arg):
 
         return_semantics, ret_words = filter_semantics(
                 arg_match.group(1).split())
-        ret_words = [w for w in ret_words if w not in ["struct", "enum"]]
-        return_base_type, = ret_words
+        return_decl_words = ret_words[:-1]
+        return_base_type = ret_words[-1]
 
         return_ptr = arg_match.group(2)
         name = arg_match.group(3)
@@ -486,6 +514,7 @@ def parse_arg(arg):
 
         return CallbackArgument(name.strip(),
                 return_semantics,
+                return_decl_words,
                 return_base_type,
                 return_ptr.strip(),
                 args)
@@ -493,7 +522,9 @@ def parse_arg(arg):
     words = arg.split()
     semantics, words = filter_semantics(words)
 
-    words = [w for w in words if w not in ["struct", "enum"]]
+    decl_words = []
+    if words[0] in ["struct", "enum"]:
+        decl_words.append(words.pop(0))
 
     rebuilt_arg = " ".join(words)
     arg_match = ARG_RE.match(rebuilt_arg)
@@ -507,6 +538,7 @@ def parse_arg(arg):
     return Argument(
             name=arg_match.group(3),
             semantics=semantics,
+            decl_words=decl_words,
             base_type=base_type,
             ptr=arg_match.group(2).strip())
 
@@ -517,7 +549,11 @@ class FunctionData:
         self.include_dirs = include_dirs
         self.seen_c_names = set()
 
+        self.headers = []
+
     def read_header(self, fname):
+        self.headers.append(fname)
+
         from os.path import join
         success = False
         for inc_dir in self.include_dirs:
@@ -697,7 +733,9 @@ class FunctionData:
             words.remove("__isl_constructor")
 
         return_semantics, words = filter_semantics(words)
-        words = [w for w in words if w not in ["struct", "enum"]]
+        return_decl_words = []
+        if words[0] in ["struct", "enum"]:
+            return_decl_words.append(words.pop(0))
         return_base_type = " ".join(words)
 
         cls_meth_list = self.classes_to_methods.setdefault(cls, [])
@@ -707,7 +745,7 @@ class FunctionData:
 
         cls_meth_list.append(Method(
                 cls, name, c_name,
-                return_semantics, return_base_type, return_ptr,
+                return_semantics, return_decl_words, return_base_type, return_ptr,
                 args, is_exported=is_exported, is_constructor=is_constructor))
 
         self.seen_c_names.add(c_name)
@@ -717,18 +755,35 @@ class FunctionData:
 
 # {{{ header writer
 
+def write_enums_to_header(header_f):
+    for enum_name, value_str in ENUMS.items():
+        values = [v.strip() for v in value_str.split(",") if v.strip()]
+
+        if enum_name in TYPEDEFD_ENUMS:
+            pattern = "typedef enum {{ {values}, ... }} {name};\n"
+        else:
+            pattern = "enum {name} {{ {values}, ... }};\n"
+
+        header_f.write(
+                pattern.format(
+                    name=enum_name,
+                    values=", ".join(values)))
+
+
 def write_classes_to_header(header_f):
     for cls_name in CLASSES:
-        header_f.write("struct isl_{name}_struct;\n".format(name=cls_name))
-        header_f.write(
-                "typedef struct isl_{name}_struct isl_{name};\n"
-                .format(name=cls_name))
+        header_f.write("struct isl_{name};\n".format(name=cls_name))
+        if cls_name not in UNTYPEDEFD_CLASSES:
+            header_f.write(
+                    "typedef struct isl_{name} isl_{name};\n"
+                    .format(name=cls_name))
 
 
 def write_method_header(header_f, method):
     header_f.write(
-            "{ret_type} {ret_ptr}{name}({args});\n"
+            "{return_decl_words} {ret_type} {ret_ptr}{name}({args});\n"
             .format(
+                return_decl_words=" ".join(method.return_decl_words),
                 ret_type=method.return_base_type,
                 ret_ptr=method.return_ptr,
                 name=method.c_name,
@@ -738,6 +793,44 @@ def write_method_header(header_f, method):
 
 
 # {{{ python wrapper writer
+
+def write_enums_to_wrapper(wrapper_f):
+    gen = PythonCodeGenerator()
+
+    gen("")
+    gen("# {{{ enums")
+    gen("")
+    for enum_name, value_str in ENUMS.items():
+        values = [v.strip() for v in value_str.split(",") if v.strip()]
+
+        assert enum_name.startswith("isl_")
+        name = enum_name[4:]
+
+        if name == "bool":
+            continue
+
+        from os.path import commonprefix
+        common_len = len(commonprefix(values))
+
+        gen("class {name}:".format(name=name))
+        with Indentation(gen):
+            for val in values:
+                py_name = val[common_len:]
+                if py_name in PYTHON_RESERVED_WORDS:
+                    py_name += "_"
+                gen(
+                        "{py_name} = lib.{val}"
+                        .format(
+                            val=val,
+                            py_name=py_name,
+                            ))
+
+        gen("")
+
+    gen("# }}}")
+    gen("")
+    wrapper_f.write(gen.get())
+
 
 def write_classes_to_wrapper(wrapper_f):
     gen = PythonCodeGenerator()
@@ -1276,22 +1369,25 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
     else:
         fdata.read_header("isl_declaration_macros_expanded_v%d.h"
                 % isl_version)
+    fdata.headers.pop()
 
     if include_barvinok:
         fdata.read_header("barvinok/isl.h")
 
     undoc = []
 
-    with open("islpy/wrapped-functions.h", "wt") as header_f:
+    with open("wrapped-functions.h", "wt") as header_f:
         with open("islpy/_isl.py", "wt") as wrapper_f:
-            write_classes_to_header(header_f)
             header_f.write(
                     "// AUTOMATICALLY GENERATED by gen_wrap.py -- do not edit\n\n")
+            write_enums_to_header(header_f)
+            write_classes_to_header(header_f)
             header_f.write(HEADER_PREAMBLE)
 
             wrapper_f.write(
                     "# AUTOMATICALLY GENERATED by gen_wrap.py -- do not edit\n")
             wrapper_f.write(PY_PREAMBLE)
+            write_enums_to_wrapper(wrapper_f)
             write_classes_to_wrapper(wrapper_f)
 
             wrapper_gen = PythonCodeGenerator()
@@ -1362,16 +1458,32 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
             wrapper_f.write("\n" + wrapper_gen.get())
             wrapper_f.write("\n\n# vim: fdm=marker\n")
 
-    with open("class_list.py", "wt") as clist_f:
+    with open("name_list.py", "wt") as clist_f:
         py_classes = []
 
         for cls_name in CLASSES:
             py_cls = isl_class_to_py_class(cls_name)
             py_classes.append(py_cls)
             clist_f.write("{py_cls} = _isl.{py_cls}\n".format(py_cls=py_cls))
-        clist_f.write("\nALL_CLASSES = [{}]\n".format(", ".join(py_classes)))
+        clist_f.write("\n")
+
+        for enum_name in ENUMS:
+            py_name = enum_name[4:]
+
+            if py_name == "bool":
+                continue
+
+            clist_f.write(
+                    "{py_name} = _isl.{py_name}\n"
+                    .format(py_name=py_name)
+                    )
+        clist_f.write("\n")
+
+        clist_f.write("ALL_CLASSES = [{}]\n".format(", ".join(py_classes)))
 
     print("SKIP (%d undocumented methods): %s" % (len(undoc), ", ".join(undoc)))
+
+    return fdata.headers
 
 if __name__ == "__main__":
     from os.path import expanduser

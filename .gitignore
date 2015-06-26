@@ -49,6 +49,7 @@ core
 src/wrapper/gen-*
 .dirty-git-ok
 wrapped-functions.h
-_isl_cffi.py
+_isl_cffi.c
 _isl.py
-class_list.py
+name_list.py
+islpy_cffi_build.py

@@ -1,5 +1,27 @@
 #!/usr/bin/env python
 
+__copyright__ = "Copyright (C) 2011-15 Andreas Kloeckner"
+
+__license__ = """
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+"""
+
 
 def get_config_schema():
     from aksetup_helper import (ConfigSchema,
@@ -30,21 +52,63 @@ def get_config_schema():
         ])
 
 
+CFFI_TEMPLATE = """
+from cffi import FFI
+
+EXTRA_DEFINES = {EXTRA_DEFINES}
+
+INCLUDES = '''
+{INCLUDES}
+'''
+
+ffi = FFI()
+ffi.set_source(
+    "islpy._isl_cffi",
+    INCLUDES,
+    define_macros=list(EXTRA_DEFINES.items()),
+    sources={EXTRA_SOURCES},
+    include_dirs={INCLUDE_DIRS},
+    library_dirs={LIBRARY_DIRS},
+    libraries={LIBRARIES},
+    extra_compile_args={CFLAGS},
+    extra_link_args={LDFLAGS})
+
+
+with open("wrapped-functions.h", "rt") as header_f:
+    header = header_f.read()
+
+ffi.cdef(header)
+
+if __name__ == "__main__":
+    ffi.compile()
+"""
+
+
+def write_cffi_build_script(headers, **kwargs):
+    format_args = dict((k, repr(v)) for k, v in kwargs.items())
+
+    format_args["INCLUDES"] = "\n".join(
+            "#include <%s>" % header
+            for header in headers)
+
+    with open("islpy_cffi_build.py", "wt") as outf:
+        outf.write(CFFI_TEMPLATE.format(**format_args))
+
+
 def main():
     from aksetup_helper import (hack_distutils,
-            get_config, setup, Extension,
-            check_git_submodules)
+            get_config, setup, check_git_submodules)
 
     check_git_submodules()
 
     hack_distutils(what_opt=None)
     conf = get_config(get_config_schema(), warn_about_no_config=False)
 
-    EXTRA_OBJECTS = []  # noqa
-    EXTRA_DEFINES = []  # noqa
-    INCLUDE_DIRS = conf["BOOST_INC_DIR"] + ["src/wrapper"]  # noqa
-    LIBRARY_DIRS = conf["BOOST_LIB_DIR"]  # noqa
-    LIBRARIES = conf["BOOST_PYTHON_LIBNAME"]  # noqa
+    EXTRA_SOURCES = []  # noqa
+    EXTRA_DEFINES = {}  # noqa
+    INCLUDE_DIRS = []  # noqa
+    LIBRARY_DIRS = []  # noqa
+    LIBRARIES = []  # noqa
 
     if conf["USE_SHIPPED_ISL"]:
         from glob import glob
@@ -86,12 +150,12 @@ def main():
                 inf.close()
 
             if "int main(" not in contents and not blacklisted:
-                EXTRA_OBJECTS.append(fn)
+                EXTRA_SOURCES.append(fn)
 
         conf["ISL_INC_DIR"] = ["isl-supplementary", "isl/include",  "isl"]
 
         if conf["USE_SHIPPED_IMATH"]:
-            EXTRA_OBJECTS.extend([
+            EXTRA_SOURCES.extend([
                 "isl/imath/imath.c",
                 "isl/imath/imrat.c",
                 "isl/imath/gmp_compat.c",
@@ -143,8 +207,19 @@ def main():
     exec(compile(open(init_filename, "r").read(), init_filename, "exec"), conf)
 
     from gen_wrap import gen_wrapper
-    gen_wrapper(wrapper_dirs, include_barvinok=conf["USE_BARVINOK"],
+    headers = gen_wrapper(wrapper_dirs, include_barvinok=conf["USE_BARVINOK"],
             isl_version=EXTRA_DEFINES.get("ISLPY_ISL_VERSION"))
+
+    write_cffi_build_script(
+            headers,
+            EXTRA_DEFINES=EXTRA_DEFINES,
+            EXTRA_SOURCES=EXTRA_SOURCES,
+            INCLUDE_DIRS=INCLUDE_DIRS,
+            LIBRARY_DIRS=LIBRARY_DIRS,
+            LIBRARIES=LIBRARIES,
+            CFLAGS=conf["CXXFLAGS"],
+            LDFLAGS=conf["LDFLAGS"]
+            )
 
     setup(name="islpy",
           version=conf["VERSION_TEXT"],
@@ -181,30 +256,14 @@ def main():
           packages=["islpy"],
 
           setup_requires=["cffi>=1.1.0"],
-          cffi_modules=["simple_example_build.py:ffi"],
+          cffi_modules=["islpy_cffi_build.py:ffi"],
           install_requires=[
               "pytest>=2",
               "cffi>=1.1.0",
               # "Mako>=0.3.6",
               "six",
               ],
-          ext_modules=[
-              Extension(
-                  "islpy._isl",
-                  [
-                      "src/wrapper/wrap_isl.cpp",
-                      "src/wrapper/wrap_isl_part1.cpp",
-                      "src/wrapper/wrap_isl_part2.cpp",
-                      "src/wrapper/wrap_isl_part3.cpp",
-                      ] + EXTRA_OBJECTS,
-                  include_dirs=INCLUDE_DIRS,
-                  library_dirs=LIBRARY_DIRS,
-                  libraries=LIBRARIES,
-                  define_macros=list(EXTRA_DEFINES.items()),
-                  extra_compile_args=conf["CXXFLAGS"],
-                  extra_link_args=conf["LDFLAGS"],
-                  ),
-              ])
+          )
 
 
 if __name__ == '__main__':
