@@ -191,8 +191,7 @@ def main():
 
         wrapper_dirs.extend(conf["BARVINOK_INC_DIR"])
 
-        EXTRA_DEFINES["ISLPY_ISL_VERSION"] = 14
-        EXTRA_DEFINES["ISLPY_INCLUDE_BARVINOK"] = 1
+        #EXTRA_DEFINES["ISLPY_ISL_VERSION"] = 14
 
     # }}}
 
