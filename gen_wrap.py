@@ -925,9 +925,14 @@ def gen_callback_wrapper(gen, cb, func_name, has_userptr):
                         py_cls=isl_class_to_py_class(arg.base_type)))
 
             if arg.semantics is SEM_TAKE:
-                post_call("_py_{name}._release()".format(name=arg.name))
-            elif arg.semantics is SEM_KEEP:
+                # We (the callback) are supposed to free the object, so
+                # just keep it attached to its wrapper until GC gets
+                # rid of it.
                 pass
+            elif arg.semantics is SEM_KEEP:
+                # The caller wants to keep this object, so we'll stop managing
+                # it.
+                post_call("_py_{name}._release()".format(name=arg.name))
             else:
                 raise SignatureNotSupported(
                         "callback arg semantics not understood: %s" % arg.semantics)
