@@ -1059,7 +1059,7 @@ def write_method_wrapper(gen, cls_name, meth):
             input_args.append(arg.name)
             doc_args.append(arg.name)
 
-            pre_call("# no argument processing for {}".format(arg.name))
+            pre_call("# no argument processing for {0}".format(arg.name))
 
             doc_cls = arg.base_type
             if doc_cls.startswith("isl_"):
@@ -1238,12 +1238,12 @@ def write_method_wrapper(gen, cls_name, meth):
     if meth.return_base_type == "isl_stat" and not meth.return_ptr:
         post_call("if _result == lib.isl_stat_error:")
         with Indentation(post_call):
-            post_call('raise Error("call to \\"{}\\" failed")'.format(meth.c_name))
+            post_call('raise Error("call to \\"{0}\\" failed")'.format(meth.c_name))
 
     elif meth.return_base_type == "isl_bool" and not meth.return_ptr:
         post_call("if _result == lib.isl_bool_error:")
         with Indentation(post_call):
-            post_call('raise Error("call to \\"{}\\" failed")'.format(meth.c_name))
+            post_call('raise Error("call to \\"{0}\\" failed")'.format(meth.c_name))
 
         ret_vals.insert(0, "_result == lib.isl_bool_true")
         ret_descrs.insert(0, "bool")
@@ -1281,11 +1281,11 @@ def write_method_wrapper(gen, cls_name, meth):
             post_call("if _result == ffi.NULL:")
             with Indentation(post_call):
                 post_call(
-                        'raise Error("call to \\"{}\\" failed")'
+                        'raise Error("call to \\"{0}\\" failed")'
                         .format(meth.c_name))
 
             py_ret_cls = isl_class_to_py_class(ret_cls)
-            ret_vals.insert(0, "{}(_data=_result)".format(py_ret_cls))
+            ret_vals.insert(0, "{0}(_data=_result)".format(py_ret_cls))
             ret_descrs.insert(0,  ":class:`%s`" % py_ret_cls)
 
     elif meth.return_base_type in ["const char", "char"] and meth.return_ptr == "*":
@@ -1524,7 +1524,7 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
                     )
         clist_f.write("\n")
 
-        clist_f.write("ALL_CLASSES = [{}]\n".format(", ".join(py_classes)))
+        clist_f.write("ALL_CLASSES = [{0}]\n".format(", ".join(py_classes)))
 
     print("SKIP (%d undocumented methods): %s" % (len(undoc), ", ".join(undoc)))
 
