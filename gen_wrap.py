@@ -371,6 +371,22 @@ class _ISLObjectBase(object):
         self.data = None
         return data
 
+    def __eq__(self, other):
+        return (type(self) == type(other) and self.data == other.data)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+
+class _EnumBase(object):
+    @classmethod
+    def find_value(cls, v):
+        for name in dir(cls):
+            if getattr(cls, name) == v:
+                return name
+
+        raise ValueError("Value '%s' not found in enum" % v)
+
 
 class _ManagedCString(object):
     def __init__(self, cdata):
@@ -808,7 +824,7 @@ def write_enums_to_wrapper(wrapper_f):
         from os.path import commonprefix
         common_len = len(commonprefix(values))
 
-        gen("class {name}:".format(name=name))
+        gen("class {name}(_EnumBase):".format(name=name))
         with Indentation(gen):
             for val in values:
                 py_name = val[common_len:]
