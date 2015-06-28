@@ -1297,7 +1297,8 @@ def write_method_wrapper(gen, cls_name, meth):
             post_call("_str_ret = None")
 
         if PY3:
-            ret_vals.insert(0, "_str_ret.decode()")
+            ret_vals.insert(0,
+                    "_str_ret.decode() if _str_ret is not None else _str_ret")
         else:
             ret_vals.insert(0, "_str_ret")
 
