@@ -82,6 +82,16 @@ Error Reporting
 
 .. exception:: Error
 
+Global Data
+^^^^^^^^^^^
+
+.. data:: DEFAULT_CONTEXT
+
+    ISL objects being unpickled or initialized from strings will be instatiated
+    within this :class:`Context`.
+
+    .. versionadded:: 2015.2
+
 Symbolic Constants
 ^^^^^^^^^^^^^^^^^^
 

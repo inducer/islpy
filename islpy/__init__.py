@@ -139,14 +139,14 @@ def _add_functionality():
             new_ctx._release()
 
     def context_getstate(self):
-        if self.data == _DEFAULT_CONTEXT.data:
+        if self.data == DEFAULT_CONTEXT.data:
             return ("default",)
         else:
             return (None,)
 
     def context_setstate(self, data):
         if data[0] == "default":
-            self._setup(_DEFAULT_CONTEXT.data)
+            self._setup(DEFAULT_CONTEXT.data)
         else:
             context_init(self)
 
@@ -175,7 +175,7 @@ def _add_functionality():
                 raise TypeError("'s' argument not supplied")
 
             if context is None:
-                context = _DEFAULT_CONTEXT
+                context = DEFAULT_CONTEXT
 
             new_me = self.read_from_str(context, s)
             self._setup(new_me._release())
@@ -232,10 +232,16 @@ def _add_functionality():
     # {{{ rich comparisons
 
     def obj_eq(self, other):
+        assert self.get_ctx() == other.get_ctx(), (
+                "Equality-comparing two objects from different ISL Contexts "
+                "will likely lead to entertaining (but never useful) results. "
+                "In particular, Spaces with matching names will no longer be "
+                "equal.")
+
         return self.is_equal(other)
 
     def obj_ne(self, other):
-        return not self.is_equal(other)
+        return not self.__eq__(other)
 
     for cls in ALL_CLASSES:
         if hasattr(cls, "is_equal"):
@@ -488,7 +494,7 @@ def _add_functionality():
             raise TypeError("'name' argument not supplied")
 
         if context is None:
-            context = _DEFAULT_CONTEXT
+            context = DEFAULT_CONTEXT
 
         new_me = cls.alloc(context, name, user)
         self._setup(new_me._release())
@@ -775,7 +781,7 @@ def _add_functionality():
             raise TypeError("'src' argument not supplied")
 
         if context is None:
-            context = _DEFAULT_CONTEXT
+            context = DEFAULT_CONTEXT
 
         if isinstance(src, six.string_types):
             new_me = Val.read_from_str(context, src)
@@ -1012,7 +1018,7 @@ def _add_functionality():
 _add_functionality()
 
 
-_DEFAULT_CONTEXT = Context()
+DEFAULT_CONTEXT = Context()
 
 
 def _back_to_basic(new_obj, old_obj):
