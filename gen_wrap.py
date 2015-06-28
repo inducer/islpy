@@ -1371,13 +1371,17 @@ def write_method_wrapper(gen, cls_name, meth):
     gen("")
 
     method_val = meth.name
+    py_name = meth.name
+
     if meth.is_static:
         method_val = "staticmethod(%s)" % method_val
+    if py_name == "size" and len(meth.args) == 1:
+        py_name = "__len__"
 
-    gen("{py_cls}.{name} = {method_val}"
+    gen("{py_cls}.{py_name} = {method_val}"
             .format(
                 py_cls=isl_class_to_py_class(meth.cls),
-                name=meth.name,
+                py_name=py_name,
                 method_val=method_val))
     gen("")
 
@@ -1385,7 +1389,7 @@ def write_method_wrapper(gen, cls_name, meth):
         gen("{py_cls}._{name}_is_static = True"
                 .format(
                     py_cls=isl_class_to_py_class(meth.cls),
-                    name=meth.name))
+                    name=py_name))
         gen("")
 
 # }}}
