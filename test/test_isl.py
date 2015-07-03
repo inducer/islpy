@@ -174,9 +174,25 @@ def test_schedule():
 
     ast = build.ast_from_schedule(schedule)
 
+    def cb_print_user(printer, options, node):
+        print("Callback user called")
+        printer = printer.print_str("Callback user")
+        return printer
+
+    def cb_print_for(printer, options, node):
+        print("Callback for called")
+        printer = printer.print_str("Callback For")
+        return printer
+
+    opts = isl.AstPrintOptions.alloc(isl.DEFAULT_CONTEXT)
+    opts, cb_print_user_handle = opts.set_print_user(cb_print_user)
+    opts, cb_print_for_handle = opts.set_print_for(cb_print_for)
+
     printer = isl.Printer.to_str(isl.DEFAULT_CONTEXT)
     printer = printer.set_output_format(isl.format.C)
-    printer = printer.print_ast_node(ast)
+    printer.print_str("// Start\n")
+    printer = ast.print_(printer, opts)
+    printer.print_str("// End")
 
     print(printer.get_str())
 
