@@ -23,6 +23,7 @@ THE SOFTWARE.
 """
 
 import islpy as isl
+import pytest
 
 
 def test_basics():
@@ -154,6 +155,33 @@ def test_eval_pw_qpolynomial():
     pwq = isl.PwQPolynomial.from_pw_aff(pwaff)
 
     pwq.eval_with_dict(dict(n=10))
+
+
+def test_schedule():
+    import faulthandler
+    faulthandler.enable()
+
+    schedule = isl.UnionMap("{A[i,j] -> [i,j]: 0 < i < j < 100}")
+    context = isl.Set("{:}")
+    build = isl.AstBuild.from_context(context)
+
+    def callback(node, build):
+        return None
+
+    build, callback_handle = build.set_after_each_for(callback)
+
+    try:
+        ast = build.ast_from_schedule(schedule)
+    except isl.Error:
+        # expected for now -- callback needs to return an AstNode,
+        # but I don't know how to make one.
+        pass
+
+    else:
+        printer = isl.Printer.to_str(isl.DEFAULT_CONTEXT)
+        printer = printer.set_output_format(4)
+        printer = printer.print_ast_node(ast)
+        print(printer.get_str())
 
 
 if __name__ == "__main__":

@@ -82,6 +82,15 @@ Error Reporting
 
 .. exception:: Error
 
+Lifetime Helpers
+^^^^^^^^^^^^^^^^
+
+.. class:: ffi_callback_handle
+
+    Some callbacks, notably those in :class:`AstBuild`, need to outlive the
+    function call to which they're passed. These callback return a callback
+    handle that must be kept alive until the callback is no longer needed.
+
 Global Data
 ^^^^^^^^^^^
 

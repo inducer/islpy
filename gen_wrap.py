@@ -974,12 +974,6 @@ def gen_callback_wrapper(gen, cb, func_name, has_userptr):
         failure_return = "ffi.NULL"
 
         ret_py_cls = isl_class_to_py_class(cb.return_base_type)
-        post_call("""
-            if not isinstance(_result, {py_cls}):
-                raise IslTypeError("return value is not a {py_cls}")
-            """
-            .format(py_cls=ret_py_cls))
-
         ret_cls = cb.return_base_type[4:]
 
         if cb.return_semantics is None:
@@ -989,7 +983,15 @@ def gen_callback_wrapper(gen, cb, func_name, has_userptr):
         if ret_cls in NON_COPYABLE:
             raise SignatureNotSupported("noncopyable callback return")
 
-        post_call("_result = _result._release()")
+        post_call("""
+            if _result is None:
+                _result = ffi.NULL
+            elif not isinstance(_result, {py_cls}):
+                raise IslTypeError("return value is not a {py_cls}")
+            else:
+                _result = _result._release()
+            """
+            .format(py_cls=ret_py_cls))
 
     else:
         raise SignatureNotSupported("unsupported callback signature")
@@ -1051,7 +1053,6 @@ def write_method_wrapper(gen, cls_name, meth):
         arg = meth.args[arg_idx]
 
         if isinstance(arg, CallbackArgument):
-
             has_userptr = (
                     arg_idx + 1 < len(meth.args)
                     and meth.args[arg_idx+1].name == "user")
@@ -1068,16 +1069,29 @@ def write_method_wrapper(gen, cls_name, meth):
                     name=arg.name, cb_decl=arg.c_declarator(),
                     cb_wrapper_name=cb_wrapper_name
                     ))
+
+            if (meth.cls == "ast_build"
+                    and meth.name.startswith("set_")):
+                # These callbacks need to outlive the set call.
+                # Store them on the instance.
+                ret_vals.append("_cb_"+arg.name)
+                ret_descrs.append(":class:`ffi_callback_handle`")
+
             input_args.append(arg.name)
 
             passed_args.append("_cb_"+arg.name)
-            passed_args.append("ffi.NULL")
+            if has_userptr:
+                passed_args.append("ffi.NULL")
 
-            docs.append(":param %s: callback(%s)"
-                    % (arg.name, ", ".join(
-                        sub_arg.name
-                        for sub_arg in arg.args
-                        if sub_arg.name != "user")))
+            docs.append(":param %s: callback(%s) -> %s"
+                    % (
+                        arg.name,
+                        ", ".join(
+                            sub_arg.name
+                            for sub_arg in arg.args
+                            if sub_arg.name != "user"),
+                        arg.return_base_type
+                        ))
 
         elif arg.base_type in SAFE_IN_TYPES and not arg.ptr:
             passed_args.append(arg.name)
@@ -1281,9 +1295,7 @@ def write_method_wrapper(gen, cls_name, meth):
             and meth.return_semantics is SEM_NULL):
         assert not meth.is_mutator
 
-    elif meth.return_base_type.startswith("isl_"):
-        assert meth.return_ptr == "*", meth
-
+    elif meth.return_base_type.startswith("isl_") and meth.return_ptr == "*":
         ret_cls = meth.return_base_type[4:]
 
         if meth.is_mutator:
