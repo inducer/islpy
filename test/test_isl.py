@@ -158,9 +158,6 @@ def test_eval_pw_qpolynomial():
 
 
 def test_schedule():
-    import faulthandler
-    faulthandler.enable()
-
     schedule = isl.UnionMap("{A[i,j] -> [i,j]: 0 < i < j < 100}")
     context = isl.Set("{:}")
     build = isl.AstBuild.from_context(context)
