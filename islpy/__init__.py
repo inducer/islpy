@@ -104,6 +104,8 @@ ast_expr_type = _isl.ast_expr_type
 ast_loop_type = _isl.ast_loop_type
 ast_node_type = _isl.ast_node_type
 ast_op_type = _isl.ast_op_type
+format = _isl.format
+yaml_style = _isl.yaml_style
 
 ALL_CLASSES = [Options, Context, IdList, ValList, BasicSetList, BasicMapList,
         SetList, MapList, UnionSetList, ConstraintList, AffList, PwAffList,

@@ -277,10 +277,27 @@ ENUMS = {
         isl_fold_min,
         isl_fold_max,
         isl_fold_list,
-    """
+    """,
+
+    # printer.h
+    "isl_format": """
+        ISL_FORMAT_ISL,
+        ISL_FORMAT_POLYLIB,
+        ISL_FORMAT_POLYLIB_CONSTRAINTS,
+        ISL_FORMAT_OMEGA,
+        ISL_FORMAT_C,
+        ISL_FORMAT_LATEX,
+        ISL_FORMAT_EXT_POLYLIB,
+    """,
+
+    "isl_yaml_style": """
+        ISL_YAML_STYLE_BLOCK,
+        ISL_YAML_STYLE_FLOW,
+    """,
     }
 
 TYPEDEFD_ENUMS = ["isl_stat", "isl_bool"]
+MACRO_ENUMS = ["isl_format", "isl_yaml_style"]
 
 HEADER_PREAMBLE = """
 // flow.h
@@ -773,15 +790,19 @@ def write_enums_to_header(header_f):
     for enum_name, value_str in ENUMS.items():
         values = [v.strip() for v in value_str.split(",") if v.strip()]
 
-        if enum_name in TYPEDEFD_ENUMS:
-            pattern = "typedef enum {{ {values}, ... }} {name};\n"
-        else:
-            pattern = "enum {name} {{ {values}, ... }};\n"
+        if enum_name not in MACRO_ENUMS:
+            if enum_name in TYPEDEFD_ENUMS:
+                pattern = "typedef enum {{ {values}, ... }} {name};\n"
+            else:
+                pattern = "enum {name} {{ {values}, ... }};\n"
 
-        header_f.write(
-                pattern.format(
-                    name=enum_name,
-                    values=", ".join(values)))
+            header_f.write(
+                    pattern.format(
+                        name=enum_name,
+                        values=", ".join(values)))
+        else:
+            for v in values:
+                header_f.write("static const int {name};".format(name=v))
 
 
 def write_classes_to_header(header_f):

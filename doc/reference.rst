@@ -131,6 +131,14 @@ Symbolic Constants
     :members:
     :undoc-members:
 
+.. autoclass:: format
+    :members:
+    :undoc-members:
+
+.. autoclass:: yaml_style
+    :members:
+    :undoc-members:
+
 Basic Building Blocks
 ^^^^^^^^^^^^^^^^^^^^^
 
