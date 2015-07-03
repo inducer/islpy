@@ -23,7 +23,7 @@ THE SOFTWARE.
 """
 
 import islpy as isl
-import pytest
+import pytest  # noqa
 
 
 def test_basics():

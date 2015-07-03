@@ -995,14 +995,11 @@ def gen_callback_wrapper(gen, cb, func_name, has_userptr):
         failure_return = "ffi.NULL"
 
         ret_py_cls = isl_class_to_py_class(cb.return_base_type)
-        ret_cls = cb.return_base_type[4:]
 
         if cb.return_semantics is None:
             raise SignatureNotSupported("callback return with unspecified semantics")
         elif cb.return_semantics is not SEM_GIVE:
             raise SignatureNotSupported("callback return with non-GIVE semantics")
-        if ret_cls in NON_COPYABLE:
-            raise SignatureNotSupported("noncopyable callback return")
 
         post_call("""
             if _result is None:
@@ -1091,7 +1088,7 @@ def write_method_wrapper(gen, cls_name, meth):
                     cb_wrapper_name=cb_wrapper_name
                     ))
 
-            if (meth.cls == "ast_build"
+            if (meth.cls in ["ast_build", "ast_print_options"]
                     and meth.name.startswith("set_")):
                 # These callbacks need to outlive the set call.
                 # Store them on the instance.
