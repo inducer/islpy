@@ -311,6 +311,8 @@ typedef isl_restriction *(*isl_access_restrict)(
 PY_PREAMBLE = """
 import six
 import sys
+import signal
+import logging
 
 
 _PY3 = sys.version_info >= (3,)
@@ -423,6 +425,22 @@ class _ManagedCString(object):
 
     def __del__(self):
         libc.free(self.data)
+
+
+class DelayedKeyboardInterrupt(object):
+    def __enter__(self):
+        self.signal_received = False
+        self.old_handler = signal.getsignal(signal.SIGINT)
+        signal.signal(signal.SIGINT, self.handler)
+
+    def handler(self, signal, frame):
+        self.signal_received = (signal, frame)
+        logging.debug('SIGINT received. Delaying KeyboardInterrupt.')
+
+    def __exit__(self, type, value, traceback):
+        signal.signal(signal.SIGINT, self.old_handler)
+        if self.signal_received:
+            self.old_handler(*self.signal_received)
 """
 
 CLASS_MAP = {
@@ -1053,7 +1071,7 @@ def write_method_wrapper(gen, cls_name, meth):
 
     # There are two post-call phases, "safety", and "check". The "safety"
     # phase's job is to package up all the data returned by the function
-    # called. No exceptions may be raised during 'safety'.
+    # called. No exceptions may be raised before safety ends.
     #
     # Next, the "check" phase will perform error checking and may raise exceptions.
     safety = PythonCodeGenerator()
@@ -1285,11 +1303,6 @@ def write_method_wrapper(gen, cls_name, meth):
         arg_idx += 1
         pre_call("")
 
-    pre_call(
-            "_result = lib.{c_name}({args})"
-            .format(c_name=meth.c_name, args=", ".join(passed_args)))
-    pre_call("")
-
     # {{{ return value processing
 
     if meth.return_base_type == "isl_stat" and not meth.return_ptr:
@@ -1410,7 +1423,29 @@ def write_method_wrapper(gen, cls_name, meth):
     gen(repr("\n".join(docs)))
     gen("")
     gen.extend(pre_call)
-    gen.extend(safety)
+    gen("")
+
+    gen("try:")
+    with Indentation(gen):
+        gen("_result = None")
+        gen("with DelayedKeyboardInterrupt():")
+        with Indentation(gen):
+            gen(
+                "_result = lib.{c_name}({args})"
+                .format(c_name=meth.c_name, args=", ".join(passed_args)))
+
+    gen("finally:")
+    with Indentation(gen):
+        gen("""
+            if _result is None:
+                # This should never happen.
+                print("*** islpy was interrupted while collecting a result. "
+                    "System state is inconsistent as a result, aborting.",
+                    file=sys.stderr)
+                sys._exit(-1)
+            """)
+        gen.extend(safety)
+
     gen.extend(check)
     gen.dedent()
     gen("")
