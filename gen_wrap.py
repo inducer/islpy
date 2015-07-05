@@ -309,6 +309,8 @@ typedef isl_restriction *(*isl_access_restrict)(
 """
 
 PY_PREAMBLE = """
+from __future__ import print_function
+
 import six
 import sys
 import signal
