@@ -1429,9 +1429,9 @@ def write_method_wrapper(gen, cls_name, meth):
 
     gen("try:")
     with Indentation(gen):
-        gen("_result = None")
         gen("with DelayedKeyboardInterrupt():")
         with Indentation(gen):
+            gen("_result = None")
             gen(
                 "_result = lib.{c_name}({args})"
                 .format(c_name=meth.c_name, args=", ".join(passed_args)))
@@ -1444,7 +1444,7 @@ def write_method_wrapper(gen, cls_name, meth):
                 print("*** islpy was interrupted while collecting a result. "
                     "System state is inconsistent as a result, aborting.",
                     file=sys.stderr)
-                sys._exit(-1)
+                os._exit(-1)
             """)
         gen.extend(safety)
 
