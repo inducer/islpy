@@ -131,6 +131,8 @@ class Method:
 
 
 CLASSES = [
+        # /!\ Order matters, class names that are prefixes of others should go last.
+
         "options",
         "ctx",
 
@@ -165,7 +167,7 @@ CLASSES = [
         "qpolynomial", "pw_qpolynomial",
         "term",
 
-        "band", "schedule", "schedule_constraints",
+        "band", "schedule_constraints", "schedule",
         "schedule_node",
 
         "access_info", "flow", "restriction",
