@@ -1440,12 +1440,13 @@ def write_method_wrapper(gen, cls_name, meth):
 
     gen("finally:")
     with Indentation(gen):
-        gen("""
+        gen(r"""
             if _result is None:
                 # This should never happen.
-                print("*** islpy was interrupted while collecting a result. "
-                    "System state is inconsistent as a result, aborting.",
-                    file=sys.stderr)
+                sys.stderr.write("*** islpy was interrupted while collecting "
+                    "a result. "
+                    "System state is inconsistent as a result, aborting.\n")
+                sys.stderr.flush()
                 os._exit(-1)
             """)
         gen.extend(safety)
