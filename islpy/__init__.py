@@ -130,6 +130,9 @@ EXPR_CLASSES = tuple(cls for cls in ALL_CLASSES
 
 
 def _runs_in_integer_set(s, max_int=None):
+    if not s:
+        return
+
     if max_int is None:
         max_int = max(s)
 
