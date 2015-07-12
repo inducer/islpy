@@ -129,6 +129,27 @@ EXPR_CLASSES = tuple(cls for cls in ALL_CLASSES
         if "Aff" in cls.__name__ or "Polynomial" in cls.__name__)
 
 
+def _runs_in_integer_set(s, max_int=None):
+    if max_int is None:
+        max_int = max(s)
+
+    i = 0
+    while i < max_int:
+        if i in s:
+            start = i
+
+            i += 1
+            while i < max_int and i in s:
+                i += 1
+
+            end = i
+
+            yield (start, end-start)
+
+        else:
+            i += 1
+
+
 def _add_functionality():
     # {{{ Context
 
@@ -1183,6 +1204,59 @@ def align_two(obj1, obj2, across_dim_types=False):
     obj2 = align_spaces(obj2, obj1, obj_bigger_ok=True,
             across_dim_types=across_dim_types)
     return (obj1, obj2)
+
+
+# {{{ performance tweak for dim_{min,max}: project first
+
+def _find_noninteracting_dims(obj, dt, idx, other_dt):
+    candidate_dims = set(range(obj.dim(other_dt)))
+
+    if isinstance(obj, BasicSet):
+        basics = [obj]
+    elif isinstance(obj, Set):
+        basics = obj.get_basic_sets()
+    elif isinstance(obj, BasicMap):
+        basics = [obj]
+    elif isinstance(obj, Map):
+        basics = obj.get_basic_maps()
+    else:
+        raise TypeError("unsupported arg type '%s'" % type(obj))
+
+    for bs in basics:
+        for c in bs.get_constraints():
+            if not c.involves_dims(dt, idx, 1):
+                continue
+
+            found_interacting = set()
+
+            for dim in candidate_dims:
+                if c.involves_dims(other_dt, dim, 1):
+                    found_interacting.add(dim)
+
+            candidate_dims -= found_interacting
+
+    return candidate_dims
+
+
+def _project_out_noninteracting(obj, dt, idx, other_dt):
+    nonint = _find_noninteracting_dims(obj, dt, idx, other_dt)
+
+    for first, n in reversed(list(_runs_in_integer_set(nonint))):
+        obj = obj.project_out(other_dt, first, n)
+
+    return obj
+
+
+def dim_min_projected(obj, idx):
+    obj = _project_out_noninteracting(obj, dim_type.out, idx, dim_type.param)
+    return obj.dim_min(idx)
+
+
+def dim_max_projected(obj, idx):
+    obj = _project_out_noninteracting(obj, dim_type.out, idx, dim_type.param)
+    return obj.dim_max(idx)
+
+# }}}
 
 
 # vim: foldmethod=marker
