@@ -1241,22 +1241,22 @@ def _find_noninteracting_dims(obj, dt, idx, other_dt):
     return candidate_dims
 
 
-def _project_out_noninteracting(obj, dt, idx, other_dt):
+def _eliminate_noninteracting(obj, dt, idx, other_dt):
     nonint = _find_noninteracting_dims(obj, dt, idx, other_dt)
 
-    for first, n in reversed(list(_runs_in_integer_set(nonint))):
-        obj = obj.project_out(other_dt, first, n)
+    for first, n in _runs_in_integer_set(nonint):
+        obj = obj.eliminate(other_dt, first, n)
 
     return obj
 
 
-def dim_min_projected(obj, idx):
-    obj = _project_out_noninteracting(obj, dim_type.out, idx, dim_type.param)
+def dim_min_with_elimination(obj, idx):
+    obj = _eliminate_noninteracting(obj, dim_type.out, idx, dim_type.param)
     return obj.dim_min(idx)
 
 
-def dim_max_projected(obj, idx):
-    obj = _project_out_noninteracting(obj, dim_type.out, idx, dim_type.param)
+def dim_max_with_elimination(obj, idx):
+    obj = _eliminate_noninteracting(obj, dim_type.out, idx, dim_type.param)
     return obj.dim_max(idx)
 
 # }}}
