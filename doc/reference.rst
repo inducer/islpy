@@ -444,7 +444,6 @@ Lists
 .. autoclass:: ValList
     :members:
 
-
 .. autoclass:: BasicSetList
     :members:
 
@@ -463,6 +462,8 @@ Lists
 .. autoclass:: AffList
     :members:
 
+.. autoclass:: UnionPwAffList
+    :members:
 
 .. autoclass:: BandList
     :members:

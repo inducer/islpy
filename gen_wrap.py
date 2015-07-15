@@ -151,6 +151,7 @@ CLASSES = [
         "printer",  "val", "multi_val", "vec", "mat",
         "aff", "pw_aff", "union_pw_aff",
         "multi_aff", "multi_pw_aff", "pw_multi_aff", "union_pw_multi_aff",
+        "union_pw_aff_list",
         "multi_union_pw_aff",
 
         "id",
