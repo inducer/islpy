@@ -168,8 +168,7 @@ CLASSES = [
         "qpolynomial", "pw_qpolynomial",
         "term",
 
-        "band", "schedule_constraints", "schedule",
-        "schedule_node",
+        "band", "schedule_constraints", "schedule_node", "schedule",
 
         "access_info", "flow", "restriction",
         "union_access_info", "union_flow",
@@ -1511,6 +1510,7 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
     fdata.read_header("isl/mat.h")
     fdata.read_header("isl/band.h")
     fdata.read_header("isl/schedule.h")
+    fdata.read_header("isl/schedule_node.h")
     fdata.read_header("isl/flow.h")
     fdata.read_header("isl/options.h")
     fdata.read_header("isl/ast.h")

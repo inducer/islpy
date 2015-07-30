@@ -60,6 +60,7 @@ MultiAff = _isl.MultiAff
 MultiPwAff = _isl.MultiPwAff
 PwMultiAff = _isl.PwMultiAff
 UnionPwMultiAff = _isl.UnionPwMultiAff
+UnionPwAffList = _isl.UnionPwAffList
 MultiUnionPwAff = _isl.MultiUnionPwAff
 Id = _isl.Id
 Constraint = _isl.Constraint
@@ -83,9 +84,9 @@ QPolynomial = _isl.QPolynomial
 PwQPolynomial = _isl.PwQPolynomial
 Term = _isl.Term
 Band = _isl.Band
-Schedule = _isl.Schedule
 ScheduleConstraints = _isl.ScheduleConstraints
 ScheduleNode = _isl.ScheduleNode
+Schedule = _isl.Schedule
 AccessInfo = _isl.AccessInfo
 Flow = _isl.Flow
 Restriction = _isl.Restriction
@@ -96,28 +97,28 @@ AstNode = _isl.AstNode
 AstPrintOptions = _isl.AstPrintOptions
 AstBuild = _isl.AstBuild
 
-stat = _isl.stat
-fold = _isl.fold
-dim_type = _isl.dim_type
-error = _isl.error
+format = _isl.format
 ast_expr_type = _isl.ast_expr_type
+yaml_style = _isl.yaml_style
+error = _isl.error
+dim_type = _isl.dim_type
 ast_loop_type = _isl.ast_loop_type
 ast_node_type = _isl.ast_node_type
+stat = _isl.stat
+fold = _isl.fold
 ast_op_type = _isl.ast_op_type
-format = _isl.format
-yaml_style = _isl.yaml_style
 
 ALL_CLASSES = [Options, Context, IdList, ValList, BasicSetList, BasicMapList,
         SetList, MapList, UnionSetList, ConstraintList, AffList, PwAffList,
         BandList, AstExprList, AstNodeList, IdToAstExpr, Printer, Val,
         MultiVal, Vec, Mat, Aff, PwAff, UnionPwAff, MultiAff, MultiPwAff,
-        PwMultiAff, UnionPwMultiAff, MultiUnionPwAff, Id, Constraint, Space,
-        LocalSpace, BasicSet, BasicMap, Set, Map, UnionMap, UnionSet, Point,
-        Vertex, Cell, Vertices, QPolynomialFold, PwQPolynomialFold,
-        UnionPwQPolynomialFold, UnionPwQPolynomial, QPolynomial, PwQPolynomial,
-        Term, Band, Schedule, ScheduleConstraints, ScheduleNode, AccessInfo,
-        Flow, Restriction, UnionAccessInfo, UnionFlow, AstExpr, AstNode,
-        AstPrintOptions, AstBuild]
+        PwMultiAff, UnionPwMultiAff, UnionPwAffList, MultiUnionPwAff, Id,
+        Constraint, Space, LocalSpace, BasicSet, BasicMap, Set, Map, UnionMap,
+        UnionSet, Point, Vertex, Cell, Vertices, QPolynomialFold,
+        PwQPolynomialFold, UnionPwQPolynomialFold, UnionPwQPolynomial,
+        QPolynomial, PwQPolynomial, Term, Band, ScheduleConstraints,
+        ScheduleNode, Schedule, AccessInfo, Flow, Restriction, UnionAccessInfo,
+        UnionFlow, AstExpr, AstNode, AstPrintOptions, AstBuild]
 
 # }}}
 

@@ -372,6 +372,9 @@ Schedule
 .. autoclass:: Schedule
     :members:
 
+Schedule Node
+-------------
+
 .. autoclass:: ScheduleNode
     :members:
 
@@ -389,6 +392,10 @@ Access Info
 
 .. autoclass:: AccessInfo
     :members:
+
+Union Access Info
+-----------------
+
 .. autoclass:: UnionAccessInfo
     :members:
 
@@ -403,6 +410,10 @@ Flow
 
 .. autoclass:: Flow
     :members:
+
+Union Flow
+----------
+
 .. autoclass:: UnionFlow
     :members:
 
