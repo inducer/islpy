@@ -1088,6 +1088,15 @@ def write_method_wrapper(gen, cls_name, meth):
     ret_vals = []
     ret_descrs = []
 
+    def emit_context_check(arg_idx, arg_name):
+        if arg_idx == 0:
+            pre_call("_ctx_data = {arg_name}._ctx_data".format(arg_name=arg_name))
+        else:
+            pre_call("""
+                if _ctx_data != {arg_name}._ctx_data:
+                    raise Error("mismatched context in {arg_name}")
+                """.format(arg_name=arg_name))
+
     arg_idx = 0
     while arg_idx < len(meth.args):
         arg = meth.args[arg_idx]
@@ -1178,11 +1187,18 @@ def write_method_wrapper(gen, cls_name, meth):
             # {{{ val input argument
 
             val_name = "_val_" + arg.name
+            fmt_args = dict(
+                    arg0_name=meth.args[0].name,
+                    name=arg.name,
+                    val_name=val_name)
+
+            pre_call("if isinstance({name}, Val):".format(**fmt_args))
+
+            with Indentation(pre_call):
+                emit_context_check(arg_idx, arg.name)
+                pre_call("{val_name} = {name}._copy()".format(**fmt_args))
 
             pre_call("""
-                if isinstance({name}, Val):
-                    {val_name} = {name}._copy()
-
                 elif isinstance({name}, six.integer_types):
                     _cdata_{name} = lib.isl_val_int_from_si(
                         {arg0_name}._get_ctx_data(), {name})
@@ -1196,10 +1212,7 @@ def write_method_wrapper(gen, cls_name, meth):
                     raise IslTypeError("{name} is a %s and cannot "
                         "be cast to a Val" % type({name}))
                 """
-                .format(
-                    arg0_name=meth.args[0].name,
-                    name=arg.name,
-                    val_name=val_name))
+                .format(**fmt_args))
 
             if arg.semantics is SEM_TAKE:
                 passed_args.append(val_name + "._release()")
@@ -1222,6 +1235,8 @@ def write_method_wrapper(gen, cls_name, meth):
                     raise IslTypeError("{name} is not a {py_cls}")
                 """
                 .format(name=arg.name, py_cls=arg_py_cls))
+
+            emit_context_check(arg_idx, arg.name)
 
             arg_cls = arg.base_type[4:]
             arg_descr = ":param %s: :class:`%s`" % (
