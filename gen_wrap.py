@@ -1281,17 +1281,17 @@ def write_method_wrapper(gen, cls_name, meth):
                 raise SignatureNotSupported("non-give secondary ptr return value")
 
             pre_call(
-                    '_retptr_{name} = ffi.new("{cls} *")'
+                    '_retptr_{name} = ffi.new("{cls} **")'
                     .format(name=arg.name, cls=arg.base_type))
 
-            passed_args.append("ffi.addressof(_retptr_{name})".format(name=arg.name))
+            passed_args.append("_retptr_{name}".format(name=arg.name))
 
             py_cls = isl_class_to_py_class(arg.base_type)
             safety("""
                 if _retptr_{name} == ffi.NULL:
                     _ret_{name} = None
                 else:
-                    _ret_{name} = {py_cls}(_data=_retptr_{name})
+                    _ret_{name} = {py_cls}(_data=_retptr_{name}[0])
                 """
                 .format(name=arg.name, cls=arg.base_type, py_cls=py_cls))
 

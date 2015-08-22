@@ -197,6 +197,13 @@ def test_schedule():
     print(printer.get_str())
 
 
+def test_union_map():
+    d = isl.UnionSet("[start, num] -> {S[i,j] : start <= i,j < start + num}")
+    s = isl.UnionMap("{S[i,j] -> [i,j]}").intersect_domain(d)
+    aw = isl.UnionMap("{S[i,j] -> B[1024 i + j]}")
+    aw.compute_flow(aw, aw, s)
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
