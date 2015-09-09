@@ -204,6 +204,36 @@ def test_union_map():
     aw.compute_flow(aw, aw, s)
 
 
+def test_schedule_dump():
+    ctx = isl.Context()
+    s = isl.UnionSet.read_from_str(ctx,
+            "{ S_2[i, j, k] : i <= 99 and i >= 0; S_3[i] : "
+            "i <= 99 and i >= 0; S_0[]; S_1[i] : i <= 99 and i >= 0 }")
+    cst = isl.ScheduleConstraints.on_domain(s)
+    schedule = isl.ScheduleConstraints.compute_schedule(cst)
+    schedule.dump()
+
+
+def test_from_union_map():
+    ctx = isl.Context()
+    m = isl.UnionMap.read_from_str(ctx,
+        "[m, n] -> { S_0[] -> [0, 0, 0, 0]; S_1[i] -> [i, 1, 0, 0]; S_3[i] -> "
+        "[1 + i, 3, 0, 0]; S_2[i, j, k] -> [i, 2, j, k] : "
+        "j <= -1 + m and j >= 0 and k <= -1 + n and k >= 0 }")
+
+    isl.MultiUnionPwAff.from_union_map(m)
+
+
+def test_get_schedule_map():
+    ctx = isl.Context()
+    ss = isl.UnionSet.read_from_str(
+        ctx, "[m, n] -> { S_2[i, j, k] : "
+        "j <= -1 + m and j >= 0 and k <= -1 + n and k >= 0 }")
+    cst1 = isl.ScheduleConstraints.on_domain(ss)
+    sub_schedule = isl.ScheduleConstraints.compute_schedule(cst1)
+    sub_schedule.get_map()
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
