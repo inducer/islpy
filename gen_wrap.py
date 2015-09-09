@@ -1455,16 +1455,20 @@ def write_method_wrapper(gen, cls_name, meth):
 
     gen("finally:")
     with Indentation(gen):
-        gen(r"""
-            if _result is None:
-                # This should never happen.
-                sys.stderr.write("*** islpy was interrupted while collecting "
-                    "a result. "
-                    "System state is inconsistent as a result, aborting.\n")
-                sys.stderr.flush()
-                os._exit(-1)
-            """)
+        if not (meth.return_base_type == "void" and not meth.return_ptr):
+            gen(r"""
+                if _result is None:
+                    # This should never happen.
+                    sys.stderr.write("*** islpy was interrupted while collecting "
+                        "a result. "
+                        "System state is inconsistent as a result, aborting.\n")
+                    sys.stderr.flush()
+                    import os
+                    os._exit(-1)
+                """)
+
         gen.extend(safety)
+        gen("pass")
 
     gen.extend(check)
     gen.dedent()
