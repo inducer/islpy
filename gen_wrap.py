@@ -317,6 +317,7 @@ import six
 import sys
 import signal
 import logging
+import threading
 
 
 _PY3 = sys.version_info >= (3,)
@@ -434,17 +435,19 @@ class _ManagedCString(object):
 class DelayedKeyboardInterrupt(object):
     def __enter__(self):
         self.signal_received = False
-        self.old_handler = signal.getsignal(signal.SIGINT)
-        signal.signal(signal.SIGINT, self.handler)
+        if isinstance(threading.current_thread(), threading._MainThread):
+            self.old_handler = signal.getsignal(signal.SIGINT)
+            signal.signal(signal.SIGINT, self.handler)
 
     def handler(self, signal, frame):
         self.signal_received = (signal, frame)
         logging.debug('SIGINT received. Delaying KeyboardInterrupt.')
 
     def __exit__(self, type, value, traceback):
-        signal.signal(signal.SIGINT, self.old_handler)
-        if self.signal_received:
-            self.old_handler(*self.signal_received)
+        if isinstance(threading.current_thread(), threading._MainThread):
+            signal.signal(signal.SIGINT, self.old_handler)
+            if self.signal_received:
+                self.old_handler(*self.signal_received)
 """
 
 CLASS_MAP = {
@@ -1367,7 +1370,9 @@ def write_method_wrapper(gen, cls_name, meth):
 
             py_ret_cls = isl_class_to_py_class(ret_cls)
             safety(
-                    "_result = None if _result == ffi.NULL else {0}(_data=_result)"
+                    "_result = None if "
+                    "(_result == ffi.NULL or _result is None) "
+                    "else {0}(_data=_result)"
                     .format(py_ret_cls))
 
             check("""
@@ -1446,9 +1451,9 @@ def write_method_wrapper(gen, cls_name, meth):
 
     gen("try:")
     with Indentation(gen):
+        gen("_result = None")
         gen("with DelayedKeyboardInterrupt():")
         with Indentation(gen):
-            gen("_result = None")
             gen(
                 "_result = lib.{c_name}({args})"
                 .format(c_name=meth.c_name, args=", ".join(passed_args)))
