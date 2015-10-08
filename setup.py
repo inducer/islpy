@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+from codecs import open
+
 
 def get_config_schema():
     from aksetup_helper import (ConfigSchema,
@@ -143,7 +145,7 @@ def main():
             if "isl_ast_int.c" in fn and conf["USE_SHIPPED_IMATH"]:
                 continue
 
-            inf = open(fn, "rt")
+            inf = open(fn, "rt", codec="utf-8")
             try:
                 contents = inf.read()
             finally:
