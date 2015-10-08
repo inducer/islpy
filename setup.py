@@ -145,7 +145,7 @@ def main():
             if "isl_ast_int.c" in fn and conf["USE_SHIPPED_IMATH"]:
                 continue
 
-            inf = open(fn, "rt", encoding="utf-8")
+            inf = open(fn, "r", encoding="utf-8")
             try:
                 contents = inf.read()
             finally:
