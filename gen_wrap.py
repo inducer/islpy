@@ -435,7 +435,7 @@ if _PY3:
     class DelayedKeyboardInterrupt(object):
         def __enter__(self):
             self.previous_switch_interval = sys.getswitchinterval()
-            sys.setswitchinterval(10000000000000)
+            sys.setswitchinterval(10000000)
 
         def __exit__(self, type, value, traceback):
             sys.setswitchinterval(self.previous_switch_interval)
@@ -443,7 +443,7 @@ else:
     class DelayedKeyboardInterrupt(object):
         def __enter__(self):
             self.previous_check_interval = sys.getcheckinterval()
-            sys.setcheckinterval(10000000000000)
+            sys.setcheckinterval(100000000)
 
         def __exit__(self, type, value, traceback):
             sys.setcheckinterval(self.previous_check_interval)
