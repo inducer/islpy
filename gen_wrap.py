@@ -315,7 +315,6 @@ from __future__ import print_function
 
 import six
 import sys
-import signal
 import logging
 import threading
 
@@ -432,22 +431,22 @@ class _ManagedCString(object):
         libc.free(self.data)
 
 
-class DelayedKeyboardInterrupt(object):
-    def __enter__(self):
-        self.signal_received = False
-        if isinstance(threading.current_thread(), threading._MainThread):
-            self.old_handler = signal.getsignal(signal.SIGINT)
-            signal.signal(signal.SIGINT, self.handler)
+if _PY3:
+    class DelayedKeyboardInterrupt(object):
+        def __enter__(self):
+            self.previous_switch_interval = sys.getswitchinterval()
+            sys.setswitchinterval(10000000000000)
 
-    def handler(self, signal, frame):
-        self.signal_received = (signal, frame)
-        logging.debug('SIGINT received. Delaying KeyboardInterrupt.')
+        def __exit__(self, type, value, traceback):
+            sys.setswitchinterval(self.previous_switch_interval)
+else:
+    class DelayedKeyboardInterrupt(object):
+        def __enter__(self):
+            self.previous_check_interval = sys.getcheckinterval()
+            sys.setcheckinterval(10000000000000)
 
-    def __exit__(self, type, value, traceback):
-        if isinstance(threading.current_thread(), threading._MainThread):
-            signal.signal(signal.SIGINT, self.old_handler)
-            if self.signal_received:
-                self.old_handler(*self.signal_received)
+        def __exit__(self, type, value, traceback):
+            sys.setcheckinterval(self.previous_check_interval)
 """
 
 CLASS_MAP = {
