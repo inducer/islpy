@@ -234,6 +234,25 @@ def test_get_schedule_map():
     sub_schedule.get_map()
 
 
+def test_codegen():
+    # courtesy of Marek Pałkowski
+
+    def isl_ast_codegen(S):
+        b = isl.AstBuild.from_context(isl.Set("{:}"))
+        m = isl.Map.from_domain_and_range(S, S)
+        m = isl.Map.identity(m.get_space())
+        m = isl.Map.from_domain(S)
+        ast = b.ast_from_schedule(m)
+        p = isl.Printer.to_str(isl.DEFAULT_CONTEXT)
+        p = p.set_output_format(isl.format.C)
+        p.flush()
+        p = p.print_ast_node(ast)
+        return p.get_str()
+
+    s = isl.Set("[n,m] -> { [i,j] : 0 <= i <= n and i <= j <= m }")
+    print(isl_ast_codegen(s))
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
