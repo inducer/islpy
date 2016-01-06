@@ -34,6 +34,8 @@ def get_config_schema():
         Switch("USE_SHIPPED_ISL", True, "Use included copy of isl"),
         Switch("USE_SHIPPED_IMATH", True, "Use included copy of imath in isl"),
         Switch("USE_BARVINOK", False, "Include wrapper for Barvinok"),
+        Switch("USE_IMATH_SIO", True, "When using imath, use small-integer "
+            "optimization"),
 
         IncludeDir("GMP", []),
         LibraryDir("GMP", []),
@@ -119,9 +121,15 @@ def main():
                 "isl_multi_templ.c",
                 "isl_multi_apply_set.c",
                 "isl_multi_gist.c",
+                "isl_multi_coalesce.c",
                 "isl_multi_intersect.c",
                 "isl_multi_floor.c",
                 "isl_multi_apply_union_set.c",
+                "isl_union_templ.c",
+                "isl_union_multi.c",
+                "isl_union_eval.c",
+                "isl_union_neg.c",
+                "isl_union_single.c",
                 ]
 
         for fn in glob("isl/*.c"):
@@ -142,6 +150,12 @@ def main():
             if "imath" in fn:
                 if not conf["USE_SHIPPED_IMATH"]:
                     continue
+
+                if "sioimath" in fn and not conf["USE_IMATH_SIO"]:
+                    continue
+                if "isl_val_imath" in fn and conf["USE_IMATH_SIO"]:
+                    continue
+
             if "isl_ast_int.c" in fn and conf["USE_SHIPPED_IMATH"]:
                 continue
 
@@ -166,6 +180,8 @@ def main():
                 "isl/imath_wrap/gmp_compat.c",
                 ])
             EXTRA_DEFINES["USE_IMATH_FOR_MP"] = 1
+            if conf["USE_IMATH_SIO"]:
+                EXTRA_DEFINES["USE_SMALL_INT_OPT"] = 1
 
             conf["ISL_INC_DIR"].append("isl/imath")
         else:
@@ -193,7 +209,7 @@ def main():
 
         wrapper_dirs.extend(conf["BARVINOK_INC_DIR"])
 
-        #EXTRA_DEFINES["ISLPY_ISL_VERSION"] = 14
+        EXTRA_DEFINES["ISLPY_ISL_VERSION"] = 15
 
     # }}}
 

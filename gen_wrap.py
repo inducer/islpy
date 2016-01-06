@@ -480,6 +480,7 @@ def isl_class_to_py_class(cls_name):
 # {{{ parser
 
 DECL_RE = re.compile(r"""
+    (?:__isl_overload\s*)?
     ((?:\w+\s+)*) (\**) \s* (?# return type)
     (\w+) (?# func name)
     \(
@@ -495,7 +496,11 @@ FUNC_PTR_RE = re.compile(r"""
     \)
     """,
     re.VERBOSE)
-STRUCT_DECL_RE = re.compile(r"(__isl_export\s+)?struct\s+([a-z_A-Z0-9]+)\s*;")
+STRUCT_DECL_RE = re.compile(
+    r"(__isl_export\s+)?"
+    "struct\s+"
+    "(__isl_subclass\([a-z_ ]+\)\s+)?"
+    "([a-z_A-Z0-9]+)\s*;")
 ARG_RE = re.compile(r"^((?:\w+)\s+)+(\**)\s*(\w+)$")
 INLINE_SEMICOLON_RE = re.compile(r"\;[ \t]*(?=\w)")
 
