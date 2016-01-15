@@ -1,2 +1,2 @@
-VERSION = (2015, 2,)
+VERSION = (2016, 1,)
 VERSION_TEXT = ".".join(str(i) for i in VERSION)
