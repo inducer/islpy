@@ -1191,10 +1191,10 @@ def make_zero_and_vars(set_vars, params=[], ctx=None):
     :arg set_vars: an iterable of variable names, or a comma-separated string
     :arg params: an iterable of variable names, or a comma-separated string
 
-    :return: a dictionary from variable (in *set_vars* and *params*)
+    :return: a dictionary from variable names (in *set_vars* and *params*)
         to :class:`PwAff` instances that represent each of the
         variables. They key '0' is also include and represents
-        a :
+        a :class:`PwAff` zero constant.
 
     .. versionadded:: 2016.1.1
 
