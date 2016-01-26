@@ -1186,4 +1186,54 @@ def align_two(obj1, obj2, across_dim_types=False):
     return (obj1, obj2)
 
 
+def make_zero_and_vars(set_vars, params=[], ctx=None):
+    """
+    :arg set_vars: an iterable of variable names, or a comma-separated string
+    :arg params: an iterable of variable names, or a comma-separated string
+
+    :return: a dictionary from variable (in *set_vars* and *params*)
+        to :class:`PwAff` instances that represent each of the
+        variables. They key '0' is also include and represents
+        a :
+
+    .. versionadded:: 2016.1.1
+
+    This function is intended to make it relatively easy to construct sets
+    programmatically without resorting to string manipulation.
+
+    Usage example::
+
+        v = isl.make_zero_and_vars("i,j,k", "n")
+
+        myset = (
+                v[0].le_set(v["i"] + v["j"])
+                &
+                (v["i"] + v["j"]).lt_set(v["n"])
+                &
+                (v[0].le_set(v["i"]))
+                &
+                (v["i"].le_set(13 + v["n"]))
+                )
+    """
+    if ctx is None:
+        ctx = DEFAULT_CONTEXT
+
+    if isinstance(set_vars, str):
+        set_vars = [s.strip() for s in set_vars.split(",")]
+    if isinstance(params, str):
+        params = [s.strip() for s in params.split(",")]
+
+    space = Space.create_from_names(ctx, set=set_vars, params=params)
+
+    result = {}
+
+    zero = Aff.zero_on_domain(LocalSpace.from_space(space))
+    result[0] = PwAff.from_aff(zero)
+
+    var_dict = zero.get_var_dict()
+    for name, (dt, idx) in var_dict.items():
+        result[name] = PwAff.from_aff(zero.set_coefficient_val(dt, idx, 1))
+
+    return result
+
 # vim: foldmethod=marker

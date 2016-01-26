@@ -254,6 +254,22 @@ def test_codegen():
     print(isl_ast_codegen(s))
 
 
+def test_set_building():
+    v = isl.make_zero_and_vars("i,j,k", "n")
+
+    myset = (
+            v[0].le_set(v["i"] + v["j"])
+            &
+            (v["i"] + v["j"]).lt_set(v["n"])
+            &
+            (v[0].le_set(v["i"]))
+            &
+            (v["i"].le_set(13 + v["n"]))
+            )
+
+    print(myset)
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
