@@ -34,7 +34,7 @@ def get_config_schema():
         Switch("USE_SHIPPED_ISL", True, "Use included copy of isl"),
         Switch("USE_SHIPPED_IMATH", True, "Use included copy of imath in isl"),
         Switch("USE_BARVINOK", False, "Include wrapper for Barvinok"),
-        Switch("USE_IMATH_SIO", True, "When using imath, use small-integer "
+        Switch("USE_IMATH_SIO", False, "When using imath, use small-integer "
             "optimization"),
 
         IncludeDir("GMP", []),

@@ -16,6 +16,16 @@ Python 3.4:
   - python3.4
   except:
   - tags
+Python 3.4 small integer opt:
+  script:
+  - export PY_EXE=python3.4
+  - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
+  - ./configure.py --use-imath-sio
+  - ". ./build-and-test-py-project.sh"
+  tags:
+  - python3.4
+  except:
+  - tags
 Python 2.6:
   script:
   - export PY_EXE=python2.6
