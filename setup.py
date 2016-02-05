@@ -113,6 +113,7 @@ def main():
     INCLUDE_DIRS = []  # noqa
     LIBRARY_DIRS = []  # noqa
     LIBRARIES = []  # noqa
+    CXXFLAGS = conf["CXXFLAGS"]
 
     if conf["USE_SHIPPED_ISL"]:
         from glob import glob
@@ -183,6 +184,10 @@ def main():
             if conf["USE_IMATH_SIO"]:
                 EXTRA_DEFINES["USE_SMALL_INT_OPT"] = 1
 
+                import sys
+                if sys.platform in ['linux', 'linux2', 'darwin']:
+                    CXXFLAGS.insert(0, "-std=gnu99")
+
             conf["ISL_INC_DIR"].append("isl/imath")
         else:
             EXTRA_DEFINES["USE_GMP_FOR_MP"] = 1
@@ -236,7 +241,7 @@ def main():
             INCLUDE_DIRS=INCLUDE_DIRS,
             LIBRARY_DIRS=LIBRARY_DIRS,
             LIBRARIES=LIBRARIES,
-            CFLAGS=conf["CXXFLAGS"],
+            CFLAGS=CXXFLAGS,
             LDFLAGS=conf["LDFLAGS"]
             )
 
