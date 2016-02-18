@@ -256,7 +256,7 @@ def autodoc_process_signature(app, what, name, obj, options, signature,
 
 
 def autodoc_process_docstring(app, what, name, obj, options, lines):
-    from inspect import isclass, isroutine, ismethod
+    from inspect import isclass, isroutine
     UNDERSCORE_WHITELIST = ["__len__", "__hash__", "__eq__", "__ne__"]
     if isclass(obj) and obj.__name__[0].isupper():
         methods = [nm for nm in dir(obj)
@@ -265,7 +265,7 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
 
         def gen_method_string(meth):
             result = ":meth:`%s`" % meth
-            if not ismethod(getattr(obj, meth)):
+            if getattr(obj, "_" + meth + "_is_static", False):
                 result += " (static)"
 
             return result
