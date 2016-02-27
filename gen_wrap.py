@@ -371,6 +371,17 @@ def _deref_ctx(ctx_data, ctx_iptr):
         lib.isl_ctx_free(ctx_data)
 
 
+def _get_last_error_str(ctx_data):
+    code = lib.isl_ctx_last_error(ctx_data)
+    for name in dir(error):
+        if name.startswith("_"):
+            continue
+        if getattr(error, name) == code:
+            return "isl_error_"+name
+
+    return "(unknown error)"
+
+
 class _ISLObjectBase(object):
     def __init__(self, _data):
         self._setup(_data)
@@ -1350,12 +1361,14 @@ def write_method_wrapper(gen, cls_name, meth):
     if meth.return_base_type == "isl_stat" and not meth.return_ptr:
         check("if _result == lib.isl_stat_error:")
         with Indentation(check):
-            check('raise Error("call to \\"{0}\\" failed")'.format(meth.c_name))
+            check('raise Error("call to \\"{0}\\" failed: %s" '
+                    '% _get_last_error_str(_ctx_data))'.format(meth.c_name))
 
     elif meth.return_base_type == "isl_bool" and not meth.return_ptr:
         check("if _result == lib.isl_bool_error:")
         with Indentation(check):
-            check('raise Error("call to \\"{0}\\" failed")'.format(meth.c_name))
+            check('raise Error("call to \\"{0}\\" failed: %s" '
+                    '% _get_last_error_str(_ctx_data))'.format(meth.c_name))
 
         ret_vals.insert(0, "_result == lib.isl_bool_true")
         ret_descrs.insert(0, "bool")
@@ -1397,7 +1410,8 @@ def write_method_wrapper(gen, cls_name, meth):
 
             check("""
                 if _result is None:
-                    raise Error("call to {c_method} failed")
+                    raise Error("call to {c_method} failed: %s"
+                        % _get_last_error_str(_ctx_data))
                 """
                 .format(c_method=meth.c_name))
 
