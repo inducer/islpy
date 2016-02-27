@@ -133,7 +133,6 @@ class Method:
 CLASSES = [
         # /!\ Order matters, class names that are prefixes of others should go last.
 
-        "options",
         "ctx",
 
         # lists
@@ -468,13 +467,8 @@ else:
 
         def __exit__(self, type, value, traceback):
             sys.setcheckinterval(self.previous_check_interval)
-"""
 
-CLASS_MAP = {
-        "equality": "constraint",
-        "inequality": "constraint",
-        "options": "ctx",
-        }
+"""
 
 SAFE_TYPES = list(ENUMS) + ["int", "unsigned", "uint32_t", "size_t", "double",
         "long", "unsigned long"]
@@ -764,13 +758,8 @@ class FunctionData:
         for cls in CLASSES:
             if name.startswith(cls):
                 found_class = True
+                name = name[len(cls)+1:]
                 break
-
-        if found_class:
-            name = name[len(cls)+1:]
-
-        if name.startswith("2"):
-            name = "two_"+name[1:]
 
         # Don't be tempted to chop off "_val"--the "_val" versions of
         # some methods are incompatible with the isl_int ones.
@@ -783,10 +772,16 @@ class FunctionData:
         # names are carried over to the Python level.
 
         if not found_class:
-            for fake_cls, cls in CLASS_MAP.items():
-                if name.startswith(fake_cls):
-                    found_class = True
-                    break
+            if name.startswith("options_"):
+                found_class = True
+                cls = "ctx"
+                name = name[len("options_"):]
+            elif name.startswith("equality_") or name.startswith("inequality_"):
+                found_class = True
+                cls = "constraint"
+
+        if name.startswith("2"):
+            name = "two_"+name[1:]
 
         assert found_class, name
 
@@ -800,7 +795,7 @@ class FunctionData:
             name = name + "_"
 
         if cls == "options":
-            assert name.startswith("set_") or name.startswith("get_")
+            assert name.startswith("set_") or name.startswith("get_"), (name, c_name)
             name = name[:4]+"option_"+name[4:]
 
         words = return_base_type.split()
