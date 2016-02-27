@@ -145,7 +145,8 @@ Basic Building Blocks
 Context
 -------
 
-.. class:: Context()
+.. autoclass:: Context()
+    :members:
 
 Id
 --
