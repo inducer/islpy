@@ -296,10 +296,31 @@ ENUMS = {
         ISL_YAML_STYLE_BLOCK,
         ISL_YAML_STYLE_FLOW,
     """,
+
+    # options.h
+
+    "isl_bound": """
+        ISL_BOUND_BERNSTEIN,
+        ISL_BOUND_RANGE,
+    """,
+
+    "isl_on_error": """
+        ISL_ON_ERROR_WARN,
+        ISL_ON_ERROR_CONTINUE,
+        ISL_ON_ERROR_ABORT,
+    """,
+
+    "isl_schedule_algorithm": """
+        ISL_SCHEDULE_ALGORITHM_ISL,
+        ISL_SCHEDULE_ALGORITHM_FEAUTRIER,
+    """
     }
 
 TYPEDEFD_ENUMS = ["isl_stat", "isl_bool"]
-MACRO_ENUMS = ["isl_format", "isl_yaml_style"]
+MACRO_ENUMS = [
+        "isl_format", "isl_yaml_style",
+        "isl_bound", "isl_on_error", "isl_schedule_algorithm",
+        ]
 
 HEADER_PREAMBLE = """
 // flow.h
