@@ -1238,4 +1238,17 @@ def make_zero_and_vars(set_vars, params=[], ctx=None):
 
     return result
 
+
+class SuppressedWarnings:
+    def __init__(self, ctx):
+        self.ctx = ctx
+
+    def __enter__(self):
+        self.prev_on_error = self.ctx.get_on_error()
+        self.ctx.set_on_error(on_error.CONTINUE)
+
+    def __exit__(self, type, value, traceback):
+        self.ctx.set_on_error(self.prev_on_error)
+
+
 # vim: foldmethod=marker
