@@ -126,11 +126,15 @@ def main():
                 "isl_multi_intersect.c",
                 "isl_multi_floor.c",
                 "isl_multi_apply_union_set.c",
+                "isl_multi_cmp.c",
+                "isl_multi_hash.c",
                 "isl_union_templ.c",
                 "isl_union_multi.c",
                 "isl_union_eval.c",
                 "isl_union_neg.c",
                 "isl_union_single.c",
+                "isl_pw_hash.c",
+                "isl_pw_union_opt.c",
                 ]
 
         for fn in glob("isl/*.c"):

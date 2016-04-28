@@ -790,6 +790,10 @@ class FunctionData:
             elif name.startswith("equality_") or name.startswith("inequality_"):
                 found_class = True
                 cls = "constraint"
+            elif name == "ast_op_type_set_print_name":
+                found_class = True
+                cls = "printer"
+                name = "ast_op_type_set_print_name"
 
         if name.startswith("2"):
             name = "two_"+name[1:]
