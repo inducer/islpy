@@ -25,7 +25,7 @@
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx.ext.pngmath']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx.ext.imgmath']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -49,7 +49,9 @@ copyright = u'2011-15, Andreas Kloeckner'
 #
 # The short X.Y version.
 ver_dic = {}
-exec(compile(open("../islpy/version.py").read(), "../islpy/version.py", 'exec'), ver_dic)
+with open("../islpy/version.py") as vfile:
+    exec(compile(vfile.read(), "../islpy/version.py", 'exec'), ver_dic)
+
 version = ".".join(str(x) for x in ver_dic["VERSION"])
 # The full version, including alpha/beta/rc tags.
 release = ver_dic["VERSION_TEXT"]
