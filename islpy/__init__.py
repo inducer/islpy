@@ -1226,6 +1226,36 @@ def make_zero_and_vars(set_vars, params=[], ctx=None):
         params = [s.strip() for s in params.split(",")]
 
     space = Space.create_from_names(ctx, set=set_vars, params=params)
+    return affs_from_space(space)
+
+
+def affs_from_space(space):
+    """
+    :return: a dictionary from variable names (in *set_vars* and *params*)
+        to :class:`PwAff` instances that represent each of the
+        variables *in*space*. They key '0' is also include and represents
+        a :class:`PwAff` zero constant.
+
+    .. versionadded:: 2016.2
+
+    This function is intended to make it relatively easy to construct sets
+    programmatically without resorting to string manipulation.
+
+    Usage example::
+
+        s = isl.Set("[n] -> {[i,j,k]: 0<=i,j,k<n}")
+        v = isl.affs_from_space(s.space)
+
+        myset = (
+                v[0].le_set(v["i"] + v["j"])
+                &
+                (v["i"] + v["j"]).lt_set(v["n"])
+                &
+                (v[0].le_set(v["i"]))
+                &
+                (v["i"].le_set(13 + v["n"]))
+                )
+    """
 
     result = {}
 

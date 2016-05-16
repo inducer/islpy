@@ -93,6 +93,9 @@ Version 2016.2
     This version is currently in development and can be obtained from
     islpy's version control.
 
+* Update for isl 0.17
+* Add :func:`make_zero_and_vars`
+
 Version 2016.1.1
 ----------------
 

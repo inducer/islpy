@@ -82,6 +82,14 @@ Error Reporting
 
 .. exception:: Error
 
+Convenience
+^^^^^^^^^^^
+
+.. autofunction:: make_zero_and_vars
+
+.. autofunction:: affs_from_space
+
+
 Lifetime Helpers
 ^^^^^^^^^^^^^^^^
 
@@ -278,8 +286,6 @@ Piecewise Quasi-Affine Expression
 
 .. autoclass:: PwAff
     :members:
-
-.. autofunction:: make_zero_and_vars
 
 Union of Piecewise Quasi-Affine Expressions
 -------------------------------------------
