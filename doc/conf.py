@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'islpy'
-copyright = u'2011-15, Andreas Kloeckner'
+copyright = u'2011-16, Andreas Kloeckner'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -93,31 +93,23 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ---------------------------------------------------
 
-try:
-    import sphinx_bootstrap_theme
-except:
-    from warnings import warn
-    warn("I would like to use the sphinx bootstrap theme, but can't find it.\n"
-            "'pip install sphinx_bootstrap_theme' to fix.")
-else:
-    # Activate the theme.
-    html_theme = 'bootstrap'
-    html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
+html_theme = "alabaster"
 
-    # Theme options are theme-specific and customize the look and feel of a theme
-    # further.  For a list of options available for each theme, see the
-    # documentation.
-    html_theme_options = {
-            "navbar_fixed_top": "true",
-            "navbar_site_name": "Contents",
-            'bootstrap_version': '3',
-            'source_link_position': 'footer',
+html_theme_options = {
+        "extra_nav_links": {
+            "🚀 Github": "https://github.com/inducer/islpy",
+            "💾 Download Releases": "https://pypi.python.org/pypi/islpy",
             }
+        }
 
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
-# documentation.
-#html_theme_options = {}
+html_sidebars = {
+    '**': [
+        'about.html',
+        'navigation.html',
+        'relations.html',
+        'searchbox.html',
+    ]
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
