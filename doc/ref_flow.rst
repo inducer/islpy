@@ -1,6 +1,8 @@
 Dataflow
 ^^^^^^^^
 
+.. currentmodule:: islpy
+
 Access Info
 -----------
 
