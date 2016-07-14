@@ -18,7 +18,7 @@ include gen_wrap.py
 include py_codegen.py
 
 include test/*.py
-include example/*.py
+include examples/*.py
 
 include doc/*.rst
 include doc/images/*png
