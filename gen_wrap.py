@@ -221,6 +221,22 @@ ENUMS = {
         isl_dim_all,
     """,
 
+    # schedule_type.h
+    "isl_schedule_node_type": """
+        isl_schedule_node_error,
+        isl_schedule_node_band,
+        isl_schedule_node_context,
+        isl_schedule_node_domain,
+        isl_schedule_node_expansion,
+        isl_schedule_node_extension,
+        isl_schedule_node_filter,
+        isl_schedule_node_leaf,
+        isl_schedule_node_guard,
+        isl_schedule_node_mark,
+        isl_schedule_node_sequence,
+        isl_schedule_node_set,
+    """,
+
     # ast_type.h
     "isl_ast_op_type": """
         isl_ast_op_error,
@@ -1577,6 +1593,7 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
     fdata.read_header("isl/options.h")
     fdata.read_header("isl/ast.h")
     fdata.read_header("isl/ast_build.h")
+    fdata.read_header("isl/ilp.h")
 
     if isl_version is None:
         fdata.read_header("isl_declaration_macros_expanded.h")
