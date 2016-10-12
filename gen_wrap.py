@@ -1520,8 +1520,11 @@ def write_method_wrapper(gen, cls_name, meth):
                     # This should never happen.
                     sys.stderr.write("*** islpy was interrupted while collecting "
                         "a result. "
-                        "System state is inconsistent as a result, aborting.\n")
+                        "System state is inconsistent as a result, will print "
+                        "traceback and abort.\n")
                     sys.stderr.flush()
+                    import traceback
+                    traceback.print_stack()
                     import os
                     os._exit(-1)
                 """)
