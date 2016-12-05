@@ -118,7 +118,9 @@ def main():
     if conf["USE_SHIPPED_ISL"]:
         from glob import glob
         isl_blacklist = [
-                "_templ.c", "mp_get",
+                "_templ.c",
+                "_templ_yaml.c",
+                "mp_get",
                 "isl_multi_templ.c",
                 "isl_multi_apply_set.c",
                 "isl_multi_gist.c",
