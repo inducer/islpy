@@ -1166,10 +1166,12 @@ def align_spaces(obj, tgt, obj_bigger_ok=False, across_dim_types=False):
         for dt in dim_types:
             obj = _align_dim_type(dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names)
     else:
-        for dt in dim_types:
-            obj_names = [obj.get_dim_name(dt, i) for i in range(obj.dim(dt))]
-            tgt_names = [tgt.get_dim_name(dt, i) for i in range(tgt.dim(dt))]
+        obj_names = [obj.get_dim_name(dt, i)
+                for dt in dim_types for i in range(obj.dim(dt))]
+        tgt_names = [tgt.get_dim_name(dt, i)
+                for dt in dim_types for i in range(tgt.dim(dt))]
 
+        for dt in dim_types:
             obj = _align_dim_type(dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names)
 
     return obj
