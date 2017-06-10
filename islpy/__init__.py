@@ -106,6 +106,7 @@ error = _isl.error
 ast_expr_type = _isl.ast_expr_type
 stat = _isl.stat
 ast_node_type = _isl.ast_node_type
+schedule_node_type = _isl.schedule_node_type
 dim_type = _isl.dim_type
 ast_loop_type = _isl.ast_loop_type
 fold = _isl.fold
