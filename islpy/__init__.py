@@ -502,7 +502,7 @@ def _add_functionality():
         if context is None:
             context = DEFAULT_CONTEXT
 
-        new_me = cls.alloc(context, name, user)
+        new_me = self.alloc(context, name, user)
         self._setup(new_me._release())
 
     Id.__init__ = id_init

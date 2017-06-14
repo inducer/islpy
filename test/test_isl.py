@@ -238,7 +238,7 @@ def test_get_schedule_map():
 def test_codegen():
     # courtesy of Marek Pałkowski
 
-    def isl_ast_codegen(S):
+    def isl_ast_codegen(S):  # noqa: N803
         b = isl.AstBuild.from_context(isl.Set("{:}"))
         m = isl.Map.from_domain_and_range(S, S)
         m = isl.Map.identity(m.get_space())
@@ -285,6 +285,12 @@ def test_affs_from_space():
             )
 
     print(myset)
+
+
+def test_id_constructor():
+    ctx = isl.Context()
+    isl.Id(context=ctx, name='x0')
+
 
 if __name__ == "__main__":
     import sys
