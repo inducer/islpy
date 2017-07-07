@@ -687,10 +687,6 @@ def _add_functionality():
             pt = pt.set_coordinate_val(
                 dim_type.param, i, value_dict[par_name])
 
-        if not (Set.from_point(pt) <= self.domain()):
-            raise ValueError("evaluation point outside of domain of "
-                    "definition of piecewise quasipolynomial")
-
         return self.eval(pt).to_python()
 
     PwQPolynomial.eval_with_dict = pwqpolynomial_eval_with_dict
