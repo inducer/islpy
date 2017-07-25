@@ -121,6 +121,7 @@ def main():
                 "_templ.c",
                 "_templ_yaml.c",
                 "mp_get",
+                "extract_key.c",
                 "isl_multi_templ.c",
                 "isl_multi_apply_set.c",
                 "isl_multi_gist.c",
@@ -136,6 +137,7 @@ def main():
                 "isl_union_neg.c",
                 "isl_union_single.c",
                 "isl_pw_hash.c",
+                "isl_pw_union_opt.c",
                 "isl_pw_union_opt.c",
                 ]
 
@@ -182,9 +184,9 @@ def main():
                 "isl/imath/imath.c",
                 "isl/imath/imrat.c",
                 "isl/imath/gmp_compat.c",
-                "isl/imath_wrap/imath.c",
-                "isl/imath_wrap/imrat.c",
-                "isl/imath_wrap/gmp_compat.c",
+                #"isl/imath_wrap/imath.c",
+                #"isl/imath_wrap/imrat.c",
+                #"isl/imath_wrap/gmp_compat.c",
                 ])
             EXTRA_DEFINES["USE_IMATH_FOR_MP"] = 1
             if conf["USE_IMATH_SIO"]:
@@ -220,7 +222,7 @@ def main():
 
         wrapper_dirs.extend(conf["BARVINOK_INC_DIR"])
 
-        EXTRA_DEFINES["ISLPY_ISL_VERSION"] = 15
+        #EXTRA_DEFINES["ISLPY_ISL_VERSION"] = 15
 
     # }}}
 

@@ -768,6 +768,7 @@ class FunctionData:
                 "ISL_DECLARE_LIST_FN",
                 "isl_ast_op_type_print_macro",
                 "ISL_DECLARE_MULTI",
+                "ISL_DECLARE_MULTI_CMP",
                 "ISL_DECLARE_MULTI_NEG",
                 "ISL_DECLARE_MULTI_DIMS",
                 "ISL_DECLARE_MULTI_WITH_DOMAIN",
