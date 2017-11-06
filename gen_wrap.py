@@ -360,18 +360,32 @@ import threading
 
 _PY3 = sys.version_info >= (3,)
 
+is_win = sys.platform.startswith('win32')
 
 from islpy._isl_cffi import ffi
-lib = ffi.dlopen(None)
+
+if is_win:
+    lib = ffi.dlopen('_isl_cffi.pyd')
+else:
+    lib = ffi.dlopen(None)
 
 from cffi import FFI
 libc_ffi = FFI()
-libc_ffi.cdef('''
+
+cdef_string = '''
     char *strdup(const char *s);
     void free(void *ptr);
-    ''')
+    '''
 
-libc = libc_ffi.dlopen(None)
+if is_win:
+    cdef_string = cdef_string.replace('strdup', '_strdup')
+
+libc_ffi.cdef(cdef_string)
+
+if is_win:
+    libc = libc_ffi.dlopen('msvcrt')
+else:
+    libc = libc_ffi.dlopen(None)
 
 
 class Error(Exception):
@@ -465,7 +479,10 @@ class _EnumBase(object):
 
 class _ManagedCString(object):
     def __init__(self, cdata):
-        self.data = libc.strdup(cdata)
+        if is_win:
+            self.data = libc._strdup(cdata)
+        else:
+            self.data = libc.strdup(cdata)
         if self.data == libc_ffi.NULL:
             raise Error("strdup() failed")
 
