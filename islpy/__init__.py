@@ -183,13 +183,15 @@ def _add_functionality():
             if context is None:
                 context = DEFAULT_CONTEXT
 
-            # Turns out __del__ is called even if the constructor fails with an
-            # exception.  This is creates a semi-valid state that's just good
-            # enough to get us past the __del__ method.
-            self.data = None
-
-            new_me = self.read_from_str(context, s)
-            self._setup(new_me._release())
+            try:
+                new_me = self.read_from_str(context, s)
+            except Exception:
+                # Turns out __del__ is called even if the constructor fails with an
+                # exception.  This is creates a semi-valid state that's just good
+                # enough to get us past the __del__ method.
+                self.data = None
+            else:
+                self._setup(new_me._release())
 
     def generic_getstate(self):
         ctx = self.get_ctx()
