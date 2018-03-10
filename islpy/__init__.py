@@ -43,7 +43,6 @@ UnionSetList = _isl.UnionSetList
 ConstraintList = _isl.ConstraintList
 AffList = _isl.AffList
 PwAffList = _isl.PwAffList
-BandList = _isl.BandList
 AstExprList = _isl.AstExprList
 AstNodeList = _isl.AstNodeList
 IdToAstExpr = _isl.IdToAstExpr
@@ -75,6 +74,7 @@ Point = _isl.Point
 Vertex = _isl.Vertex
 Cell = _isl.Cell
 Vertices = _isl.Vertices
+StrideInfo = _isl.StrideInfo
 QPolynomialFold = _isl.QPolynomialFold
 PwQPolynomialFold = _isl.PwQPolynomialFold
 UnionPwQPolynomialFold = _isl.UnionPwQPolynomialFold
@@ -96,28 +96,28 @@ AstNode = _isl.AstNode
 AstPrintOptions = _isl.AstPrintOptions
 AstBuild = _isl.AstBuild
 
+error = _isl.error
+stat = _isl.stat
+dim_type = _isl.dim_type
+schedule_node_type = _isl.schedule_node_type
+ast_op_type = _isl.ast_op_type
+ast_expr_type = _isl.ast_expr_type
+ast_node_type = _isl.ast_node_type
+ast_loop_type = _isl.ast_loop_type
+fold = _isl.fold
+format = _isl.format
+yaml_style = _isl.yaml_style
 bound = _isl.bound
 on_error = _isl.on_error
 schedule_algorithm = _isl.schedule_algorithm
-yaml_style = _isl.yaml_style
-ast_op_type = _isl.ast_op_type
-format = _isl.format
-error = _isl.error
-ast_expr_type = _isl.ast_expr_type
-stat = _isl.stat
-ast_node_type = _isl.ast_node_type
-schedule_node_type = _isl.schedule_node_type
-dim_type = _isl.dim_type
-ast_loop_type = _isl.ast_loop_type
-fold = _isl.fold
 
 ALL_CLASSES = [Context, IdList, ValList, BasicSetList, BasicMapList, SetList,
-        MapList, UnionSetList, ConstraintList, AffList, PwAffList, BandList,
-        AstExprList, AstNodeList, IdToAstExpr, Printer, Val, MultiVal, Vec,
-        Mat, Aff, PwAff, UnionPwAff, MultiAff, MultiPwAff, PwMultiAff,
-        UnionPwMultiAff, UnionPwAffList, MultiUnionPwAff, Id, Constraint,
-        Space, LocalSpace, BasicSet, BasicMap, Set, Map, UnionMap, UnionSet,
-        Point, Vertex, Cell, Vertices, QPolynomialFold, PwQPolynomialFold,
+        MapList, UnionSetList, ConstraintList, AffList, PwAffList, AstExprList,
+        AstNodeList, IdToAstExpr, Printer, Val, MultiVal, Vec, Mat, Aff, PwAff,
+        UnionPwAff, MultiAff, MultiPwAff, PwMultiAff, UnionPwMultiAff,
+        UnionPwAffList, MultiUnionPwAff, Id, Constraint, Space, LocalSpace,
+        BasicSet, BasicMap, Set, Map, UnionMap, UnionSet, Point, Vertex, Cell,
+        Vertices, StrideInfo, QPolynomialFold, PwQPolynomialFold,
         UnionPwQPolynomialFold, UnionPwQPolynomial, QPolynomial, PwQPolynomial,
         Term, Band, ScheduleConstraints, ScheduleNode, Schedule, AccessInfo,
         Flow, Restriction, UnionAccessInfo, UnionFlow, AstExpr, AstNode,
@@ -339,7 +339,7 @@ def _add_functionality():
 
         return result
 
-    def space_get_var_dict(self, dimtype=None):
+    def space_get_var_dict(self, dimtype=None, ignore_out=False):
         """Return a dictionary mapping variable names to tuples of
         (:class:`dim_type`, index).
 
@@ -355,6 +355,9 @@ def _add_functionality():
 
         if dimtype is None:
             types = _CHECK_DIM_TYPES
+            if ignore_out:
+                types = types[:]
+                types.remove(dim_type.out)
         else:
             types = [dimtype]
 
@@ -613,7 +616,8 @@ def _add_functionality():
         :param dimtype: None to get all variables, otherwise
             one of :class:`dim_type`.
         """
-        return self.get_space().get_var_dict(dimtype)
+        return self.get_space().get_var_dict(
+                dimtype, ignore_out=isinstance(self, EXPR_CLASSES))
 
     def obj_get_var_ids(self, dimtype):
         """Return a list of :class:`Id` instances for :class:`dim_type` *dimtype*."""

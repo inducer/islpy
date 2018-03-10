@@ -140,7 +140,7 @@ CLASSES = [
         "basic_set_list", "basic_map_list", "set_list", "map_list",
         "union_set_list",
         "constraint_list",
-        "aff_list", "pw_aff_list", "band_list",
+        "aff_list", "pw_aff_list",
         "ast_expr_list", "ast_node_list",
 
         # maps
@@ -160,6 +160,7 @@ CLASSES = [
         "set", "map",
         "union_map", "union_set",
         "point", "vertex", "cell", "vertices",
+        "stride_info",
 
         "qpolynomial_fold", "pw_qpolynomial_fold",
         "union_pw_qpolynomial_fold",
@@ -1590,7 +1591,6 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
     fdata.read_header("isl/val.h")
     fdata.read_header("isl/vec.h")
     fdata.read_header("isl/mat.h")
-    fdata.read_header("isl/band.h")
     fdata.read_header("isl/schedule.h")
     fdata.read_header("isl/schedule_node.h")
     fdata.read_header("isl/flow.h")

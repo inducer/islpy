@@ -7,30 +7,35 @@
 # 13 "isl/include/isl/ctx.h"
 # 1 "/usr/include/stdio.h" 1 3 4
 # 27 "/usr/include/stdio.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/libc-header-start.h" 1 3 4
+# 33 "/usr/include/x86_64-linux-gnu/bits/libc-header-start.h" 3 4
 # 1 "/usr/include/features.h" 1 3 4
-# 342 "/usr/include/features.h" 3 4
+# 402 "/usr/include/features.h" 3 4
 # 1 "/usr/include/stdc-predef.h" 1 3 4
-# 343 "/usr/include/features.h" 2 3 4
-# 364 "/usr/include/features.h" 3 4
+# 403 "/usr/include/features.h" 2 3 4
+# 424 "/usr/include/features.h" 3 4
 # 1 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 1 3 4
-# 415 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
+# 427 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 3 4
 # 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
-# 416 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 2 3 4
-# 365 "/usr/include/features.h" 2 3 4
-# 388 "/usr/include/features.h" 3 4
+# 428 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 2 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/long-double.h" 1 3 4
+# 429 "/usr/include/x86_64-linux-gnu/sys/cdefs.h" 2 3 4
+# 425 "/usr/include/features.h" 2 3 4
+# 448 "/usr/include/features.h" 3 4
 # 1 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 1 3 4
 # 10 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 3 4
 # 1 "/usr/include/x86_64-linux-gnu/gnu/stubs-64.h" 1 3 4
 # 11 "/usr/include/x86_64-linux-gnu/gnu/stubs.h" 2 3 4
-# 389 "/usr/include/features.h" 2 3 4
+# 449 "/usr/include/features.h" 2 3 4
+# 34 "/usr/include/x86_64-linux-gnu/bits/libc-header-start.h" 2 3 4
 # 28 "/usr/include/stdio.h" 2 3 4
 
 
 
 
 
-# 1 "/usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h" 1 3 4
-# 216 "/usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h" 3 4
+# 1 "/usr/lib/gcc/x86_64-linux-gnu/7/include/stddef.h" 1 3 4
+# 216 "/usr/lib/gcc/x86_64-linux-gnu/7/include/stddef.h" 3 4
 
 # 34 "/usr/include/stdio.h" 2 3 4
 
@@ -64,9 +69,22 @@
 
 
 
-# 121 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
+
+
+
+
+
+
+
+
+
+# 130 "/usr/include/x86_64-linux-gnu/bits/types.h" 3 4
 # 1 "/usr/include/x86_64-linux-gnu/bits/typesizes.h" 1 3 4
-# 122 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
+# 131 "/usr/include/x86_64-linux-gnu/bits/types.h" 2 3 4
+
+
+
+
 
 
 
@@ -136,7 +154,14 @@
 
 
 # 36 "/usr/include/stdio.h" 2 3 4
-# 44 "/usr/include/stdio.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/types/__FILE.h" 1 3 4
+
+
+
+
+
+# 37 "/usr/include/stdio.h" 2 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/types/FILE.h" 1 3 4
 
 
 
@@ -144,62 +169,29 @@
 
 
 
+# 38 "/usr/include/stdio.h" 2 3 4
 
 
 
-# 64 "/usr/include/stdio.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/libio.h" 1 3 4
+# 35 "/usr/include/x86_64-linux-gnu/bits/libio.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/_G_config.h" 1 3 4
+# 19 "/usr/include/x86_64-linux-gnu/bits/_G_config.h" 3 4
+# 1 "/usr/lib/gcc/x86_64-linux-gnu/7/include/stddef.h" 1 3 4
+# 20 "/usr/include/x86_64-linux-gnu/bits/_G_config.h" 2 3 4
 
-# 74 "/usr/include/stdio.h" 3 4
-# 1 "/usr/include/libio.h" 1 3 4
-# 31 "/usr/include/libio.h" 3 4
-# 1 "/usr/include/_G_config.h" 1 3 4
-# 15 "/usr/include/_G_config.h" 3 4
-# 1 "/usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h" 1 3 4
-# 16 "/usr/include/_G_config.h" 2 3 4
-
-
-
-
-# 1 "/usr/include/wchar.h" 1 3 4
-# 82 "/usr/include/wchar.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h" 1 3 4
+# 13 "/usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h" 3 4
 
 
  
  
  
-
    
-
-
-
    
  
 
-# 21 "/usr/include/_G_config.h" 2 3 4
-
-
- 
- 
-
-
-
- 
- 
-
-# 32 "/usr/include/libio.h" 2 3 4
-# 49 "/usr/include/libio.h" 3 4
-# 1 "/usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h" 1 3 4
-# 40 "/usr/lib/gcc/x86_64-linux-gnu/5/include/stdarg.h" 3 4
-
-# 50 "/usr/include/libio.h" 2 3 4
-# 144 "/usr/include/libio.h" 3 4
-
-
-
-
-
-
-
+# 22 "/usr/include/x86_64-linux-gnu/bits/_G_config.h" 2 3 4
 
 
 
@@ -212,7 +204,34 @@
 
 
  
-# 173 "/usr/include/libio.h" 3 4
+ 
+
+# 36 "/usr/include/x86_64-linux-gnu/bits/libio.h" 2 3 4
+# 53 "/usr/include/x86_64-linux-gnu/bits/libio.h" 3 4
+# 1 "/usr/lib/gcc/x86_64-linux-gnu/7/include/stdarg.h" 1 3 4
+# 40 "/usr/lib/gcc/x86_64-linux-gnu/7/include/stdarg.h" 3 4
+
+# 54 "/usr/include/x86_64-linux-gnu/bits/libio.h" 2 3 4
+# 149 "/usr/include/x86_64-linux-gnu/bits/libio.h" 3 4
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+
+
+ 
+# 177 "/usr/include/x86_64-linux-gnu/bits/libio.h" 3 4
 
 
 
@@ -223,7 +242,7 @@
  
  
 
-# 241 "/usr/include/libio.h" 3 4
+# 245 "/usr/include/x86_64-linux-gnu/bits/libio.h" 3 4
 
  
 
@@ -264,7 +283,7 @@
 
 
  
-# 289 "/usr/include/libio.h" 3 4
+# 293 "/usr/include/x86_64-linux-gnu/bits/libio.h" 3 4
  
 
 
@@ -294,7 +313,7 @@
 
 
 
-# 333 "/usr/include/libio.h" 3 4
+# 337 "/usr/include/x86_64-linux-gnu/bits/libio.h" 3 4
 
 
 
@@ -316,15 +335,11 @@
 
 
 
-# 385 "/usr/include/libio.h" 3 4
+# 389 "/usr/include/x86_64-linux-gnu/bits/libio.h" 3 4
 
 
 
-# 429 "/usr/include/libio.h" 3 4
-
-
-
-
+# 433 "/usr/include/x86_64-linux-gnu/bits/libio.h" 3 4
 
 
 
@@ -335,7 +350,11 @@
 
 
 
-# 459 "/usr/include/libio.h" 3 4
+
+
+
+
+# 462 "/usr/include/x86_64-linux-gnu/bits/libio.h" 3 4
 
   
 
@@ -347,17 +366,15 @@
 
 
 
-# 75 "/usr/include/stdio.h" 2 3 4
+# 42 "/usr/include/stdio.h" 2 3 4
 
 
 
 
 
-# 90 "/usr/include/stdio.h" 3 4
+# 57 "/usr/include/stdio.h" 3 4
 
-# 104 "/usr/include/stdio.h" 3 4
-
-
+# 71 "/usr/include/stdio.h" 3 4
 
 
 
@@ -366,14 +383,9 @@
 
 
 
-
-
-
-# 166 "/usr/include/stdio.h" 3 4
+# 131 "/usr/include/stdio.h" 3 4
 # 1 "/usr/include/x86_64-linux-gnu/bits/stdio_lim.h" 1 3 4
-# 167 "/usr/include/stdio.h" 2 3 4
-
-
+# 132 "/usr/include/stdio.h" 2 3 4
 
 
 
@@ -402,16 +414,14 @@
 
 
 
-
-# 211 "/usr/include/stdio.h" 3 4
-
+# 173 "/usr/include/stdio.h" 3 4
 
 
 
 
 
 
-# 229 "/usr/include/stdio.h" 3 4
+# 190 "/usr/include/stdio.h" 3 4
 
     
 
@@ -427,17 +437,9 @@
 
 
 
+# 213 "/usr/include/stdio.h" 3 4
 
-
-# 254 "/usr/include/stdio.h" 3 4
-
-# 268 "/usr/include/stdio.h" 3 4
-
-
-
-
-
-
+# 232 "/usr/include/stdio.h" 3 4
 
      
 
@@ -447,11 +449,9 @@
 
        
        
-# 297 "/usr/include/stdio.h" 3 4
+# 265 "/usr/include/stdio.h" 3 4
 
-# 308 "/usr/include/stdio.h" 3 4
-
-# 321 "/usr/include/stdio.h" 3 4
+# 278 "/usr/include/stdio.h" 3 4
 
  
 
@@ -469,9 +469,7 @@
 
 
 
-
      
-
 
 
 
@@ -489,7 +487,6 @@
 
 
 
-
      
 
 
@@ -514,8 +511,6 @@
 
 
       
-
-
 
 
 
@@ -526,8 +521,7 @@
 
        
     
-
-# 414 "/usr/include/stdio.h" 3 4
+# 365 "/usr/include/stdio.h" 3 4
 
       
     
@@ -541,7 +535,6 @@
 
 
 
-
     
 
 
@@ -551,7 +544,7 @@
 
 
     
-# 445 "/usr/include/stdio.h" 3 4
+# 395 "/usr/include/stdio.h" 3 4
 
    
         
@@ -560,15 +553,7 @@
 
        
      
-# 465 "/usr/include/stdio.h" 3 4
-
-
-
-
-
-
-
-
+# 420 "/usr/include/stdio.h" 3 4
 
      
     
@@ -584,7 +569,7 @@
 
      
     
-# 496 "/usr/include/stdio.h" 3 4
+# 443 "/usr/include/stdio.h" 3 4
 
         
   
@@ -598,7 +583,7 @@
       
       
     
-# 524 "/usr/include/stdio.h" 3 4
+# 477 "/usr/include/stdio.h" 3 4
 
 
 
@@ -607,6 +592,12 @@
 
 
 
+# 495 "/usr/include/stdio.h" 3 4
+
+
+# 506 "/usr/include/stdio.h" 3 4
+
+# 517 "/usr/include/stdio.h" 3 4
 
 
 
@@ -615,35 +606,7 @@
 
 
 
-
-
-# 552 "/usr/include/stdio.h" 3 4
-
-
-# 563 "/usr/include/stdio.h" 3 4
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# 596 "/usr/include/stdio.h" 3 4
-
+# 537 "/usr/include/stdio.h" 3 4
 
 
 
@@ -673,9 +636,7 @@
 
 
     
-# 642 "/usr/include/stdio.h" 3 4
-
-# 667 "/usr/include/stdio.h" 3 4
+# 603 "/usr/include/stdio.h" 3 4
 
          
          
@@ -720,7 +681,6 @@
 
 
 
-
       
 
 
@@ -728,8 +688,7 @@
 
 
        
-
-# 739 "/usr/include/stdio.h" 3 4
+# 673 "/usr/include/stdio.h" 3 4
 
         
 
@@ -752,36 +711,21 @@
 
 
 
-
-
-# 775 "/usr/include/stdio.h" 3 4
-
-
-
-
-
-
-# 794 "/usr/include/stdio.h" 3 4
+# 707 "/usr/include/stdio.h" 3 4
 
 
 
 
 
 
+# 731 "/usr/include/stdio.h" 3 4
 
 
 
 
 
 
-# 817 "/usr/include/stdio.h" 3 4
-
-# 826 "/usr/include/stdio.h" 3 4
-
-
-
-
-
+# 757 "/usr/include/stdio.h" 3 4
 
 
 
@@ -810,7 +754,7 @@
 # 26 "/usr/include/x86_64-linux-gnu/bits/sys_errlist.h" 3 4
 
 
-# 856 "/usr/include/stdio.h" 2 3 4
+# 782 "/usr/include/stdio.h" 2 3 4
 
 
 
@@ -821,7 +765,7 @@
 
 
 
-# 874 "/usr/include/stdio.h" 3 4
+# 800 "/usr/include/stdio.h" 3 4
 
 
 
@@ -835,7 +779,7 @@
 
 
 
-# 914 "/usr/include/stdio.h" 3 4
+# 840 "/usr/include/stdio.h" 3 4
 
 
 
@@ -844,16 +788,22 @@
 
 
 
-# 944 "/usr/include/stdio.h" 3 4
+# 868 "/usr/include/stdio.h" 3 4
 
 # 14 "isl/include/isl/ctx.h" 2
 # 1 "/usr/include/stdlib.h" 1 3 4
-# 32 "/usr/include/stdlib.h" 3 4
-# 1 "/usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h" 1 3 4
-# 328 "/usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h" 3 4
+# 25 "/usr/include/stdlib.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/libc-header-start.h" 1 3 4
+# 26 "/usr/include/stdlib.h" 2 3 4
 
-# 33 "/usr/include/stdlib.h" 2 3 4
 
+
+
+
+# 1 "/usr/lib/gcc/x86_64-linux-gnu/7/include/stddef.h" 1 3 4
+# 328 "/usr/lib/gcc/x86_64-linux-gnu/7/include/stddef.h" 3 4
+
+# 32 "/usr/include/stdlib.h" 2 3 4
 
 
 
@@ -862,17 +812,25 @@
 
 
 # 1 "/usr/include/x86_64-linux-gnu/bits/waitflags.h" 1 3 4
-# 50 "/usr/include/x86_64-linux-gnu/bits/waitflags.h" 3 4
+# 52 "/usr/include/x86_64-linux-gnu/bits/waitflags.h" 3 4
 
 
  
  
  
 
-# 42 "/usr/include/stdlib.h" 2 3 4
+# 40 "/usr/include/stdlib.h" 2 3 4
 # 1 "/usr/include/x86_64-linux-gnu/bits/waitstatus.h" 1 3 4
-# 43 "/usr/include/stdlib.h" 2 3 4
-# 56 "/usr/include/stdlib.h" 3 4
+# 41 "/usr/include/stdlib.h" 2 3 4
+# 55 "/usr/include/stdlib.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/floatn.h" 1 3 4
+# 120 "/usr/include/x86_64-linux-gnu/bits/floatn.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 1 3 4
+# 24 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/long-double.h" 1 3 4
+# 25 "/usr/include/x86_64-linux-gnu/bits/floatn-common.h" 2 3 4
+# 121 "/usr/include/x86_64-linux-gnu/bits/floatn.h" 2 3 4
+# 56 "/usr/include/stdlib.h" 2 3 4
 
 
 
@@ -894,16 +852,11 @@
 
 
 
-
-
  
    
    
  
-
-
-# 100 "/usr/include/stdlib.h" 3 4
-
+# 97 "/usr/include/stdlib.h" 3 4
 
 
 
@@ -920,11 +873,7 @@
 
 
 
-
-
     
-
-
 
 
 
@@ -935,18 +884,12 @@
 
 
 
-
-
       
 
 
       
     
-
-
-
-
-
+# 176 "/usr/include/stdlib.h" 3 4
 
   
     
@@ -954,7 +897,6 @@
 
      
     
-
 
 
 
@@ -973,7 +915,6 @@
 
 
 
-
         
     
 
@@ -981,8 +922,7 @@
 
     
     
-
-# 266 "/usr/include/stdlib.h" 3 4
+# 385 "/usr/include/stdlib.h" 3 4
 
 
 
@@ -1055,30 +995,68 @@
 
 
 
-# 132 "/usr/include/x86_64-linux-gnu/sys/types.h" 3 4
-# 1 "/usr/include/time.h" 1 3 4
-# 57 "/usr/include/time.h" 3 4
+
+
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/types/clock_t.h" 1 3 4
 
 
 
 
 
 
-# 73 "/usr/include/time.h" 3 4
+
+# 128 "/usr/include/x86_64-linux-gnu/sys/types.h" 2 3 4
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/types/clockid_t.h" 1 3 4
 
 
 
 
 
 
-# 91 "/usr/include/time.h" 3 4
 
-# 103 "/usr/include/time.h" 3 4
+# 130 "/usr/include/x86_64-linux-gnu/sys/types.h" 2 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/types/time_t.h" 1 3 4
 
-# 133 "/usr/include/x86_64-linux-gnu/sys/types.h" 2 3 4
-# 146 "/usr/include/x86_64-linux-gnu/sys/types.h" 3 4
-# 1 "/usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h" 1 3 4
-# 147 "/usr/include/x86_64-linux-gnu/sys/types.h" 2 3 4
+
+
+
+
+
+
+# 131 "/usr/include/x86_64-linux-gnu/sys/types.h" 2 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/types/timer_t.h" 1 3 4
+
+
+
+
+
+
+
+# 132 "/usr/include/x86_64-linux-gnu/sys/types.h" 2 3 4
+# 145 "/usr/include/x86_64-linux-gnu/sys/types.h" 3 4
+# 1 "/usr/lib/gcc/x86_64-linux-gnu/7/include/stddef.h" 1 3 4
+# 146 "/usr/include/x86_64-linux-gnu/sys/types.h" 2 3 4
+
+
+
+
+
+
+
+
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/stdint-intn.h" 1 3 4
+# 24 "/usr/include/x86_64-linux-gnu/bits/stdint-intn.h" 3 4
+
+
+
+
+# 157 "/usr/include/x86_64-linux-gnu/sys/types.h" 2 3 4
+# 178 "/usr/include/x86_64-linux-gnu/sys/types.h" 3 4
 
 
 
@@ -1086,19 +1064,6 @@
 
 
 # 194 "/usr/include/x86_64-linux-gnu/sys/types.h" 3 4
-
-
-
-
-
-
-
-
-
-
-
-
-# 216 "/usr/include/x86_64-linux-gnu/sys/types.h" 3 4
 # 1 "/usr/include/endian.h" 1 3 4
 # 36 "/usr/include/endian.h" 3 4
 # 1 "/usr/include/x86_64-linux-gnu/bits/endian.h" 1 3 4
@@ -1129,7 +1094,27 @@
  
 
 # 61 "/usr/include/endian.h" 2 3 4
-# 217 "/usr/include/x86_64-linux-gnu/sys/types.h" 2 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/uintn-identity.h" 1 3 4
+# 32 "/usr/include/x86_64-linux-gnu/bits/uintn-identity.h" 3 4
+
+
+
+ 
+
+
+
+
+
+ 
+
+
+
+
+
+ 
+
+# 62 "/usr/include/endian.h" 2 3 4
+# 195 "/usr/include/x86_64-linux-gnu/sys/types.h" 2 3 4
 
 
 # 1 "/usr/include/x86_64-linux-gnu/sys/select.h" 1 3 4
@@ -1141,8 +1126,11 @@
 # 31 "/usr/include/x86_64-linux-gnu/sys/select.h" 2 3 4
 
 
-# 1 "/usr/include/x86_64-linux-gnu/bits/sigset.h" 1 3 4
-# 22 "/usr/include/x86_64-linux-gnu/bits/sigset.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/types/sigset_t.h" 1 3 4
+
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/types/__sigset_t.h" 1 3 4
 
 
 
@@ -1150,12 +1138,16 @@
 
 
  
-   
- 
+
+# 5 "/usr/include/x86_64-linux-gnu/bits/types/sigset_t.h" 2 3 4
+
+
+
 # 34 "/usr/include/x86_64-linux-gnu/sys/select.h" 2 3 4
 
 
 
+# 1 "/usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h" 1 3 4
 
 
 
@@ -1164,42 +1156,46 @@
 
 
 
-# 1 "/usr/include/time.h" 1 3 4
-# 120 "/usr/include/time.h" 3 4
 
  
+ 
+
+# 38 "/usr/include/x86_64-linux-gnu/sys/select.h" 2 3 4
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h" 1 3 4
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+# 40 "/usr/include/x86_64-linux-gnu/sys/select.h" 2 3 4
+
+
+
+
+
+
+
+
+
+
+# 59 "/usr/include/x86_64-linux-gnu/sys/select.h" 3 4
+
+ 
+
+
+
+
+
+
    
-   
- 
-# 46 "/usr/include/x86_64-linux-gnu/sys/select.h" 2 3 4
-
-# 1 "/usr/include/x86_64-linux-gnu/bits/time.h" 1 3 4
-# 30 "/usr/include/x86_64-linux-gnu/bits/time.h" 3 4
-
- 
-   
-   
- 
-# 48 "/usr/include/x86_64-linux-gnu/sys/select.h" 2 3 4
-
-
-
-
-
-
-
-
-
-# 66 "/usr/include/x86_64-linux-gnu/sys/select.h" 3 4
-
- 
-
-
-
-
-
-
-   
 
 
  
@@ -1210,41 +1206,43 @@
 
 
 
-# 98 "/usr/include/x86_64-linux-gnu/sys/select.h" 3 4
+# 91 "/usr/include/x86_64-linux-gnu/sys/select.h" 3 4
 
-# 108 "/usr/include/x86_64-linux-gnu/sys/select.h" 3 4
+# 101 "/usr/include/x86_64-linux-gnu/sys/select.h" 3 4
 
     
     
     
-# 120 "/usr/include/x86_64-linux-gnu/sys/select.h" 3 4
+# 113 "/usr/include/x86_64-linux-gnu/sys/select.h" 3 4
 
      
      
      
      
-# 133 "/usr/include/x86_64-linux-gnu/sys/select.h" 3 4
+# 126 "/usr/include/x86_64-linux-gnu/sys/select.h" 3 4
 
-# 220 "/usr/include/x86_64-linux-gnu/sys/types.h" 2 3 4
+# 198 "/usr/include/x86_64-linux-gnu/sys/types.h" 2 3 4
+
+
+
+
+
 
 
 # 1 "/usr/include/x86_64-linux-gnu/sys/sysmacros.h" 1 3 4
-# 24 "/usr/include/x86_64-linux-gnu/sys/sysmacros.h" 3 4
+# 41 "/usr/include/x86_64-linux-gnu/sys/sysmacros.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/sysmacros.h" 1 3 4
+# 42 "/usr/include/x86_64-linux-gnu/sys/sysmacros.h" 2 3 4
+# 71 "/usr/include/x86_64-linux-gnu/sys/sysmacros.h" 3 4
 
 
 
 
-    
 
+# 85 "/usr/include/x86_64-linux-gnu/sys/sysmacros.h" 3 4
 
-    
+# 206 "/usr/include/x86_64-linux-gnu/sys/types.h" 2 3 4
 
-
-           
-    
-# 58 "/usr/include/x86_64-linux-gnu/sys/sysmacros.h" 3 4
-
-# 223 "/usr/include/x86_64-linux-gnu/sys/types.h" 2 3 4
 
 
 
@@ -1266,14 +1264,59 @@
 
 
 
-# 270 "/usr/include/x86_64-linux-gnu/sys/types.h" 3 4
+# 254 "/usr/include/x86_64-linux-gnu/sys/types.h" 3 4
 # 1 "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h" 1 3 4
-# 21 "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h" 3 4
+# 23 "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/thread-shared-types.h" 1 3 4
+# 77 "/usr/include/x86_64-linux-gnu/bits/thread-shared-types.h" 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h" 1 3 4
+# 21 "/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h" 3 4
 # 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
-# 22 "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h" 2 3 4
-# 60 "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h" 3 4
+# 22 "/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h" 2 3 4
+# 65 "/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h" 3 4
 
 
+ 
+ 
+ 
+ 
+ 
+ 
+
+ 
+ 
+ 
+
+
+
+
+ 
+
+
+ 
+
+
+ 
+# 99 "/usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h" 3 4
+
+# 78 "/usr/include/x86_64-linux-gnu/bits/thread-shared-types.h" 2 3 4
+
+
+
+
+
+
+ 
+ 
+
+# 118 "/usr/include/x86_64-linux-gnu/bits/thread-shared-types.h" 3 4
+
+
+ 
+ 
+ 
+
+ 
 
 
 
@@ -1283,79 +1326,10 @@
 
 
 
-
-
-
-
-
-
  
  
-
-# 90 "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h" 3 4
-
-
+# 145 "/usr/include/x86_64-linux-gnu/bits/thread-shared-types.h" 3 4
  
- 
-   
-   
-   
-
-   
-
-
-
-   
-
-   
-   
-   
-# 125 "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h" 3 4
- 
- 
- 
-
-
-
-
- 
- 
-
-
-
-
-
-
-
- 
- 
-   
-   
-   
-   
-   
-   
-   
-   
- 
- 
- 
-
-
-
-
- 
- 
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1368,37 +1342,26 @@
    
    
    
+     
+     
    
-   
-   
-   
-   
-   
-
-
-
-
-   
-
-
-   
-
-
-   
-
  
-# 220 "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h" 3 4
+ 
+ 
+   
+   
+   
+     
+     
+   
+ 
+ 
+ 
+ 
  
  
 
-
-
-
- 
- 
-
-
-
+# 24 "/usr/include/x86_64-linux-gnu/bits/pthreadtypes.h" 2 3 4
 
 
 
@@ -1415,14 +1378,90 @@
 
 
 
+
+
+
  
  
 
-# 271 "/usr/include/x86_64-linux-gnu/sys/types.h" 2 3 4
 
 
 
-# 276 "/usr/include/stdlib.h" 2 3 4
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+
+
+
+
+
+
+
+
+ 
+ 
+ 
+
+
+
+
+
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+ 
+ 
+ 
+
+
+
+
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+
+
+
+ 
+ 
+
+# 255 "/usr/include/x86_64-linux-gnu/sys/types.h" 2 3 4
+
+
+
+# 395 "/usr/include/stdlib.h" 2 3 4
 
 
 
@@ -1501,8 +1540,6 @@
 
 
 
-
-
     
 
 
@@ -1572,11 +1609,6 @@
 
 
 
-
-
-
-
-
     
 
 
@@ -1585,24 +1617,14 @@
 
 
 
-
-
-
-
     
-
-
-
-
-
-
-
+# 563 "/usr/include/stdlib.h" 3 4
 
 
 
 # 1 "/usr/include/alloca.h" 1 3 4
 # 24 "/usr/include/alloca.h" 3 4
-# 1 "/usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h" 1 3 4
+# 1 "/usr/lib/gcc/x86_64-linux-gnu/7/include/stddef.h" 1 3 4
 # 25 "/usr/include/alloca.h" 2 3 4
 
 
@@ -1618,7 +1640,7 @@
 
 
 
-# 454 "/usr/include/stdlib.h" 2 3 4
+# 567 "/usr/include/stdlib.h" 2 3 4
 
 
 
@@ -1660,8 +1682,6 @@
 
 
 
-
-
     
 
 
@@ -1686,13 +1706,7 @@
 
 
 
-
-
-
-
-
-
-# 539 "/usr/include/stdlib.h" 3 4
+# 644 "/usr/include/stdlib.h" 3 4
 
 
 
@@ -1710,24 +1724,18 @@
 
 
 
-
-# 567 "/usr/include/stdlib.h" 3 4
-
-# 580 "/usr/include/stdlib.h" 3 4
-
-# 602 "/usr/include/stdlib.h" 3 4
-
-# 623 "/usr/include/stdlib.h" 3 4
 
 # 672 "/usr/include/stdlib.h" 3 4
 
+# 685 "/usr/include/stdlib.h" 3 4
 
+# 707 "/usr/include/stdlib.h" 3 4
 
+# 728 "/usr/include/stdlib.h" 3 4
 
+# 781 "/usr/include/stdlib.h" 3 4
 
-
-
-# 694 "/usr/include/stdlib.h" 3 4
+# 797 "/usr/include/stdlib.h" 3 4
 
         
 
@@ -1737,10 +1745,7 @@
 
 
 
-# 712 "/usr/include/stdlib.h" 3 4
-
-
-
+# 817 "/usr/include/stdlib.h" 3 4
 
        
     
@@ -1753,15 +1758,13 @@
 
 
     
-# 735 "/usr/include/stdlib.h" 3 4
-
+# 837 "/usr/include/stdlib.h" 3 4
 
 
 
 
 
     
-
 
 
 
@@ -1772,15 +1775,12 @@
     
 
     
-
-
 
 
 
        
     
-
-# 772 "/usr/include/stdlib.h" 3 4
+# 869 "/usr/include/stdlib.h" 3 4
 
     
 
@@ -1826,7 +1826,6 @@
      
      
     
-
 
 
 
@@ -1857,31 +1856,31 @@
 
 
 
-
-# 859 "/usr/include/stdlib.h" 3 4
+# 954 "/usr/include/stdlib.h" 3 4
 
        
        
     
-# 911 "/usr/include/stdlib.h" 3 4
+# 1006 "/usr/include/stdlib.h" 3 4
 
     
-# 921 "/usr/include/stdlib.h" 3 4
+# 1016 "/usr/include/stdlib.h" 3 4
 # 1 "/usr/include/x86_64-linux-gnu/bits/stdlib-float.h" 1 3 4
-# 922 "/usr/include/stdlib.h" 2 3 4
-# 934 "/usr/include/stdlib.h" 3 4
+# 1017 "/usr/include/stdlib.h" 2 3 4
+# 1026 "/usr/include/stdlib.h" 3 4
 
 # 15 "isl/include/isl/ctx.h" 2
 
 # 1 "isl/include/isl/arg.h" 1
 # 13 "isl/include/isl/arg.h"
-# 1 "/usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h" 1 3 4
-# 149 "/usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h" 3 4
+# 1 "/usr/lib/gcc/x86_64-linux-gnu/7/include/stddef.h" 1 3 4
+# 149 "/usr/lib/gcc/x86_64-linux-gnu/7/include/stddef.h" 3 4
 
-# 426 "/usr/lib/gcc/x86_64-linux-gnu/5/include/stddef.h" 3 4
+# 426 "/usr/lib/gcc/x86_64-linux-gnu/7/include/stddef.h" 3 4
 
  
  
+# 437 "/usr/lib/gcc/x86_64-linux-gnu/7/include/stddef.h" 3 4
 
 # 14 "isl/include/isl/arg.h" 2
 
@@ -2043,6 +2042,9 @@
 
 
 
+
+
+
 # 14 "./isl/include/isl/list.h" 2
 # 1 "isl/include/isl/printer_type.h" 1
 
@@ -2071,15 +2073,31 @@
 # 6 "isl/include/isl/id.h" 2
 
 # 1 "isl-supplementary/isl/stdint.h" 1
-# 1 "/usr/lib/gcc/x86_64-linux-gnu/5/include/stdint.h" 1 3 4
-# 9 "/usr/lib/gcc/x86_64-linux-gnu/5/include/stdint.h" 3 4
+# 1 "/usr/lib/gcc/x86_64-linux-gnu/7/include/stdint.h" 1 3 4
+# 9 "/usr/lib/gcc/x86_64-linux-gnu/7/include/stdint.h" 3 4
 # 1 "/usr/include/stdint.h" 1 3 4
 # 26 "/usr/include/stdint.h" 3 4
-# 1 "/usr/include/x86_64-linux-gnu/bits/wchar.h" 1 3 4
+# 1 "/usr/include/x86_64-linux-gnu/bits/libc-header-start.h" 1 3 4
 # 27 "/usr/include/stdint.h" 2 3 4
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/wchar.h" 1 3 4
+# 29 "/usr/include/stdint.h" 2 3 4
 # 1 "/usr/include/x86_64-linux-gnu/bits/wordsize.h" 1 3 4
-# 28 "/usr/include/stdint.h" 2 3 4
-# 48 "/usr/include/stdint.h" 3 4
+# 30 "/usr/include/stdint.h" 2 3 4
+
+
+
+
+
+
+
+# 1 "/usr/include/x86_64-linux-gnu/bits/stdint-uintn.h" 1 3 4
+# 24 "/usr/include/x86_64-linux-gnu/bits/stdint-uintn.h" 3 4
+
+
+
+
+# 38 "/usr/include/stdint.h" 2 3 4
 
 
 
@@ -2088,7 +2106,6 @@
 
 
 
-# 65 "/usr/include/stdint.h" 3 4
 
 
 
@@ -2102,30 +2119,27 @@
 
 
 
-
-
-
-# 90 "/usr/include/stdint.h" 3 4
-
-
-
-
-
-# 103 "/usr/include/stdint.h" 3 4
+# 68 "/usr/include/stdint.h" 3 4
 
 
 
 
 
-# 119 "/usr/include/stdint.h" 3 4
+# 81 "/usr/include/stdint.h" 3 4
 
 
 
 
-# 134 "/usr/include/stdint.h" 3 4
+
+# 97 "/usr/include/stdint.h" 3 4
 
 
-# 10 "/usr/lib/gcc/x86_64-linux-gnu/5/include/stdint.h" 2 3 4
+
+
+# 111 "/usr/include/stdint.h" 3 4
+
+
+# 10 "/usr/lib/gcc/x86_64-linux-gnu/7/include/stdint.h" 2 3 4
 # 1 "isl-supplementary/isl/stdint.h" 2
 # 8 "isl/include/isl/id.h" 2
 
@@ -2242,6 +2256,9 @@
   
 
   
+
+
+
 
 
 
@@ -2435,11 +2452,10 @@ struct isl_union_set; struct isl_union_set_list; typedef struct isl_union_set_li
 
 struct isl_ast_expr; struct isl_ast_expr_list; typedef struct isl_ast_expr_list isl_ast_expr_list; isl_ctx *isl_ast_expr_list_get_ctx(__isl_keep isl_ast_expr_list *list); __isl_give isl_ast_expr_list *isl_ast_expr_list_from_ast_expr( __isl_take struct isl_ast_expr *el); __isl_give isl_ast_expr_list *isl_ast_expr_list_alloc(isl_ctx *ctx, int n); __isl_give isl_ast_expr_list *isl_ast_expr_list_copy( __isl_keep isl_ast_expr_list *list); isl_ast_expr_list *isl_ast_expr_list_free( __isl_take isl_ast_expr_list *list); __isl_give isl_ast_expr_list *isl_ast_expr_list_add( __isl_take isl_ast_expr_list *list, __isl_take struct isl_ast_expr *el); __isl_give isl_ast_expr_list *isl_ast_expr_list_insert( __isl_take isl_ast_expr_list *list, unsigned pos, __isl_take struct isl_ast_expr *el); __isl_give isl_ast_expr_list *isl_ast_expr_list_drop( __isl_take isl_ast_expr_list *list, unsigned first, unsigned n); __isl_give isl_ast_expr_list *isl_ast_expr_list_concat( __isl_take isl_ast_expr_list *list1, __isl_take isl_ast_expr_list *list2); int isl_ast_expr_list_n_ast_expr(__isl_keep isl_ast_expr_list *list); __isl_give struct isl_ast_expr *isl_ast_expr_list_get_ast_expr( __isl_keep isl_ast_expr_list *list, int index); __isl_give struct isl_ast_expr_list *isl_ast_expr_list_set_ast_expr( __isl_take struct isl_ast_expr_list *list, int index, __isl_take struct isl_ast_expr *el); isl_stat isl_ast_expr_list_foreach(__isl_keep isl_ast_expr_list *list, isl_stat (*fn)(__isl_take struct isl_ast_expr *el, void *user), void *user); __isl_give isl_ast_expr_list *isl_ast_expr_list_map( __isl_take isl_ast_expr_list *list, __isl_give isl_ast_expr * (*fn)(__isl_take isl_ast_expr *el, void *user), void *user); __isl_give isl_ast_expr_list *isl_ast_expr_list_sort( __isl_take isl_ast_expr_list *list, int (*cmp)(__isl_keep struct isl_ast_expr *a, __isl_keep struct isl_ast_expr *b, void *user), void *user); isl_stat isl_ast_expr_list_foreach_scc(__isl_keep isl_ast_expr_list *list, isl_bool (*follows)(__isl_keep struct isl_ast_expr *a, __isl_keep struct isl_ast_expr *b, void *user), void *follows_user, isl_stat (*fn)(__isl_take isl_ast_expr_list *scc, void *user), void *fn_user); __isl_give isl_printer *isl_printer_print_ast_expr_list( __isl_take isl_printer *p, __isl_keep isl_ast_expr_list *list); void isl_ast_expr_list_dump(__isl_keep isl_ast_expr_list *list);
 struct isl_ast_node; struct isl_ast_node_list; typedef struct isl_ast_node_list isl_ast_node_list; isl_ctx *isl_ast_node_list_get_ctx(__isl_keep isl_ast_node_list *list); __isl_give isl_ast_node_list *isl_ast_node_list_from_ast_node( __isl_take struct isl_ast_node *el); __isl_give isl_ast_node_list *isl_ast_node_list_alloc(isl_ctx *ctx, int n); __isl_give isl_ast_node_list *isl_ast_node_list_copy( __isl_keep isl_ast_node_list *list); isl_ast_node_list *isl_ast_node_list_free( __isl_take isl_ast_node_list *list); __isl_give isl_ast_node_list *isl_ast_node_list_add( __isl_take isl_ast_node_list *list, __isl_take struct isl_ast_node *el); __isl_give isl_ast_node_list *isl_ast_node_list_insert( __isl_take isl_ast_node_list *list, unsigned pos, __isl_take struct isl_ast_node *el); __isl_give isl_ast_node_list *isl_ast_node_list_drop( __isl_take isl_ast_node_list *list, unsigned first, unsigned n); __isl_give isl_ast_node_list *isl_ast_node_list_concat( __isl_take isl_ast_node_list *list1, __isl_take isl_ast_node_list *list2); int isl_ast_node_list_n_ast_node(__isl_keep isl_ast_node_list *list); __isl_give struct isl_ast_node *isl_ast_node_list_get_ast_node( __isl_keep isl_ast_node_list *list, int index); __isl_give struct isl_ast_node_list *isl_ast_node_list_set_ast_node( __isl_take struct isl_ast_node_list *list, int index, __isl_take struct isl_ast_node *el); isl_stat isl_ast_node_list_foreach(__isl_keep isl_ast_node_list *list, isl_stat (*fn)(__isl_take struct isl_ast_node *el, void *user), void *user); __isl_give isl_ast_node_list *isl_ast_node_list_map( __isl_take isl_ast_node_list *list, __isl_give isl_ast_node * (*fn)(__isl_take isl_ast_node *el, void *user), void *user); __isl_give isl_ast_node_list *isl_ast_node_list_sort( __isl_take isl_ast_node_list *list, int (*cmp)(__isl_keep struct isl_ast_node *a, __isl_keep struct isl_ast_node *b, void *user), void *user); isl_stat isl_ast_node_list_foreach_scc(__isl_keep isl_ast_node_list *list, isl_bool (*follows)(__isl_keep struct isl_ast_node *a, __isl_keep struct isl_ast_node *b, void *user), void *follows_user, isl_stat (*fn)(__isl_take isl_ast_node_list *scc, void *user), void *fn_user); __isl_give isl_printer *isl_printer_print_ast_node_list( __isl_take isl_printer *p, __isl_keep isl_ast_node_list *list); void isl_ast_node_list_dump(__isl_keep isl_ast_node_list *list);
-struct isl_band; struct isl_band_list; typedef struct isl_band_list isl_band_list; isl_ctx *isl_band_list_get_ctx(__isl_keep isl_band_list *list); __isl_give isl_band_list *isl_band_list_from_band( __isl_take struct isl_band *el); __isl_give isl_band_list *isl_band_list_alloc(isl_ctx *ctx, int n); __isl_give isl_band_list *isl_band_list_copy( __isl_keep isl_band_list *list); isl_band_list *isl_band_list_free( __isl_take isl_band_list *list); __isl_give isl_band_list *isl_band_list_add( __isl_take isl_band_list *list, __isl_take struct isl_band *el); __isl_give isl_band_list *isl_band_list_insert( __isl_take isl_band_list *list, unsigned pos, __isl_take struct isl_band *el); __isl_give isl_band_list *isl_band_list_drop( __isl_take isl_band_list *list, unsigned first, unsigned n); __isl_give isl_band_list *isl_band_list_concat( __isl_take isl_band_list *list1, __isl_take isl_band_list *list2); int isl_band_list_n_band(__isl_keep isl_band_list *list); __isl_give struct isl_band *isl_band_list_get_band( __isl_keep isl_band_list *list, int index); __isl_give struct isl_band_list *isl_band_list_set_band( __isl_take struct isl_band_list *list, int index, __isl_take struct isl_band *el); isl_stat isl_band_list_foreach(__isl_keep isl_band_list *list, isl_stat (*fn)(__isl_take struct isl_band *el, void *user), void *user); __isl_give isl_band_list *isl_band_list_map( __isl_take isl_band_list *list, __isl_give isl_band * (*fn)(__isl_take isl_band *el, void *user), void *user); __isl_give isl_band_list *isl_band_list_sort( __isl_take isl_band_list *list, int (*cmp)(__isl_keep struct isl_band *a, __isl_keep struct isl_band *b, void *user), void *user); isl_stat isl_band_list_foreach_scc(__isl_keep isl_band_list *list, isl_bool (*follows)(__isl_keep struct isl_band *a, __isl_keep struct isl_band *b, void *user), void *follows_user, isl_stat (*fn)(__isl_take isl_band_list *scc, void *user), void *fn_user); __isl_give isl_printer *isl_printer_print_band_list( __isl_take isl_printer *p, __isl_keep isl_band_list *list); void isl_band_list_dump(__isl_keep isl_band_list *list);
 
-unsigned isl_multi_aff_dim(__isl_keep isl_multi_aff *multi, enum isl_dim_type type); isl_ctx *isl_multi_aff_get_ctx( __isl_keep isl_multi_aff *multi); __isl_give isl_space *isl_multi_aff_get_space( __isl_keep isl_multi_aff *multi); __isl_give isl_space *isl_multi_aff_get_domain_space( __isl_keep isl_multi_aff *multi); int isl_multi_aff_find_dim_by_name( __isl_keep isl_multi_aff *multi, enum isl_dim_type type, const char *name); __isl_give isl_multi_aff *isl_multi_aff_from_aff_list( __isl_take isl_space *space, __isl_take isl_aff_list *list); __isl_give isl_multi_aff *isl_multi_aff_zero( __isl_take isl_space *space); __isl_give isl_multi_aff *isl_multi_aff_copy( __isl_keep isl_multi_aff *multi); isl_multi_aff *isl_multi_aff_free( __isl_take isl_multi_aff *multi); isl_bool isl_multi_aff_plain_is_equal( __isl_keep isl_multi_aff *multi1, __isl_keep isl_multi_aff *multi2); isl_bool isl_multi_aff_involves_nan( __isl_keep isl_multi_aff *multi); int isl_multi_aff_find_dim_by_id( __isl_keep isl_multi_aff *multi, enum isl_dim_type type, __isl_keep isl_id *id); __isl_give isl_id *isl_multi_aff_get_dim_id( __isl_take isl_multi_aff *multi, enum isl_dim_type type, unsigned pos); __isl_give isl_multi_aff *isl_multi_aff_set_dim_name( __isl_take isl_multi_aff *multi, enum isl_dim_type type, unsigned pos, const char *s); __isl_give isl_multi_aff *isl_multi_aff_set_dim_id( __isl_take isl_multi_aff *multi, enum isl_dim_type type, unsigned pos, __isl_take isl_id *id); const char *isl_multi_aff_get_tuple_name( __isl_keep isl_multi_aff *multi, enum isl_dim_type type); isl_bool isl_multi_aff_has_tuple_id( __isl_keep isl_multi_aff *multi, enum isl_dim_type type); __isl_give isl_id *isl_multi_aff_get_tuple_id( __isl_keep isl_multi_aff *multi, enum isl_dim_type type); __isl_give isl_multi_aff *isl_multi_aff_set_tuple_name( __isl_take isl_multi_aff *multi, enum isl_dim_type type, const char *s); __isl_give isl_multi_aff *isl_multi_aff_set_tuple_id( __isl_take isl_multi_aff *multi, enum isl_dim_type type, __isl_take isl_id *id); __isl_give isl_multi_aff *isl_multi_aff_reset_tuple_id( __isl_take isl_multi_aff *multi, enum isl_dim_type type); __isl_give isl_multi_aff *isl_multi_aff_reset_user( __isl_take isl_multi_aff *multi); __isl_give isl_multi_aff *isl_multi_aff_drop_dims( __isl_take isl_multi_aff *multi, enum isl_dim_type type, unsigned first, unsigned n); __isl_give isl_aff *isl_multi_aff_get_aff( __isl_keep isl_multi_aff *multi, int pos); __isl_give isl_multi_aff *isl_multi_aff_set_aff( __isl_take isl_multi_aff *multi, int pos, __isl_take isl_aff *el); __isl_give isl_multi_aff *isl_multi_aff_range_splice( __isl_take isl_multi_aff *multi1, unsigned pos, __isl_take isl_multi_aff *multi2); __isl_give isl_multi_aff *isl_multi_aff_flatten_range( __isl_take isl_multi_aff *multi); __isl_give isl_multi_aff *isl_multi_aff_flat_range_product( __isl_take isl_multi_aff *multi1, __isl_take isl_multi_aff *multi2); __isl_give isl_multi_aff *isl_multi_aff_range_product( __isl_take isl_multi_aff *multi1, __isl_take isl_multi_aff *multi2); __isl_give isl_multi_aff *isl_multi_aff_factor_range( __isl_take isl_multi_aff *multi); isl_bool isl_multi_aff_range_is_wrapping( __isl_keep isl_multi_aff *multi); __isl_give isl_multi_aff *isl_multi_aff_range_factor_domain( __isl_take isl_multi_aff *multi); __isl_give isl_multi_aff *isl_multi_aff_range_factor_range( __isl_take isl_multi_aff *multi); __isl_give isl_multi_aff *isl_multi_aff_scale_val( __isl_take isl_multi_aff *multi, __isl_take isl_val *v); __isl_give isl_multi_aff *isl_multi_aff_scale_down_val( __isl_take isl_multi_aff *multi, __isl_take isl_val *v); __isl_give isl_multi_aff *isl_multi_aff_scale_multi_val( __isl_take isl_multi_aff *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_aff *isl_multi_aff_scale_down_multi_val( __isl_take isl_multi_aff *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_aff *isl_multi_aff_mod_multi_val( __isl_take isl_multi_aff *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_aff *isl_multi_aff_add( __isl_take isl_multi_aff *multi1, __isl_take isl_multi_aff *multi2); __isl_give isl_multi_aff *isl_multi_aff_sub( __isl_take isl_multi_aff *multi1, __isl_take isl_multi_aff *multi2); __isl_give isl_multi_aff *isl_multi_aff_align_params( __isl_take isl_multi_aff *multi, __isl_take isl_space *model); __isl_give isl_multi_aff *isl_multi_aff_from_range( __isl_take isl_multi_aff *multi);
-unsigned isl_multi_pw_aff_dim(__isl_keep isl_multi_pw_aff *multi, enum isl_dim_type type); isl_ctx *isl_multi_pw_aff_get_ctx( __isl_keep isl_multi_pw_aff *multi); __isl_give isl_space *isl_multi_pw_aff_get_space( __isl_keep isl_multi_pw_aff *multi); __isl_give isl_space *isl_multi_pw_aff_get_domain_space( __isl_keep isl_multi_pw_aff *multi); int isl_multi_pw_aff_find_dim_by_name( __isl_keep isl_multi_pw_aff *multi, enum isl_dim_type type, const char *name); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_from_pw_aff_list( __isl_take isl_space *space, __isl_take isl_pw_aff_list *list); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_zero( __isl_take isl_space *space); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_copy( __isl_keep isl_multi_pw_aff *multi); isl_multi_pw_aff *isl_multi_pw_aff_free( __isl_take isl_multi_pw_aff *multi); isl_bool isl_multi_pw_aff_plain_is_equal( __isl_keep isl_multi_pw_aff *multi1, __isl_keep isl_multi_pw_aff *multi2); isl_bool isl_multi_pw_aff_involves_nan( __isl_keep isl_multi_pw_aff *multi); int isl_multi_pw_aff_find_dim_by_id( __isl_keep isl_multi_pw_aff *multi, enum isl_dim_type type, __isl_keep isl_id *id); __isl_give isl_id *isl_multi_pw_aff_get_dim_id( __isl_take isl_multi_pw_aff *multi, enum isl_dim_type type, unsigned pos); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_set_dim_name( __isl_take isl_multi_pw_aff *multi, enum isl_dim_type type, unsigned pos, const char *s); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_set_dim_id( __isl_take isl_multi_pw_aff *multi, enum isl_dim_type type, unsigned pos, __isl_take isl_id *id); const char *isl_multi_pw_aff_get_tuple_name( __isl_keep isl_multi_pw_aff *multi, enum isl_dim_type type); isl_bool isl_multi_pw_aff_has_tuple_id( __isl_keep isl_multi_pw_aff *multi, enum isl_dim_type type); __isl_give isl_id *isl_multi_pw_aff_get_tuple_id( __isl_keep isl_multi_pw_aff *multi, enum isl_dim_type type); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_set_tuple_name( __isl_take isl_multi_pw_aff *multi, enum isl_dim_type type, const char *s); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_set_tuple_id( __isl_take isl_multi_pw_aff *multi, enum isl_dim_type type, __isl_take isl_id *id); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_reset_tuple_id( __isl_take isl_multi_pw_aff *multi, enum isl_dim_type type); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_reset_user( __isl_take isl_multi_pw_aff *multi); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_drop_dims( __isl_take isl_multi_pw_aff *multi, enum isl_dim_type type, unsigned first, unsigned n); __isl_give isl_pw_aff *isl_multi_pw_aff_get_pw_aff( __isl_keep isl_multi_pw_aff *multi, int pos); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_set_pw_aff( __isl_take isl_multi_pw_aff *multi, int pos, __isl_take isl_pw_aff *el); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_range_splice( __isl_take isl_multi_pw_aff *multi1, unsigned pos, __isl_take isl_multi_pw_aff *multi2); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_flatten_range( __isl_take isl_multi_pw_aff *multi); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_flat_range_product( __isl_take isl_multi_pw_aff *multi1, __isl_take isl_multi_pw_aff *multi2); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_range_product( __isl_take isl_multi_pw_aff *multi1, __isl_take isl_multi_pw_aff *multi2); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_factor_range( __isl_take isl_multi_pw_aff *multi); isl_bool isl_multi_pw_aff_range_is_wrapping( __isl_keep isl_multi_pw_aff *multi); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_range_factor_domain( __isl_take isl_multi_pw_aff *multi); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_range_factor_range( __isl_take isl_multi_pw_aff *multi); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_scale_val( __isl_take isl_multi_pw_aff *multi, __isl_take isl_val *v); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_scale_down_val( __isl_take isl_multi_pw_aff *multi, __isl_take isl_val *v); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_scale_multi_val( __isl_take isl_multi_pw_aff *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_scale_down_multi_val( __isl_take isl_multi_pw_aff *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_mod_multi_val( __isl_take isl_multi_pw_aff *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_add( __isl_take isl_multi_pw_aff *multi1, __isl_take isl_multi_pw_aff *multi2); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_sub( __isl_take isl_multi_pw_aff *multi1, __isl_take isl_multi_pw_aff *multi2); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_align_params( __isl_take isl_multi_pw_aff *multi, __isl_take isl_space *model); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_from_range( __isl_take isl_multi_pw_aff *multi);
-unsigned isl_multi_val_dim(__isl_keep isl_multi_val *multi, enum isl_dim_type type); isl_ctx *isl_multi_val_get_ctx( __isl_keep isl_multi_val *multi); __isl_give isl_space *isl_multi_val_get_space( __isl_keep isl_multi_val *multi); __isl_give isl_space *isl_multi_val_get_domain_space( __isl_keep isl_multi_val *multi); int isl_multi_val_find_dim_by_name( __isl_keep isl_multi_val *multi, enum isl_dim_type type, const char *name); __isl_give isl_multi_val *isl_multi_val_from_val_list( __isl_take isl_space *space, __isl_take isl_val_list *list); __isl_give isl_multi_val *isl_multi_val_zero( __isl_take isl_space *space); __isl_give isl_multi_val *isl_multi_val_copy( __isl_keep isl_multi_val *multi); isl_multi_val *isl_multi_val_free( __isl_take isl_multi_val *multi); isl_bool isl_multi_val_plain_is_equal( __isl_keep isl_multi_val *multi1, __isl_keep isl_multi_val *multi2); isl_bool isl_multi_val_involves_nan( __isl_keep isl_multi_val *multi); int isl_multi_val_find_dim_by_id( __isl_keep isl_multi_val *multi, enum isl_dim_type type, __isl_keep isl_id *id); __isl_give isl_id *isl_multi_val_get_dim_id( __isl_take isl_multi_val *multi, enum isl_dim_type type, unsigned pos); __isl_give isl_multi_val *isl_multi_val_set_dim_name( __isl_take isl_multi_val *multi, enum isl_dim_type type, unsigned pos, const char *s); __isl_give isl_multi_val *isl_multi_val_set_dim_id( __isl_take isl_multi_val *multi, enum isl_dim_type type, unsigned pos, __isl_take isl_id *id); const char *isl_multi_val_get_tuple_name( __isl_keep isl_multi_val *multi, enum isl_dim_type type); isl_bool isl_multi_val_has_tuple_id( __isl_keep isl_multi_val *multi, enum isl_dim_type type); __isl_give isl_id *isl_multi_val_get_tuple_id( __isl_keep isl_multi_val *multi, enum isl_dim_type type); __isl_give isl_multi_val *isl_multi_val_set_tuple_name( __isl_take isl_multi_val *multi, enum isl_dim_type type, const char *s); __isl_give isl_multi_val *isl_multi_val_set_tuple_id( __isl_take isl_multi_val *multi, enum isl_dim_type type, __isl_take isl_id *id); __isl_give isl_multi_val *isl_multi_val_reset_tuple_id( __isl_take isl_multi_val *multi, enum isl_dim_type type); __isl_give isl_multi_val *isl_multi_val_reset_user( __isl_take isl_multi_val *multi); __isl_give isl_multi_val *isl_multi_val_drop_dims( __isl_take isl_multi_val *multi, enum isl_dim_type type, unsigned first, unsigned n); __isl_give isl_val *isl_multi_val_get_val( __isl_keep isl_multi_val *multi, int pos); __isl_give isl_multi_val *isl_multi_val_set_val( __isl_take isl_multi_val *multi, int pos, __isl_take isl_val *el); __isl_give isl_multi_val *isl_multi_val_range_splice( __isl_take isl_multi_val *multi1, unsigned pos, __isl_take isl_multi_val *multi2); __isl_give isl_multi_val *isl_multi_val_flatten_range( __isl_take isl_multi_val *multi); __isl_give isl_multi_val *isl_multi_val_flat_range_product( __isl_take isl_multi_val *multi1, __isl_take isl_multi_val *multi2); __isl_give isl_multi_val *isl_multi_val_range_product( __isl_take isl_multi_val *multi1, __isl_take isl_multi_val *multi2); __isl_give isl_multi_val *isl_multi_val_factor_range( __isl_take isl_multi_val *multi); isl_bool isl_multi_val_range_is_wrapping( __isl_keep isl_multi_val *multi); __isl_give isl_multi_val *isl_multi_val_range_factor_domain( __isl_take isl_multi_val *multi); __isl_give isl_multi_val *isl_multi_val_range_factor_range( __isl_take isl_multi_val *multi); __isl_give isl_multi_val *isl_multi_val_scale_val( __isl_take isl_multi_val *multi, __isl_take isl_val *v); __isl_give isl_multi_val *isl_multi_val_scale_down_val( __isl_take isl_multi_val *multi, __isl_take isl_val *v); __isl_give isl_multi_val *isl_multi_val_scale_multi_val( __isl_take isl_multi_val *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_val *isl_multi_val_scale_down_multi_val( __isl_take isl_multi_val *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_val *isl_multi_val_mod_multi_val( __isl_take isl_multi_val *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_val *isl_multi_val_add( __isl_take isl_multi_val *multi1, __isl_take isl_multi_val *multi2); __isl_give isl_multi_val *isl_multi_val_sub( __isl_take isl_multi_val *multi1, __isl_take isl_multi_val *multi2); __isl_give isl_multi_val *isl_multi_val_align_params( __isl_take isl_multi_val *multi, __isl_take isl_space *model); __isl_give isl_multi_val *isl_multi_val_from_range( __isl_take isl_multi_val *multi);
-unsigned isl_multi_union_pw_aff_dim(__isl_keep isl_multi_union_pw_aff *multi, enum isl_dim_type type); isl_ctx *isl_multi_union_pw_aff_get_ctx( __isl_keep isl_multi_union_pw_aff *multi); __isl_give isl_space *isl_multi_union_pw_aff_get_space( __isl_keep isl_multi_union_pw_aff *multi); __isl_give isl_space *isl_multi_union_pw_aff_get_domain_space( __isl_keep isl_multi_union_pw_aff *multi); int isl_multi_union_pw_aff_find_dim_by_name( __isl_keep isl_multi_union_pw_aff *multi, enum isl_dim_type type, const char *name); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_from_union_pw_aff_list( __isl_take isl_space *space, __isl_take isl_union_pw_aff_list *list); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_zero( __isl_take isl_space *space); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_copy( __isl_keep isl_multi_union_pw_aff *multi); isl_multi_union_pw_aff *isl_multi_union_pw_aff_free( __isl_take isl_multi_union_pw_aff *multi); isl_bool isl_multi_union_pw_aff_plain_is_equal( __isl_keep isl_multi_union_pw_aff *multi1, __isl_keep isl_multi_union_pw_aff *multi2); isl_bool isl_multi_union_pw_aff_involves_nan( __isl_keep isl_multi_union_pw_aff *multi); int isl_multi_union_pw_aff_find_dim_by_id( __isl_keep isl_multi_union_pw_aff *multi, enum isl_dim_type type, __isl_keep isl_id *id); __isl_give isl_id *isl_multi_union_pw_aff_get_dim_id( __isl_take isl_multi_union_pw_aff *multi, enum isl_dim_type type, unsigned pos); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_set_dim_name( __isl_take isl_multi_union_pw_aff *multi, enum isl_dim_type type, unsigned pos, const char *s); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_set_dim_id( __isl_take isl_multi_union_pw_aff *multi, enum isl_dim_type type, unsigned pos, __isl_take isl_id *id); const char *isl_multi_union_pw_aff_get_tuple_name( __isl_keep isl_multi_union_pw_aff *multi, enum isl_dim_type type); isl_bool isl_multi_union_pw_aff_has_tuple_id( __isl_keep isl_multi_union_pw_aff *multi, enum isl_dim_type type); __isl_give isl_id *isl_multi_union_pw_aff_get_tuple_id( __isl_keep isl_multi_union_pw_aff *multi, enum isl_dim_type type); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_set_tuple_name( __isl_take isl_multi_union_pw_aff *multi, enum isl_dim_type type, const char *s); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_set_tuple_id( __isl_take isl_multi_union_pw_aff *multi, enum isl_dim_type type, __isl_take isl_id *id); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_reset_tuple_id( __isl_take isl_multi_union_pw_aff *multi, enum isl_dim_type type); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_reset_user( __isl_take isl_multi_union_pw_aff *multi); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_drop_dims( __isl_take isl_multi_union_pw_aff *multi, enum isl_dim_type type, unsigned first, unsigned n); __isl_give isl_union_pw_aff *isl_multi_union_pw_aff_get_union_pw_aff( __isl_keep isl_multi_union_pw_aff *multi, int pos); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_set_union_pw_aff( __isl_take isl_multi_union_pw_aff *multi, int pos, __isl_take isl_union_pw_aff *el); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_range_splice( __isl_take isl_multi_union_pw_aff *multi1, unsigned pos, __isl_take isl_multi_union_pw_aff *multi2); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_flatten_range( __isl_take isl_multi_union_pw_aff *multi); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_flat_range_product( __isl_take isl_multi_union_pw_aff *multi1, __isl_take isl_multi_union_pw_aff *multi2); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_range_product( __isl_take isl_multi_union_pw_aff *multi1, __isl_take isl_multi_union_pw_aff *multi2); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_factor_range( __isl_take isl_multi_union_pw_aff *multi); isl_bool isl_multi_union_pw_aff_range_is_wrapping( __isl_keep isl_multi_union_pw_aff *multi); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_range_factor_domain( __isl_take isl_multi_union_pw_aff *multi); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_range_factor_range( __isl_take isl_multi_union_pw_aff *multi); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_scale_val( __isl_take isl_multi_union_pw_aff *multi, __isl_take isl_val *v); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_scale_down_val( __isl_take isl_multi_union_pw_aff *multi, __isl_take isl_val *v); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_scale_multi_val( __isl_take isl_multi_union_pw_aff *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_scale_down_multi_val( __isl_take isl_multi_union_pw_aff *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_mod_multi_val( __isl_take isl_multi_union_pw_aff *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_add( __isl_take isl_multi_union_pw_aff *multi1, __isl_take isl_multi_union_pw_aff *multi2); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_sub( __isl_take isl_multi_union_pw_aff *multi1, __isl_take isl_multi_union_pw_aff *multi2); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_align_params( __isl_take isl_multi_union_pw_aff *multi, __isl_take isl_space *model); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_from_range( __isl_take isl_multi_union_pw_aff *multi);
+unsigned isl_multi_aff_dim(__isl_keep isl_multi_aff *multi, enum isl_dim_type type); isl_ctx *isl_multi_aff_get_ctx( __isl_keep isl_multi_aff *multi); __isl_give isl_space *isl_multi_aff_get_space( __isl_keep isl_multi_aff *multi); __isl_give isl_space *isl_multi_aff_get_domain_space( __isl_keep isl_multi_aff *multi); int isl_multi_aff_find_dim_by_name( __isl_keep isl_multi_aff *multi, enum isl_dim_type type, const char *name); __isl_give isl_multi_aff *isl_multi_aff_from_aff_list( __isl_take isl_space *space, __isl_take isl_aff_list *list); __isl_give isl_multi_aff *isl_multi_aff_zero( __isl_take isl_space *space); __isl_give isl_multi_aff *isl_multi_aff_copy( __isl_keep isl_multi_aff *multi); isl_multi_aff *isl_multi_aff_free( __isl_take isl_multi_aff *multi); isl_bool isl_multi_aff_plain_is_equal( __isl_keep isl_multi_aff *multi1, __isl_keep isl_multi_aff *multi2); isl_bool isl_multi_aff_involves_nan( __isl_keep isl_multi_aff *multi); int isl_multi_aff_find_dim_by_id( __isl_keep isl_multi_aff *multi, enum isl_dim_type type, __isl_keep isl_id *id); __isl_give isl_id *isl_multi_aff_get_dim_id( __isl_keep isl_multi_aff *multi, enum isl_dim_type type, unsigned pos); __isl_give isl_multi_aff *isl_multi_aff_set_dim_name( __isl_take isl_multi_aff *multi, enum isl_dim_type type, unsigned pos, const char *s); __isl_give isl_multi_aff *isl_multi_aff_set_dim_id( __isl_take isl_multi_aff *multi, enum isl_dim_type type, unsigned pos, __isl_take isl_id *id); const char *isl_multi_aff_get_tuple_name( __isl_keep isl_multi_aff *multi, enum isl_dim_type type); isl_bool isl_multi_aff_has_tuple_id( __isl_keep isl_multi_aff *multi, enum isl_dim_type type); __isl_give isl_id *isl_multi_aff_get_tuple_id( __isl_keep isl_multi_aff *multi, enum isl_dim_type type); __isl_give isl_multi_aff *isl_multi_aff_set_tuple_name( __isl_take isl_multi_aff *multi, enum isl_dim_type type, const char *s); __isl_give isl_multi_aff *isl_multi_aff_set_tuple_id( __isl_take isl_multi_aff *multi, enum isl_dim_type type, __isl_take isl_id *id); __isl_give isl_multi_aff *isl_multi_aff_reset_tuple_id( __isl_take isl_multi_aff *multi, enum isl_dim_type type); __isl_give isl_multi_aff *isl_multi_aff_reset_user( __isl_take isl_multi_aff *multi); __isl_give isl_multi_aff *isl_multi_aff_drop_dims( __isl_take isl_multi_aff *multi, enum isl_dim_type type, unsigned first, unsigned n); __isl_give isl_aff *isl_multi_aff_get_aff( __isl_keep isl_multi_aff *multi, int pos); __isl_give isl_multi_aff *isl_multi_aff_set_aff( __isl_take isl_multi_aff *multi, int pos, __isl_take isl_aff *el); __isl_give isl_multi_aff *isl_multi_aff_range_splice( __isl_take isl_multi_aff *multi1, unsigned pos, __isl_take isl_multi_aff *multi2); __isl_give isl_multi_aff *isl_multi_aff_flatten_range( __isl_take isl_multi_aff *multi); __isl_give isl_multi_aff *isl_multi_aff_flat_range_product( __isl_take isl_multi_aff *multi1, __isl_take isl_multi_aff *multi2); __isl_give isl_multi_aff *isl_multi_aff_range_product( __isl_take isl_multi_aff *multi1, __isl_take isl_multi_aff *multi2); __isl_give isl_multi_aff *isl_multi_aff_factor_range( __isl_take isl_multi_aff *multi); isl_bool isl_multi_aff_range_is_wrapping( __isl_keep isl_multi_aff *multi); __isl_give isl_multi_aff *isl_multi_aff_range_factor_domain( __isl_take isl_multi_aff *multi); __isl_give isl_multi_aff *isl_multi_aff_range_factor_range( __isl_take isl_multi_aff *multi); __isl_give isl_multi_aff *isl_multi_aff_scale_val( __isl_take isl_multi_aff *multi, __isl_take isl_val *v); __isl_give isl_multi_aff *isl_multi_aff_scale_down_val( __isl_take isl_multi_aff *multi, __isl_take isl_val *v); __isl_give isl_multi_aff *isl_multi_aff_scale_multi_val( __isl_take isl_multi_aff *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_aff *isl_multi_aff_scale_down_multi_val( __isl_take isl_multi_aff *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_aff *isl_multi_aff_mod_multi_val( __isl_take isl_multi_aff *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_aff *isl_multi_aff_add( __isl_take isl_multi_aff *multi1, __isl_take isl_multi_aff *multi2); __isl_give isl_multi_aff *isl_multi_aff_sub( __isl_take isl_multi_aff *multi1, __isl_take isl_multi_aff *multi2); __isl_give isl_multi_aff *isl_multi_aff_align_params( __isl_take isl_multi_aff *multi, __isl_take isl_space *model); __isl_give isl_multi_aff *isl_multi_aff_from_range( __isl_take isl_multi_aff *multi);
+unsigned isl_multi_pw_aff_dim(__isl_keep isl_multi_pw_aff *multi, enum isl_dim_type type); isl_ctx *isl_multi_pw_aff_get_ctx( __isl_keep isl_multi_pw_aff *multi); __isl_give isl_space *isl_multi_pw_aff_get_space( __isl_keep isl_multi_pw_aff *multi); __isl_give isl_space *isl_multi_pw_aff_get_domain_space( __isl_keep isl_multi_pw_aff *multi); int isl_multi_pw_aff_find_dim_by_name( __isl_keep isl_multi_pw_aff *multi, enum isl_dim_type type, const char *name); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_from_pw_aff_list( __isl_take isl_space *space, __isl_take isl_pw_aff_list *list); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_zero( __isl_take isl_space *space); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_copy( __isl_keep isl_multi_pw_aff *multi); isl_multi_pw_aff *isl_multi_pw_aff_free( __isl_take isl_multi_pw_aff *multi); isl_bool isl_multi_pw_aff_plain_is_equal( __isl_keep isl_multi_pw_aff *multi1, __isl_keep isl_multi_pw_aff *multi2); isl_bool isl_multi_pw_aff_involves_nan( __isl_keep isl_multi_pw_aff *multi); int isl_multi_pw_aff_find_dim_by_id( __isl_keep isl_multi_pw_aff *multi, enum isl_dim_type type, __isl_keep isl_id *id); __isl_give isl_id *isl_multi_pw_aff_get_dim_id( __isl_keep isl_multi_pw_aff *multi, enum isl_dim_type type, unsigned pos); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_set_dim_name( __isl_take isl_multi_pw_aff *multi, enum isl_dim_type type, unsigned pos, const char *s); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_set_dim_id( __isl_take isl_multi_pw_aff *multi, enum isl_dim_type type, unsigned pos, __isl_take isl_id *id); const char *isl_multi_pw_aff_get_tuple_name( __isl_keep isl_multi_pw_aff *multi, enum isl_dim_type type); isl_bool isl_multi_pw_aff_has_tuple_id( __isl_keep isl_multi_pw_aff *multi, enum isl_dim_type type); __isl_give isl_id *isl_multi_pw_aff_get_tuple_id( __isl_keep isl_multi_pw_aff *multi, enum isl_dim_type type); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_set_tuple_name( __isl_take isl_multi_pw_aff *multi, enum isl_dim_type type, const char *s); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_set_tuple_id( __isl_take isl_multi_pw_aff *multi, enum isl_dim_type type, __isl_take isl_id *id); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_reset_tuple_id( __isl_take isl_multi_pw_aff *multi, enum isl_dim_type type); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_reset_user( __isl_take isl_multi_pw_aff *multi); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_drop_dims( __isl_take isl_multi_pw_aff *multi, enum isl_dim_type type, unsigned first, unsigned n); __isl_give isl_pw_aff *isl_multi_pw_aff_get_pw_aff( __isl_keep isl_multi_pw_aff *multi, int pos); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_set_pw_aff( __isl_take isl_multi_pw_aff *multi, int pos, __isl_take isl_pw_aff *el); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_range_splice( __isl_take isl_multi_pw_aff *multi1, unsigned pos, __isl_take isl_multi_pw_aff *multi2); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_flatten_range( __isl_take isl_multi_pw_aff *multi); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_flat_range_product( __isl_take isl_multi_pw_aff *multi1, __isl_take isl_multi_pw_aff *multi2); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_range_product( __isl_take isl_multi_pw_aff *multi1, __isl_take isl_multi_pw_aff *multi2); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_factor_range( __isl_take isl_multi_pw_aff *multi); isl_bool isl_multi_pw_aff_range_is_wrapping( __isl_keep isl_multi_pw_aff *multi); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_range_factor_domain( __isl_take isl_multi_pw_aff *multi); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_range_factor_range( __isl_take isl_multi_pw_aff *multi); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_scale_val( __isl_take isl_multi_pw_aff *multi, __isl_take isl_val *v); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_scale_down_val( __isl_take isl_multi_pw_aff *multi, __isl_take isl_val *v); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_scale_multi_val( __isl_take isl_multi_pw_aff *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_scale_down_multi_val( __isl_take isl_multi_pw_aff *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_mod_multi_val( __isl_take isl_multi_pw_aff *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_add( __isl_take isl_multi_pw_aff *multi1, __isl_take isl_multi_pw_aff *multi2); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_sub( __isl_take isl_multi_pw_aff *multi1, __isl_take isl_multi_pw_aff *multi2); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_align_params( __isl_take isl_multi_pw_aff *multi, __isl_take isl_space *model); __isl_give isl_multi_pw_aff *isl_multi_pw_aff_from_range( __isl_take isl_multi_pw_aff *multi);
+unsigned isl_multi_val_dim(__isl_keep isl_multi_val *multi, enum isl_dim_type type); isl_ctx *isl_multi_val_get_ctx( __isl_keep isl_multi_val *multi); __isl_give isl_space *isl_multi_val_get_space( __isl_keep isl_multi_val *multi); __isl_give isl_space *isl_multi_val_get_domain_space( __isl_keep isl_multi_val *multi); int isl_multi_val_find_dim_by_name( __isl_keep isl_multi_val *multi, enum isl_dim_type type, const char *name); __isl_give isl_multi_val *isl_multi_val_from_val_list( __isl_take isl_space *space, __isl_take isl_val_list *list); __isl_give isl_multi_val *isl_multi_val_zero( __isl_take isl_space *space); __isl_give isl_multi_val *isl_multi_val_copy( __isl_keep isl_multi_val *multi); isl_multi_val *isl_multi_val_free( __isl_take isl_multi_val *multi); isl_bool isl_multi_val_plain_is_equal( __isl_keep isl_multi_val *multi1, __isl_keep isl_multi_val *multi2); isl_bool isl_multi_val_involves_nan( __isl_keep isl_multi_val *multi); int isl_multi_val_find_dim_by_id( __isl_keep isl_multi_val *multi, enum isl_dim_type type, __isl_keep isl_id *id); __isl_give isl_id *isl_multi_val_get_dim_id( __isl_keep isl_multi_val *multi, enum isl_dim_type type, unsigned pos); __isl_give isl_multi_val *isl_multi_val_set_dim_name( __isl_take isl_multi_val *multi, enum isl_dim_type type, unsigned pos, const char *s); __isl_give isl_multi_val *isl_multi_val_set_dim_id( __isl_take isl_multi_val *multi, enum isl_dim_type type, unsigned pos, __isl_take isl_id *id); const char *isl_multi_val_get_tuple_name( __isl_keep isl_multi_val *multi, enum isl_dim_type type); isl_bool isl_multi_val_has_tuple_id( __isl_keep isl_multi_val *multi, enum isl_dim_type type); __isl_give isl_id *isl_multi_val_get_tuple_id( __isl_keep isl_multi_val *multi, enum isl_dim_type type); __isl_give isl_multi_val *isl_multi_val_set_tuple_name( __isl_take isl_multi_val *multi, enum isl_dim_type type, const char *s); __isl_give isl_multi_val *isl_multi_val_set_tuple_id( __isl_take isl_multi_val *multi, enum isl_dim_type type, __isl_take isl_id *id); __isl_give isl_multi_val *isl_multi_val_reset_tuple_id( __isl_take isl_multi_val *multi, enum isl_dim_type type); __isl_give isl_multi_val *isl_multi_val_reset_user( __isl_take isl_multi_val *multi); __isl_give isl_multi_val *isl_multi_val_drop_dims( __isl_take isl_multi_val *multi, enum isl_dim_type type, unsigned first, unsigned n); __isl_give isl_val *isl_multi_val_get_val( __isl_keep isl_multi_val *multi, int pos); __isl_give isl_multi_val *isl_multi_val_set_val( __isl_take isl_multi_val *multi, int pos, __isl_take isl_val *el); __isl_give isl_multi_val *isl_multi_val_range_splice( __isl_take isl_multi_val *multi1, unsigned pos, __isl_take isl_multi_val *multi2); __isl_give isl_multi_val *isl_multi_val_flatten_range( __isl_take isl_multi_val *multi); __isl_give isl_multi_val *isl_multi_val_flat_range_product( __isl_take isl_multi_val *multi1, __isl_take isl_multi_val *multi2); __isl_give isl_multi_val *isl_multi_val_range_product( __isl_take isl_multi_val *multi1, __isl_take isl_multi_val *multi2); __isl_give isl_multi_val *isl_multi_val_factor_range( __isl_take isl_multi_val *multi); isl_bool isl_multi_val_range_is_wrapping( __isl_keep isl_multi_val *multi); __isl_give isl_multi_val *isl_multi_val_range_factor_domain( __isl_take isl_multi_val *multi); __isl_give isl_multi_val *isl_multi_val_range_factor_range( __isl_take isl_multi_val *multi); __isl_give isl_multi_val *isl_multi_val_scale_val( __isl_take isl_multi_val *multi, __isl_take isl_val *v); __isl_give isl_multi_val *isl_multi_val_scale_down_val( __isl_take isl_multi_val *multi, __isl_take isl_val *v); __isl_give isl_multi_val *isl_multi_val_scale_multi_val( __isl_take isl_multi_val *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_val *isl_multi_val_scale_down_multi_val( __isl_take isl_multi_val *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_val *isl_multi_val_mod_multi_val( __isl_take isl_multi_val *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_val *isl_multi_val_add( __isl_take isl_multi_val *multi1, __isl_take isl_multi_val *multi2); __isl_give isl_multi_val *isl_multi_val_sub( __isl_take isl_multi_val *multi1, __isl_take isl_multi_val *multi2); __isl_give isl_multi_val *isl_multi_val_align_params( __isl_take isl_multi_val *multi, __isl_take isl_space *model); __isl_give isl_multi_val *isl_multi_val_from_range( __isl_take isl_multi_val *multi);
+unsigned isl_multi_union_pw_aff_dim(__isl_keep isl_multi_union_pw_aff *multi, enum isl_dim_type type); isl_ctx *isl_multi_union_pw_aff_get_ctx( __isl_keep isl_multi_union_pw_aff *multi); __isl_give isl_space *isl_multi_union_pw_aff_get_space( __isl_keep isl_multi_union_pw_aff *multi); __isl_give isl_space *isl_multi_union_pw_aff_get_domain_space( __isl_keep isl_multi_union_pw_aff *multi); int isl_multi_union_pw_aff_find_dim_by_name( __isl_keep isl_multi_union_pw_aff *multi, enum isl_dim_type type, const char *name); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_from_union_pw_aff_list( __isl_take isl_space *space, __isl_take isl_union_pw_aff_list *list); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_zero( __isl_take isl_space *space); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_copy( __isl_keep isl_multi_union_pw_aff *multi); isl_multi_union_pw_aff *isl_multi_union_pw_aff_free( __isl_take isl_multi_union_pw_aff *multi); isl_bool isl_multi_union_pw_aff_plain_is_equal( __isl_keep isl_multi_union_pw_aff *multi1, __isl_keep isl_multi_union_pw_aff *multi2); isl_bool isl_multi_union_pw_aff_involves_nan( __isl_keep isl_multi_union_pw_aff *multi); int isl_multi_union_pw_aff_find_dim_by_id( __isl_keep isl_multi_union_pw_aff *multi, enum isl_dim_type type, __isl_keep isl_id *id); __isl_give isl_id *isl_multi_union_pw_aff_get_dim_id( __isl_keep isl_multi_union_pw_aff *multi, enum isl_dim_type type, unsigned pos); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_set_dim_name( __isl_take isl_multi_union_pw_aff *multi, enum isl_dim_type type, unsigned pos, const char *s); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_set_dim_id( __isl_take isl_multi_union_pw_aff *multi, enum isl_dim_type type, unsigned pos, __isl_take isl_id *id); const char *isl_multi_union_pw_aff_get_tuple_name( __isl_keep isl_multi_union_pw_aff *multi, enum isl_dim_type type); isl_bool isl_multi_union_pw_aff_has_tuple_id( __isl_keep isl_multi_union_pw_aff *multi, enum isl_dim_type type); __isl_give isl_id *isl_multi_union_pw_aff_get_tuple_id( __isl_keep isl_multi_union_pw_aff *multi, enum isl_dim_type type); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_set_tuple_name( __isl_take isl_multi_union_pw_aff *multi, enum isl_dim_type type, const char *s); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_set_tuple_id( __isl_take isl_multi_union_pw_aff *multi, enum isl_dim_type type, __isl_take isl_id *id); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_reset_tuple_id( __isl_take isl_multi_union_pw_aff *multi, enum isl_dim_type type); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_reset_user( __isl_take isl_multi_union_pw_aff *multi); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_drop_dims( __isl_take isl_multi_union_pw_aff *multi, enum isl_dim_type type, unsigned first, unsigned n); __isl_give isl_union_pw_aff *isl_multi_union_pw_aff_get_union_pw_aff( __isl_keep isl_multi_union_pw_aff *multi, int pos); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_set_union_pw_aff( __isl_take isl_multi_union_pw_aff *multi, int pos, __isl_take isl_union_pw_aff *el); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_range_splice( __isl_take isl_multi_union_pw_aff *multi1, unsigned pos, __isl_take isl_multi_union_pw_aff *multi2); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_flatten_range( __isl_take isl_multi_union_pw_aff *multi); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_flat_range_product( __isl_take isl_multi_union_pw_aff *multi1, __isl_take isl_multi_union_pw_aff *multi2); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_range_product( __isl_take isl_multi_union_pw_aff *multi1, __isl_take isl_multi_union_pw_aff *multi2); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_factor_range( __isl_take isl_multi_union_pw_aff *multi); isl_bool isl_multi_union_pw_aff_range_is_wrapping( __isl_keep isl_multi_union_pw_aff *multi); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_range_factor_domain( __isl_take isl_multi_union_pw_aff *multi); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_range_factor_range( __isl_take isl_multi_union_pw_aff *multi); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_scale_val( __isl_take isl_multi_union_pw_aff *multi, __isl_take isl_val *v); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_scale_down_val( __isl_take isl_multi_union_pw_aff *multi, __isl_take isl_val *v); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_scale_multi_val( __isl_take isl_multi_union_pw_aff *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_scale_down_multi_val( __isl_take isl_multi_union_pw_aff *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_mod_multi_val( __isl_take isl_multi_union_pw_aff *multi, __isl_take isl_multi_val *mv); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_add( __isl_take isl_multi_union_pw_aff *multi1, __isl_take isl_multi_union_pw_aff *multi2); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_sub( __isl_take isl_multi_union_pw_aff *multi1, __isl_take isl_multi_union_pw_aff *multi2); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_align_params( __isl_take isl_multi_union_pw_aff *multi, __isl_take isl_space *model); __isl_give isl_multi_union_pw_aff *isl_multi_union_pw_aff_from_range( __isl_take isl_multi_union_pw_aff *multi);
 
 int isl_multi_aff_plain_cmp(__isl_keep isl_multi_aff *multi1, __isl_keep isl_multi_aff *multi2);
