@@ -131,6 +131,7 @@ def main():
                 "isl_multi_apply_union_set.c",
                 "isl_multi_cmp.c",
                 "isl_multi_hash.c",
+                "isl_multi_dims.c",
                 "isl_union_templ.c",
                 "isl_union_multi.c",
                 "isl_union_eval.c",

@@ -5,7 +5,7 @@ set -x
 
 INCLUDEPATH=isl/include
 OUTFILE=isl_declaration_macros_expanded.h
-DEFINES="-DISLPY_ISL_VERSION=16"
+DEFINES="-DISLPY_ISL_VERSION=19"
 
 #INCLUDEPATH=$HOME/pool/include
 #OUTFILE=isl_declaration_macros_expanded_v14.h
