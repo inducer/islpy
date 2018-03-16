@@ -1,3 +1,8 @@
+islpy: Polyhedral Analysis from Python
+======================================
+
+.. image:: https://gitlab.tiker.net/inducer/islpy/badges/master/pipeline.svg
+   :target: https://gitlab.tiker.net/inducer/islpy/commits/master
 .. image:: https://badge.fury.io/py/islpy.png
     :target: http://pypi.python.org/pypi/islpy
 
