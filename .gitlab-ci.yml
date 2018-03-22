@@ -7,6 +7,7 @@ Python 2.7:
   - python2.7
   except:
   - tags
+
 Python 3.5:
   script:
   - export PY_EXE=python3.5
@@ -16,6 +17,7 @@ Python 3.5:
   - python3.5
   except:
   - tags
+
 Python 3.5 small integer opt:
   script:
   - export PY_EXE=python3.5
@@ -26,6 +28,7 @@ Python 3.5 small integer opt:
   - python3.5
   except:
   - tags
+
 Python 2.6:
   script:
   - export PY_EXE=python2.6
@@ -35,6 +38,20 @@ Python 2.6:
   - python2.6
   except:
   - tags
+
+Python 3.6 + Barvinok:
+  script:
+  - git clean -fdx
+  - python3.6 -m venv .env
+  - source .env/bin/activate
+  - python -m ensurepip
+  - pip install cffi
+  - "./build-with-barvinok.sh"
+  tags:
+  - python3.6
+  except:
+  - tags
+
 PyPy:
   script:
   - export PY_EXE=pypy
@@ -44,6 +61,7 @@ PyPy:
   - pypy
   except:
   - tags
+
 Documentation:
   script:
   - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-docs.sh
