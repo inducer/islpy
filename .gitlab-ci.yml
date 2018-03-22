@@ -44,6 +44,8 @@ Python 3.6 + Barvinok:
   - git clean -fdx
   - python3.6 -m venv .env
   - source .env/bin/activate
+  - python -m ensurepip
+  - pip install cffi
   - "./build-with-barvinok.sh"
   tags:
   - python3.6
