@@ -292,6 +292,14 @@ def test_id_constructor():
     isl.Id(context=ctx, name='x0')
 
 
+def test_creation_error():
+    # note the (intentional) syntax error
+    with pytest.raises(isl.Error):
+        isl.BasicSet(
+                "[n0, n1] -> "
+                "{ [i0, i1, i2] : 0 <= i0 < n1  and 0 and 0 <= i2 <= 15 }")
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:

@@ -190,6 +190,7 @@ def _add_functionality():
                 # exception.  This is creates a semi-valid state that's just good
                 # enough to get us past the __del__ method.
                 self.data = None
+                raise
             else:
                 self._setup(new_me._release())
 
