@@ -542,6 +542,7 @@ FUNC_PTR_RE = re.compile(r"""
 STRUCT_DECL_RE = re.compile(
     r"(__isl_export\s+)?"
     "struct\s+"
+    "(__isl_export\s+)?"
     "(__isl_subclass\([a-z_ ]+\)\s+)?"
     "([a-z_A-Z0-9]+)\s*;")
 ARG_RE = re.compile(r"^((?:\w+)\s+)+(\**)\s*(\w+)$")
