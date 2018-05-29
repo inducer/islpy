@@ -1,7 +1,6 @@
 import islpy as isl
 
-ctx = isl.Context()
-space = isl.Space.create_from_names(ctx, set=["x", "y"])
+space = isl.Space.create_from_names(isl.DEFAULT_CONTEXT, set=["x", "y"])
 
 bset = (isl.BasicSet.universe(space)
         .add_constraint(isl.Constraint.ineq_from_names(space, {1: -1, "x": 1}))
