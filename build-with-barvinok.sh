@@ -12,7 +12,7 @@ BARVINOK_GIT_REV="barvinok-0.41"
 NPROCS=30
 
 if true; then
-  rm -Rf "$PREFIX" "$BUILD_DIR"
+  rm -Rf "$BUILD_DIR"
 
   mkdir "$BUILD_DIR"
   cd "$BUILD_DIR"
