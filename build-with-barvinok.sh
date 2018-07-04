@@ -12,7 +12,7 @@ BARVINOK_GIT_REV="barvinok-0.41"
 NPROCS=30
 
 if true; then
-  rm -Rf "$PREFIX" "$BUILD_DIR"
+  rm -Rf "$BUILD_DIR"
 
   mkdir "$BUILD_DIR"
   cd "$BUILD_DIR"
@@ -31,7 +31,7 @@ if true; then
   git checkout $BARVINOK_GIT_REV
   ./get_submodules.sh
   sh autogen.sh
-  ./configure --prefix="$PREFIX" --with-ntl-prefix="$PREFIX" --enable-shared-barvinok
+  ./configure --prefix="$PREFIX" --with-ntl-prefix="$PREFIX" --enable-shared-barvinok --with-pet=bundled
 
   make -j$NPROCS
   make install
