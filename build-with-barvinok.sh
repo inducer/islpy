@@ -31,7 +31,7 @@ if true; then
   git checkout $BARVINOK_GIT_REV
   ./get_submodules.sh
   sh autogen.sh
-  ./configure --prefix="$PREFIX" --with-ntl-prefix="$PREFIX" --enable-shared-barvinok
+  ./configure --prefix="$PREFIX" --with-ntl-prefix="$PREFIX" --enable-shared-barvinok --with-pet=bundled
 
   make -j$NPROCS
   make install
