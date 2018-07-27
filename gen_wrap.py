@@ -140,14 +140,16 @@ CLASSES = [
         "basic_set_list", "basic_map_list", "set_list", "map_list",
         "union_set_list",
         "constraint_list",
-        "aff_list", "pw_aff_list",
+        "aff_list", "pw_aff_list", "pw_multi_aff_list",
         "ast_expr_list", "ast_node_list",
+        "pw_qpolynomial_list",
+        "pw_qpolynomial_fold_list",
 
         # maps
         "id_to_ast_expr",
 
         # others
-        "printer",  "val", "multi_val", "vec", "mat",
+        "printer",  "val", "multi_val", "vec", "mat", "fixed_box",
         "aff", "pw_aff", "union_pw_aff",
         "multi_aff", "multi_pw_aff", "pw_multi_aff", "union_pw_multi_aff",
         "union_pw_aff_list",

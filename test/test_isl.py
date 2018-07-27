@@ -300,6 +300,14 @@ def test_creation_error():
                 "{ [i0, i1, i2] : 0 <= i0 < n1  and 0 and 0 <= i2 <= 15 }")
 
 
+def test_lexmin():
+    print(isl.Set("""{ [s] : exists a,b,c :
+            0 <= a <= 5 and 1 <= b <= 4 and 2 <= c <= 7 and
+            ((2 <= b and b <= 3) implies (a <= 1 or a >= 3)) and
+            ((not (c < 5 or b > 3)) implies (a > 2 and c < 3)) and s = a + b + c }
+            """).lexmin())
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
