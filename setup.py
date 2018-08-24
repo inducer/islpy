@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from codecs import open
+from codecs import open  # pylint: disable=redefined-builtin
 
 
 def get_config_schema():
@@ -101,6 +101,8 @@ def write_cffi_build_script(headers, **kwargs):
 
 
 def main():
+    # pylint: disable=too-many-statements, too-many-branches, too-many-locals
+
     from aksetup_helper import (hack_distutils,
             get_config, setup, check_git_submodules)
 
@@ -114,7 +116,7 @@ def main():
     INCLUDE_DIRS = []  # noqa
     LIBRARY_DIRS = []  # noqa
     LIBRARIES = []  # noqa
-    CXXFLAGS = conf["CXXFLAGS"]
+    CXXFLAGS = conf["CXXFLAGS"]  # noqa: N806
 
     if conf["USE_SHIPPED_ISL"]:
         from glob import glob
@@ -186,7 +188,7 @@ def main():
             if "int main(" not in contents and not blacklisted:
                 EXTRA_SOURCES.append(fn)
 
-        conf["ISL_INC_DIR"] = ["isl-supplementary", "isl/include",  "isl"]
+        conf["ISL_INC_DIR"] = ["isl-supplementary", "isl/include", "isl"]
 
         if conf["USE_SHIPPED_IMATH"]:
             EXTRA_SOURCES.extend([
