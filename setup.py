@@ -33,6 +33,7 @@ def get_config_schema():
     return ConfigSchema([
         Switch("USE_SHIPPED_ISL", True, "Use included copy of isl"),
         Switch("USE_SHIPPED_IMATH", True, "Use included copy of imath in isl"),
+        Switch("USE_GMP", True, "Use gmp in external isl"),
         Switch("USE_BARVINOK", False, "Include wrapper for Barvinok"),
         Switch("USE_IMATH_SIO", False, "When using imath, use small-integer "
             "optimization"),
@@ -236,7 +237,8 @@ def main():
 
     INCLUDE_DIRS.extend(conf["ISL_INC_DIR"])
 
-    if not (conf["USE_SHIPPED_ISL"] and conf["USE_SHIPPED_IMATH"]):
+    if not (conf["USE_SHIPPED_ISL"] and conf["USE_SHIPPED_IMATH"]) and \
+            conf["USE_GMP"]:
         INCLUDE_DIRS.extend(conf["GMP_INC_DIR"])
         LIBRARY_DIRS.extend(conf["GMP_LIB_DIR"])
         LIBRARIES.extend(conf["GMP_LIBNAME"])
@@ -281,11 +283,12 @@ def main():
               'Natural Language :: English',
               'Programming Language :: C++',
               'Programming Language :: Python',
-              'Programming Language :: Python :: 2.6',
               'Programming Language :: Python :: 2.7',
               'Programming Language :: Python :: 3',
               'Programming Language :: Python :: 3.3',
               'Programming Language :: Python :: 3.4',
+              'Programming Language :: Python :: 3.5',
+              'Programming Language :: Python :: 3.6',
               'Programming Language :: Python :: Implementation :: CPython',
               'Programming Language :: Python :: Implementation :: PyPy',
               'Topic :: Multimedia :: Graphics :: 3D Modeling',
