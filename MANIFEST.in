@@ -10,7 +10,12 @@ include isl/include/isl/deprecated/*.h
 include isl-supplementary/isl/*.h
 include isl-supplementary/*.h
 
+include build-with-barvinok.sh
+
+include regenerate-isl-declaration-macros-expanded.sh
+include isl_declaration_macros.h
 include isl_declaration_macros_expanded*.h
+
 include src/wrapper/*.h
 include src/wrapper/*.hpp
 include src/wrapper/*.cpp
