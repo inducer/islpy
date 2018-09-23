@@ -7,6 +7,9 @@ Python 2.7:
   - python2.7
   except:
   - tags
+  artifacts:
+    reports:
+      junit: test/pytest.xml
 
 Python 3.5:
   script:
@@ -17,6 +20,9 @@ Python 3.5:
   - python3.5
   except:
   - tags
+  artifacts:
+    reports:
+      junit: test/pytest.xml
 
 Python 3.5 small integer opt:
   script:
@@ -28,6 +34,9 @@ Python 3.5 small integer opt:
   - python3.5
   except:
   - tags
+  artifacts:
+    reports:
+      junit: test/pytest.xml
 
 Python 3.6 + Barvinok:
   script:
@@ -41,6 +50,22 @@ Python 3.6 + Barvinok:
   - python3.6
   except:
   - tags
+  artifacts:
+    reports:
+      junit: test/pytest.xml
+
+Python 3.7:
+  script:
+  - export PY_EXE=python3.7
+  - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
+  - ". ./build-and-test-py-project.sh"
+  tags:
+  - python3.7
+  except:
+  - tags
+  artifacts:
+    reports:
+      junit: test/pytest.xml
 
 PyPy:
   script:
@@ -51,6 +76,9 @@ PyPy:
   - pypy
   except:
   - tags
+  artifacts:
+    reports:
+      junit: test/pytest.xml
 
 Documentation:
   script:
