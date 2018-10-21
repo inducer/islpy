@@ -17,7 +17,7 @@ if true; then
   mkdir "$BUILD_DIR"
   cd "$BUILD_DIR"
 
-  curl -O http://shoup.net/ntl/ntl-"$NTL_VER".tar.gz
+  curl -L -O http://shoup.net/ntl/ntl-"$NTL_VER".tar.gz
   tar xfz ntl-"$NTL_VER".tar.gz
   cd "$BUILD_DIR/ntl-$NTL_VER/src"
   ./configure NTL_GMP_LIP=on PREFIX="$PREFIX" TUNE=x86 SHARED=on
