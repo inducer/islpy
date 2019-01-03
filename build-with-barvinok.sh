@@ -8,7 +8,7 @@ echo "BUILDING IN $BUILD_DIR"
 
 PREFIX="$HOME/pack/barvinok"
 NTL_VER="10.5.0"
-BARVINOK_GIT_REV="barvinok-0.41"
+BARVINOK_GIT_REV="barvinok-0.41.1"
 NPROCS=30
 
 if true; then
@@ -29,7 +29,17 @@ if true; then
   git clone git://repo.or.cz/barvinok.git
   cd barvinok
   git checkout $BARVINOK_GIT_REV
-  ./get_submodules.sh
+
+  numtries=1
+  while ! ./get_submodules.sh; do
+    sleep 5
+    numtries=$((numtries+1))
+    if test "$numtries" == 5; then
+      echo "*** getting barvinok submodules failed even after a few tries"
+      exit 1
+    fi
+  done
+
   sh autogen.sh
   ./configure --prefix="$PREFIX" --with-ntl-prefix="$PREFIX" --enable-shared-barvinok --with-pet=bundled
 
