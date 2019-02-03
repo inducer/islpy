@@ -11,61 +11,49 @@ Python 2.7:
     reports:
       junit: test/pytest.xml
 
-Python 3.6:
+Python 3:
   script:
-  - export PY_EXE=python3.6
+  - export PY_EXE=python3
   - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
   - ". ./build-and-test-py-project.sh"
   tags:
-  - python3.6
+  - python3
   except:
   - tags
   artifacts:
     reports:
       junit: test/pytest.xml
 
-Python 3.6 small integer opt:
+Python 3 small integer opt:
   script:
-  - export PY_EXE=python3.6
+  - export PY_EXE=python3
   - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
   - ./configure.py --use-imath-sio
   - ". ./build-and-test-py-project.sh"
   tags:
-  - python3.6
+  - python3
   except:
   - tags
   artifacts:
     reports:
       junit: test/pytest.xml
 
-Python 3.6 + Barvinok:
+Python 3 + Barvinok:
   script:
   - git clean -fdx
-  - python3.6 -m venv .env
+  - python3 -m venv .env
   - source .env/bin/activate
   - python -m ensurepip
   - pip install cffi
   - "./build-with-barvinok.sh"
   tags:
-  - python3.6
+  - python3
   except:
   - tags
   artifacts:
     reports:
       junit: test/pytest.xml
 
-Python 3.7:
-  script:
-  - export PY_EXE=python3.7
-  - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
-  - ". ./build-and-test-py-project.sh"
-  tags:
-  - python3.7
-  except:
-  - tags
-  artifacts:
-    reports:
-      junit: test/pytest.xml
 
 PyPy:
   script:
@@ -85,6 +73,6 @@ Documentation:
   - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-docs.sh
   - ". ./build-docs.sh"
   tags:
-  - python3.5
+  - python3
   only:
   - master
