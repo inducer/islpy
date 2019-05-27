@@ -1,0 +1,12 @@
+diff --git a/isl_polynomial.c b/isl_polynomial.c
+index 4c02324f..e86713fc 100644
+--- a/isl_polynomial.c
++++ b/isl_polynomial.c
+@@ -3936,6 +3936,7 @@ __isl_give isl_term *isl_upoly_foreach_term(__isl_keep struct isl_upoly *up,
+ 		if (!term)
+ 			goto error;
+ 	}
++	term = isl_term_cow(term);
+ 	term->pow[up->var] = 0;
+ 
+ 	return term;
