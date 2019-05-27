@@ -213,7 +213,7 @@ def _add_functionality():
 
     # }}}
 
-    # {{{ printing
+    # {{{ str, repr, hash
 
     def generic_str(self):
         prn = Printer.to_str(self.get_ctx())
@@ -236,10 +236,12 @@ def _add_functionality():
         if hasattr(cls, "_base_name") and hasattr(Printer, "print_"+cls._base_name):
             cls.__str__ = generic_str
             cls.__repr__ = generic_repr
-            if hasattr(cls, "get_hash"):
-                cls.__hash__ = generic_isl_hash
-            else:
+
+            if not hasattr(cls, "get_hash"):
                 cls.__hash__ = generic_hash
+
+        if hasattr(cls, "get_hash"):
+            cls.__hash__ = generic_isl_hash
 
     # }}}
 
