@@ -687,6 +687,18 @@ def _add_functionality():
 
     # }}}
 
+    # {{{ QPolynomial
+
+    def qpolynomial_get_terms(self):
+        """Get the list of :class:`Term` instances in this :class:`QPolynomial`."""
+        result = []
+        self.foreach_term(result.append)
+        return result
+
+    QPolynomial.get_terms = qpolynomial_get_terms
+
+    # }}}
+
     # {{{ PwQPolynomial
 
     def pwqpolynomial_eval_with_dict(self, value_dict):
