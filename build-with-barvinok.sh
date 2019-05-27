@@ -41,7 +41,11 @@ if true; then
   done
 
   sh autogen.sh
-  ./configure --prefix="$PREFIX" --with-ntl-prefix="$PREFIX" --enable-shared-barvinok --with-pet=bundled
+  ./configure \
+    --prefix="$PREFIX" \
+    --with-ntl-prefix="$PREFIX" \
+    --enable-shared-barvinok \
+    --with-pet=no
 
   make -j$NPROCS
   make install
