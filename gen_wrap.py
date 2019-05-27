@@ -156,7 +156,7 @@ CLASSES = [
         "union_pw_aff_list",
         "multi_union_pw_aff",
 
-        "id",
+        "id", "multi_id",
         "constraint", "space", "local_space",
 
         "basic_set", "basic_map",
@@ -794,6 +794,16 @@ class FunctionData:
                 "ISL_DECLARE_MULTI_NEG",
                 "ISL_DECLARE_MULTI_DIMS",
                 "ISL_DECLARE_MULTI_WITH_DOMAIN",
+                "ISL_DECLARE_EXPORTED_LIST_FN",
+                "ISL_DECLARE_MULTI_IDENTITY",
+                "ISL_DECLARE_MULTI_ARITH",
+                "ISL_DECLARE_MULTI_ZERO",
+                "ISL_DECLARE_MULTI_NAN",
+                "ISL_DECLARE_MULTI_DIM_ID",
+                "ISL_DECLARE_MULTI_TUPLE_ID",
+                "ISL_DECLARE_MULTI_BIND_DOMAIN",
+                "ISL_DECLARE_MULTI_PARAM",
+                "ISL_DECLARE_MULTI_DROP_DIMS",
                 "isl_malloc_or_die",
                 "isl_calloc_or_die",
                 "isl_realloc_or_die",
@@ -822,6 +832,8 @@ class FunctionData:
         # names are carried over to the Python level.
 
         if not found_class:
+            if name.startswith("bool_"):
+                return
             if name.startswith("options_"):
                 found_class = True
                 cls = "ctx"
