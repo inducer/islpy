@@ -747,7 +747,10 @@ def _add_functionality():
 
     def expr_like_add(self, other):
         if not isinstance(other, ARITH_CLASSES):
-            other = _number_to_expr_like(self, other)
+            try:
+                other = _number_to_expr_like(self, other)
+            except _isl.IslTypeError:
+                return NotImplemented
 
         try:
             return self.add(other)
@@ -756,7 +759,10 @@ def _add_functionality():
 
     def expr_like_sub(self, other):
         if not isinstance(other, ARITH_CLASSES):
-            other = _number_to_expr_like(self, other)
+            try:
+                other = _number_to_expr_like(self, other)
+            except _isl.IslTypeError:
+                return NotImplemented
 
         try:
             return self.sub(other)
@@ -765,13 +771,19 @@ def _add_functionality():
 
     def expr_like_rsub(self, other):
         if not isinstance(other, ARITH_CLASSES):
-            other = _number_to_expr_like(self, other)
+            try:
+                other = _number_to_expr_like(self, other)
+            except _isl.IslTypeError:
+                return NotImplemented
 
         return -self + other
 
     def expr_like_mul(self, other):
         if not isinstance(other, ARITH_CLASSES):
-            other = _number_to_expr_like(self, other)
+            try:
+                other = _number_to_expr_like(self, other)
+            except _isl.IslTypeError:
+                return NotImplemented
 
         try:
             return self.mul(other)
