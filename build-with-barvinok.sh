@@ -17,6 +17,9 @@ if true; then
   mkdir "$BUILD_DIR"
   cd "$BUILD_DIR"
 
+  rm -Rf  islpy
+  git clone --recursive https://github.com/inducer/islpy
+
   curl -L -O http://shoup.net/ntl/ntl-"$NTL_VER".tar.gz
   tar xfz ntl-"$NTL_VER".tar.gz
   cd "$BUILD_DIR/ntl-$NTL_VER/src"
@@ -40,6 +43,8 @@ if true; then
     fi
   done
 
+  (cd isl; patch -p1 < ../../islpy/add-missing-isl_term_cow-in-isl_poly_foreach_term.patch)
+
   sh autogen.sh
   ./configure \
     --prefix="$PREFIX" \
@@ -52,8 +57,6 @@ if true; then
 fi
 
 cd "$BUILD_DIR"
-rm -Rf  islpy
-git clone --recursive https://github.com/inducer/islpy
 cd islpy
 ./configure.py \
   --no-use-shipped-isl \
