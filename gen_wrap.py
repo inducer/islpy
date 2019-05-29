@@ -343,6 +343,7 @@ MACRO_ENUMS = [
 
 HEADER_PREAMBLE = """
 // flow.h
+typedef int isl_size;
 typedef int (*isl_access_level_before)(void *first, void *second);
 typedef isl_restriction *(*isl_access_restrict)(
         isl_map *source_map, isl_set *sink,
@@ -519,7 +520,7 @@ else:
 """
 
 SAFE_TYPES = list(ENUMS) + ["int", "unsigned", "uint32_t", "size_t", "double",
-        "long", "unsigned long"]
+        "long", "unsigned long", "isl_size"]
 SAFE_IN_TYPES = SAFE_TYPES + ["const char *", "char *"]
 
 
@@ -561,12 +562,17 @@ FUNC_PTR_RE = re.compile(r"""
     re.VERBOSE)
 STRUCT_DECL_RE = re.compile(
     r"(__isl_export\s+)?"
-    "struct\s+"
-    "(__isl_export\s+)?"
-    "(__isl_subclass\([a-z_ ]+\)\s+)?"
-    "([a-z_A-Z0-9]+)\s*;")
+    r"struct\s+"
+    r"(__isl_export\s+)?"
+    r"(__isl_subclass\([a-z_ ]+\)\s+)?"
+    r"([a-z_A-Z0-9]+)\s*;")
 ARG_RE = re.compile(r"^((?:\w+)\s+)+(\**)\s*(\w+)$")
 INLINE_SEMICOLON_RE = re.compile(r"\;[ \t]*(?=\w)")
+SUBCLASS_RE = re.compile(
+        r"__isl_subclass\s*"
+        r"\(\s*"
+        "[0-9a-zA-Z_]+"
+        r"\s*\)")
 
 
 def filter_semantics(words):
@@ -704,6 +710,7 @@ class FunctionData:
             my_line = lines[i].strip()
             i += 1
 
+            my_line, _ = SUBCLASS_RE.subn("", my_line)
             while my_line.endswith("\\"):
                 my_line = my_line[:-1] + lines[i].strip()
                 i += 1
@@ -717,41 +724,41 @@ class FunctionData:
         i = 0
 
         while i < len(lines):
-            l = lines[i].strip()
+            line = lines[i].strip()
 
-            if (not l
-                    or l.startswith("extern")
-                    or STRUCT_DECL_RE.search(l)
-                    or l.startswith("typedef")
-                    or l == "}"):
+            if (not line
+                    or line.startswith("extern")
+                    or STRUCT_DECL_RE.search(line)
+                    or line.startswith("typedef")
+                    or line == "}"):
                 i += 1
-            elif "/*" in l:
+            elif "/*" in line:
                 while True:
-                    if "*/" in l:
+                    if "*/" in line:
                         i += 1
                         break
 
                     i += 1
 
-                    l = lines[i].strip()
-            elif l.endswith("{"):
+                    line = lines[i].strip()
+            elif line.endswith("{"):
                 while True:
-                    if "}" in l:
+                    if "}" in line:
                         i += 1
                         break
 
                     i += 1
 
-                    l = lines[i].strip()
+                    line = lines[i].strip()
 
-            elif not l:
+            elif not line:
                 i += 1
 
             else:
                 decl = ""
 
                 while True:
-                    decl = decl + l
+                    decl = decl + line
                     if decl:
                         decl += " "
                     i += 1
@@ -762,7 +769,7 @@ class FunctionData:
                     close_par_count = sum(1 for i in decl if i == ")")
                     if open_par_count and open_par_count == close_par_count:
                         break
-                    l = lines[i].strip()
+                    line = lines[i].strip()
 
                 if not STRUCT_DECL_RE.search(decl):
                     self.parse_decl(decl)
@@ -1756,6 +1763,7 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
     print("SKIP (%d undocumented methods): %s" % (len(undoc), ", ".join(undoc)))
 
     return fdata.headers
+
 
 if __name__ == "__main__":
     from os.path import expanduser
