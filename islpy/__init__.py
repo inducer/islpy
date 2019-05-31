@@ -732,16 +732,24 @@ def _add_functionality():
 
         # everything else is piecewise
 
-        number_pw_aff = PwAff.empty(template.get_space())
-        for set, _ in template.get_pieces():
-            number_pw_aff = set.indicator_function().cond(
-                    number_aff, number_pw_aff)
+        if template.get_pieces():
+            number_pw_aff = PwAff.empty(template.get_space())
+            for set, _ in template.get_pieces():
+                number_pw_aff = set.indicator_function().cond(
+                        number_aff, number_pw_aff)
+        else:
+            number_pw_aff = PwAff.alloc(
+                    Set.universe(template.domain().space),
+                    number_aff)
 
         if isinstance(template, PwAff):
             return number_pw_aff
 
-        else:
+        elif isinstance(template, PwQPolynomial):
             return PwQPolynomial.from_pw_aff(number_pw_aff)
+
+        else:
+            raise TypeError("unexpected template type")
 
     ARITH_CLASSES = (Aff, PwAff, QPolynomial, PwQPolynomial)  # noqa
 
