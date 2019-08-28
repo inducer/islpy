@@ -308,6 +308,14 @@ def test_lexmin():
             """).lexmin())
 
 
+def test_align_spaces():
+    m1 = isl.BasicMap("[m,n] -> {[i,j,k]->[l,o]:}")
+    m2 = isl.BasicMap("[m,n] -> {[j,k,l,i]->[o]:}")
+
+    result = isl.align_spaces(m1, m2)
+    assert result.get_var_dict() == m2.get_var_dict()
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
