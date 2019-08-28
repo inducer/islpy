@@ -1173,7 +1173,7 @@ def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
     return obj
 
 
-def align_spaces(obj, tgt, obj_bigger_ok=False, across_dim_types=False):
+def align_spaces(obj, tgt, obj_bigger_ok=False, across_dim_types=None):
     """
     Try to make the space in which *obj* lives the same as that of *tgt* by
     adding/matching named dimensions.
@@ -1181,6 +1181,11 @@ def align_spaces(obj, tgt, obj_bigger_ok=False, across_dim_types=False):
     :param obj_bigger_ok: If *True*, no error is raised if the resulting *obj*
         has more dimensions than *tgt*.
     """
+
+    if across_dim_types is not None:
+        warn("across_dim_types is deprecated and should no longer be used. "
+                "It never had any effect anyway.",
+                DeprecationWarning, stacklevel=2)
 
     have_any_param_domains = (
             isinstance(obj, (Set, BasicSet))
@@ -1198,28 +1203,19 @@ def align_spaces(obj, tgt, obj_bigger_ok=False, across_dim_types=False):
     else:
         dim_types = _CHECK_DIM_TYPES
 
-    if across_dim_types:
-        obj_names = [
-                obj.get_dim_name(dt, i)
-                for dt in dim_types
-                for i in range(obj.dim(dt))
-                ]
-        tgt_names = [
-                tgt.get_dim_name(dt, i)
-                for dt in dim_types
-                for i in range(tgt.dim(dt))
-                ]
+    obj_names = [
+            obj.get_dim_name(dt, i)
+            for dt in dim_types
+            for i in range(obj.dim(dt))
+            ]
+    tgt_names = [
+            tgt.get_dim_name(dt, i)
+            for dt in dim_types
+            for i in range(tgt.dim(dt))
+            ]
 
-        for dt in dim_types:
-            obj = _align_dim_type(dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names)
-    else:
-        obj_names = [obj.get_dim_name(dt, i)
-                for dt in dim_types for i in range(obj.dim(dt))]
-        tgt_names = [tgt.get_dim_name(dt, i)
-                for dt in dim_types for i in range(tgt.dim(dt))]
-
-        for dt in dim_types:
-            obj = _align_dim_type(dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names)
+    for dt in dim_types:
+        obj = _align_dim_type(dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names)
 
     return obj
 
