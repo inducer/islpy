@@ -1183,6 +1183,7 @@ def align_spaces(obj, tgt, obj_bigger_ok=False, across_dim_types=None):
     """
 
     if across_dim_types is not None:
+        from warnings import warn
         warn("across_dim_types is deprecated and should no longer be used. "
                 "It never had any effect anyway.",
                 DeprecationWarning, stacklevel=2)
