@@ -259,12 +259,9 @@ def test_make_zero_and_vars():
 
     myset = (
             v[0].le_set(v["i"] + v["j"])
-            &
-            (v["i"] + v["j"]).lt_set(v["n"])
-            &
-            (v[0].le_set(v["i"]))
-            &
-            (v["i"].le_set(13 + v["n"]))
+            & (v["i"] + v["j"]).lt_set(v["n"])
+            & (v[0].le_set(v["i"]))
+            & (v["i"].le_set(13 + v["n"]))
             )
 
     print(myset)
@@ -276,12 +273,9 @@ def test_affs_from_space():
 
     myset = (
             v[0].le_set(v["i"] + v["j"])
-            &
-            (v["i"] + v["j"]).lt_set(v["n"])
-            &
-            (v[0].le_set(v["i"]))
-            &
-            (v["i"].le_set(13 + v["n"]))
+            & (v["i"] + v["j"]).lt_set(v["n"])
+            & (v[0].le_set(v["i"]))
+            & (v["i"].le_set(13 + v["n"]))
             )
 
     print(myset)
