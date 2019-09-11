@@ -1221,16 +1221,20 @@ def align_spaces(obj, tgt, obj_bigger_ok=False, across_dim_types=None):
     return obj
 
 
-def align_two(obj1, obj2, across_dim_types=False):
+def align_two(obj1, obj2, across_dim_types=None):
     """Align the spaces of two objects, potentially modifying both of them.
 
     See also :func:`align_spaces`.
     """
 
-    obj1 = align_spaces(obj1, obj2, obj_bigger_ok=True,
-            across_dim_types=across_dim_types)
-    obj2 = align_spaces(obj2, obj1, obj_bigger_ok=True,
-            across_dim_types=across_dim_types)
+    if across_dim_types is not None:
+        from warnings import warn
+        warn("across_dim_types is deprecated and should no longer be used. "
+                "It never had any effect anyway.",
+                DeprecationWarning, stacklevel=2)
+
+    obj1 = align_spaces(obj1, obj2, obj_bigger_ok=True)
+    obj2 = align_spaces(obj2, obj1, obj_bigger_ok=True)
     return (obj1, obj2)
 
 
