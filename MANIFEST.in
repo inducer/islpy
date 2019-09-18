@@ -39,3 +39,6 @@ include aksetup_helper.py
 include README_SETUP.txt
 
 include README.rst
+
+include isl/LICENSE
+include isl/imath/LICENSE
