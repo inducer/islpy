@@ -242,7 +242,7 @@ ENUMS = {
     """,
 
     # ast_type.h
-    "isl_ast_op_type": """
+    "isl_ast_expr_op_type": """
         isl_ast_op_error,
         isl_ast_op_and,
         isl_ast_op_and_then,
@@ -332,7 +332,7 @@ ENUMS = {
     "isl_schedule_algorithm": """
         ISL_SCHEDULE_ALGORITHM_ISL,
         ISL_SCHEDULE_ALGORITHM_FEAUTRIER,
-    """
+    """,
     }
 
 TYPEDEFD_ENUMS = ["isl_stat", "isl_bool"]
