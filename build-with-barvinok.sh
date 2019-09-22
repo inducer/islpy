@@ -8,7 +8,7 @@ echo "BUILDING IN $BUILD_DIR"
 
 PREFIX="$HOME/pack/barvinok"
 NTL_VER="10.5.0"
-BARVINOK_GIT_REV="barvinok-0.41.1"
+BARVINOK_GIT_REV="barvinok-0.41.2"
 NPROCS=6
 
 if true; then
