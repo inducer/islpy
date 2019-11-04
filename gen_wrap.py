@@ -26,6 +26,8 @@ import re
 import sys
 from py_codegen import PythonCodeGenerator, Indentation
 from distutils.sysconfig import get_config_var
+from os.path import join
+import os
 
 SEM_TAKE = "take"
 SEM_GIVE = "give"
@@ -145,6 +147,9 @@ CLASSES = [
         "ast_expr_list", "ast_node_list",
         "pw_qpolynomial_list",
         "pw_qpolynomial_fold_list",
+        "union_pw_aff_list",
+        "union_pw_multi_aff_list",
+        "union_map_list",
 
         # maps
         "id_to_ast_expr",
@@ -153,7 +158,6 @@ CLASSES = [
         "printer",  "val", "multi_val", "vec", "mat", "fixed_box",
         "aff", "pw_aff", "union_pw_aff",
         "multi_aff", "multi_pw_aff", "pw_multi_aff", "union_pw_multi_aff",
-        "union_pw_aff_list",
         "multi_union_pw_aff",
 
         "id", "multi_id",
@@ -673,17 +677,55 @@ def parse_arg(arg):
             ptr=arg_match.group(2).strip())
 
 
+def preprocess_with_macros(macro_header_contents, code):
+    try:
+        from pcpp.preprocessor import (
+                Preprocessor as PreprocessorBase, OutputDirective, Action)
+    except ImportError:
+        raise RuntimeError("pcpp was not found. Please install pcpp before "
+                "installing islpy. 'pip install pcpp' should do the job.")
+
+    class MacroExpandingCPreprocessor(PreprocessorBase):
+        def on_directive_handle(self, directive, toks, ifpassthru, precedingtoks):
+            if directive.value == "include":
+                raise OutputDirective(action=Action.IgnoreAndPassThrough)
+            elif directive.value == "define":
+                assert toks
+                macro_name = toks[0].value
+                if macro_name in ISL_SEM_TO_SEM:
+                    raise OutputDirective(action=Action.IgnoreAndRemove)
+
+            return super(MacroExpandingCPreprocessor, self).on_directive_handle(
+                    directive, toks, ifpassthru, precedingtoks)
+
+    cpp = MacroExpandingCPreprocessor()
+    if sys.version_info < (3,):
+        from StringIO import StringIO
+    else:
+        from io import StringIO
+
+    # read macro definitions, but don't output resulting code
+    for macro_header in macro_header_contents:
+        cpp.parse(macro_header)
+        cpp.write(StringIO())
+
+    sio_output = StringIO()
+    cpp.parse(code)
+    cpp.write(sio_output)
+
+    return sio_output.getvalue()
+
+
 class FunctionData:
     def __init__(self, include_dirs):
         self.classes_to_methods = {}
         self.include_dirs = include_dirs
         self.seen_c_names = set()
 
+        # used in setup.py
         self.headers = []
 
-    def read_header(self, fname):
-        self.headers.append(fname)
-
+    def get_header_contents(self, fname):
         from os.path import join
         success = False
         for inc_dir in self.include_dirs:
@@ -699,9 +741,63 @@ class FunctionData:
             raise RuntimeError("header '%s' not found" % fname)
 
         try:
-            lines = inf.readlines()
+            return inf.read()
         finally:
             inf.close()
+
+    def get_header_hashes(self, fnames):
+        import hashlib
+        h = hashlib.sha256()
+        h.update(b"v1-")
+        for fname in fnames:
+            h.update(self.get_header_contents(fname).encode())
+        return h.hexdigest()
+
+    preprocessed_dir = "preproc-headers"
+    macro_headers = ["isl/multi.h", "isl/list.h"]
+
+    def get_preprocessed_header(self, fname):
+        header_hash = self.get_header_hashes(
+                self.macro_headers + [fname])
+
+        # cache preprocessed headers to avoid install-time
+        # dependency on pcpp
+        import errno
+        try:
+            os.mkdir(self.preprocessed_dir)
+        except OSError as err:
+            if err.errno == errno.EEXIST:
+                pass
+            else:
+                raise
+
+        prepro_fname = join(self.preprocessed_dir, header_hash)
+        try:
+            with open(prepro_fname, "rt") as inf:
+                return inf.read()
+        except IOError:
+            # Python 2
+            pass
+        except OSError:
+            pass
+
+        print("preprocessing %s..." % fname)
+        macro_header_contents = [
+                self.get_header_contents(mh)
+                for mh in self.macro_headers]
+
+        prepro_header = preprocess_with_macros(
+                macro_header_contents, self.get_header_contents(fname))
+
+        with open(prepro_fname, "wt") as outf:
+            outf.write(prepro_header)
+
+        return prepro_header
+
+    def read_header(self, fname):
+        self.headers.append(fname)
+
+        lines = self.get_preprocessed_header(fname).split("\n")
 
         # heed continuations, split at semicolons
         new_lines = []
@@ -1619,6 +1715,7 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
     fdata.read_header("isl/space.h")
     fdata.read_header("isl/set.h")
     fdata.read_header("isl/map.h")
+    fdata.read_header("isl/map_type.h")
     fdata.read_header("isl/local_space.h")
     fdata.read_header("isl/aff.h")
     fdata.read_header("isl/polynomial.h")
@@ -1638,13 +1735,6 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
     fdata.read_header("isl/ast.h")
     fdata.read_header("isl/ast_build.h")
     fdata.read_header("isl/ilp.h")
-
-    if isl_version is None:
-        fdata.read_header("isl_declaration_macros_expanded.h")
-    else:
-        fdata.read_header("isl_declaration_macros_expanded_v%d.h"
-                % isl_version)
-    fdata.headers.pop()
 
     if include_barvinok:
         fdata.read_header("barvinok/isl.h")
@@ -1703,9 +1793,9 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
 
                             if val_versions:
                                 # no need to expose C integer versions of things
-                                print("SKIP (val version available): %s -> %s"
-                                        % (meth, ", ".join(str(s)
-                                            for s in val_versions)))
+                                # print("SKIP (val version available): %s -> %s"
+                                #         % (meth, ", ".join(str(s)
+                                #             for s in val_versions)))
                                 continue
 
                         write_method_header(header_f, meth)
