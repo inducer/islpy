@@ -12,9 +12,7 @@ include isl-supplementary/*.h
 
 include build-with-barvinok.sh
 
-include regenerate-isl-declaration-macros-expanded.sh
-include isl_declaration_macros.h
-include isl_declaration_macros_expanded*.h
+include preproc-headers/*
 
 include src/wrapper/*.h
 include src/wrapper/*.hpp
