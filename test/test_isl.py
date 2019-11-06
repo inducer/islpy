@@ -310,6 +310,16 @@ def test_align_spaces():
     assert result.get_var_dict() == m2.get_var_dict()
 
 
+def test_pass_numpy_int():
+    np = pytest.importorskip("numpy")
+
+    s = isl.BasicMap("{[i,j]: 0<=i,j<15}")
+    c0 = s.get_constraints()[0]
+
+    c1 = c0.set_constant_val(np.int32(5))
+    print(c1)
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
