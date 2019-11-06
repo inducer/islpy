@@ -362,6 +362,10 @@ import six
 import sys
 import logging
 import threading
+import operator as _operator
+
+# isl has parameters called type which end up shadowing the built-in function.
+_type = type
 
 
 _PY3 = sys.version_info >= (3,)
@@ -1391,7 +1395,13 @@ def write_method_wrapper(gen, cls_name, meth):
                 pre_call("{val_name} = {name}._copy()".format(**fmt_args))
 
             pre_call("""
-                elif isinstance({name}, six.integer_types):
+                else:
+                    try:
+                        {name} = _operator.index({name})
+                    except TypeError:
+                        raise IslTypeError("{name} is a %s and cannot "
+                            "be cast to a Val" % _type({name}))
+
                     _cdata_{name} = lib.isl_val_int_from_si(
                         {arg0_name}._get_ctx_data(), {name})
 
@@ -1399,10 +1409,6 @@ def write_method_wrapper(gen, cls_name, meth):
                         raise Error("isl_val_int_from_si failed")
 
                     {val_name} = Val(_data=_cdata_{name})
-
-                else:
-                    raise IslTypeError("{name} is a %s and cannot "
-                        "be cast to a Val" % type({name}))
                 """
                 .format(**fmt_args))
 
