@@ -321,12 +321,12 @@ def test_pass_numpy_int():
 
 
 def test_isl_align_two():
-    a1 = isl.Aff("[start, end, t] -> { [(32)] }")
-    a2 = isl.Aff("[end, start] -> { [(0)] }")
+    a1 = isl.Aff("[t0, t1, t2] -> { [(32)] }")
+    a2 = isl.Aff("[t1, t0] -> { [(0)] }")
 
     assert isl.align_two(a1, a2) == (
-            isl.Aff("[end, start, t] -> { [(32)] }"),
-            isl.Aff("[end, start, t] -> { [(0)] }"))
+            isl.Aff("[t1, t0, t2] -> { [(32)] }"),
+            isl.Aff("[t1, t0, t2] -> { [(0)] }"))
 
 
 if __name__ == "__main__":
