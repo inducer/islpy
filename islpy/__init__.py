@@ -1116,8 +1116,7 @@ def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
             tgt_space = tgt.space
         else:
             tgt_space = tgt
-        if (not obj_bigger_ok
-                or obj.space.dim(dim_type.param) == tgt_space.dim(dim_type.param)):
+        if obj_bigger_ok:
             return obj.align_params(tgt_space)
 
     if None in tgt_names:
