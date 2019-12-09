@@ -245,45 +245,6 @@ def _add_functionality():
 
     # }}}
 
-    # {{{ rich comparisons
-
-    def obj_eq(self, other):
-        assert self.get_ctx() == other.get_ctx(), (
-                "Equality-comparing two objects from different ISL Contexts "
-                "will likely lead to entertaining (but never useful) results. "
-                "In particular, Spaces with matching names will no longer be "
-                "equal.")
-
-        return self.is_equal(other)
-
-    def obj_ne(self, other):
-        return not self.__eq__(other)
-
-    for cls in ALL_CLASSES:
-        if hasattr(cls, "is_equal"):
-            cls.__eq__ = obj_eq
-            cls.__ne__ = obj_ne
-
-    def obj_lt(self, other):
-        return self.is_strict_subset(other)
-
-    def obj_le(self, other):
-        return self.is_subset(other)
-
-    def obj_gt(self, other):
-        return other.is_strict_subset(self)
-
-    def obj_ge(self, other):
-        return other.is_subset(self)
-
-    for cls in [BasicSet, BasicMap, Set, Map]:
-        cls.__lt__ = obj_lt
-        cls.__le__ = obj_le
-        cls.__gt__ = obj_gt
-        cls.__ge__ = obj_ge
-
-    # }}}
-
     # {{{ Python set-like behavior
 
     def obj_or(self, other):
@@ -973,6 +934,49 @@ def _add_functionality():
             (Space, LocalSpace, LocalSpace.from_space),
             ]:
         add_upcasts(*args_triple)
+
+    # }}}
+
+    # ORDERING DEPENDENCY: The availability of some of the 'is_equal'
+    # used by rich comparison below depends on the self upcasts created
+    # above.
+
+    # {{{ rich comparisons
+
+    def obj_eq(self, other):
+        assert self.get_ctx() == other.get_ctx(), (
+                "Equality-comparing two objects from different ISL Contexts "
+                "will likely lead to entertaining (but never useful) results. "
+                "In particular, Spaces with matching names will no longer be "
+                "equal.")
+
+        return self.is_equal(other)
+
+    def obj_ne(self, other):
+        return not self.__eq__(other)
+
+    for cls in ALL_CLASSES:
+        if hasattr(cls, "is_equal"):
+            cls.__eq__ = obj_eq
+            cls.__ne__ = obj_ne
+
+    def obj_lt(self, other):
+        return self.is_strict_subset(other)
+
+    def obj_le(self, other):
+        return self.is_subset(other)
+
+    def obj_gt(self, other):
+        return other.is_strict_subset(self)
+
+    def obj_ge(self, other):
+        return other.is_subset(self)
+
+    for cls in [BasicSet, BasicMap, Set, Map]:
+        cls.__lt__ = obj_lt
+        cls.__le__ = obj_le
+        cls.__gt__ = obj_gt
+        cls.__ge__ = obj_ge
 
     # }}}
 
