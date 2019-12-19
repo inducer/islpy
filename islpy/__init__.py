@@ -1152,7 +1152,7 @@ def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
                 if src_dt == tgt_dt:
                     assert src_idx > tgt_idx
 
-                    # isl requires move_dims to be between different types
+                    # isl requires move_dims to be between different types.
                     # Not sure why. Let's make it happy.
                     other_dt = dim_type.param
                     if src_dt == other_dt:
