@@ -328,6 +328,13 @@ def test_isl_align_two():
     assert a1_aligned == isl.Aff("[t1, t0, t2] -> { [(32)] }")
     assert a2_aligned == isl.Aff("[t1, t0, t2] -> { [(0)] }")
 
+    b1 = isl.BasicSet("[n0, n1, n2] -> { [i0, i1] : }")
+    b2 = isl.BasicSet("[n0, n2, n1, n3] -> { [i1, i0, i2] : }")
+
+    b1_aligned, b2_aligned = isl.align_two(b1, b2)
+    assert b1_aligned == isl.BasicSet("[n0, n2, n1, n3] -> { [i1, i0, i2] :  }")
+    assert b2_aligned == isl.BasicSet("[n0, n2, n1, n3] -> { [i1, i0, i2] :  }")
+
 
 if __name__ == "__main__":
     import sys
