@@ -1111,7 +1111,7 @@ def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
     # the 'param' dim_type, and we are not allowed to move dims around in there.
     # We'll make isl do the work, using align_params.
 
-    if tgt_dt == dim_type.param and isinstance(obj, (Set, BasicSet, Aff, PwAff)):
+    if tgt_dt == dim_type.param and isinstance(obj, (Aff, PwAff)):
         if not isinstance(tgt, Space):
             tgt_space = tgt.space
         else:
@@ -1152,12 +1152,11 @@ def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
                 if src_dt == tgt_dt:
                     assert src_idx > tgt_idx
 
-                    # isl requires move_dims to be between different types and
-                    # one of dim_type.in_ and one of dim_type.param.
+                    # isl requires move_dims to be between different types
                     # Not sure why. Let's make it happy.
                     other_dt = dim_type.param
                     if src_dt == other_dt:
-                        other_dt = dim_type.in_
+                        other_dt = dim_type.out
 
                     other_dt_dim = obj.dim(other_dt)
                     obj = obj.move_dims(other_dt, other_dt_dim, src_dt, src_idx, 1)
