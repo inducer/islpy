@@ -1111,13 +1111,17 @@ def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
     # the 'param' dim_type, and we are not allowed to move dims around in there.
     # We'll make isl do the work, using align_params.
 
-    if tgt_dt == dim_type.param and isinstance(obj, (Aff, PwAff)):
+    if tgt_dt == dim_type.param and isinstance(obj, (Set, BasicSet, Aff, PwAff)):
         if not isinstance(tgt, Space):
             tgt_space = tgt.space
         else:
             tgt_space = tgt
+
         if obj_bigger_ok:
             return obj.align_params(tgt_space)
+        else:
+            raise NotImplementedError("align_dim_types for %s if"
+                    " 'obj_bigger_ok' is False" % type(obj).__name__)
 
     if None in tgt_names:
         all_nones = [None] * len(tgt_names)
