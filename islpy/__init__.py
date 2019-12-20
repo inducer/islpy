@@ -1117,8 +1117,7 @@ def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
         else:
             tgt_space = tgt
 
-        if obj_bigger_ok:
-            return obj.align_params(tgt_space)
+        return obj.align_params(tgt_space)
 
     if None in tgt_names:
         all_nones = [None] * len(tgt_names)
