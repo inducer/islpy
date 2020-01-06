@@ -1368,14 +1368,18 @@ def write_method_wrapper(gen, cls_name, meth):
 
             docs.append(":param %s: string" % arg.name)
 
-        elif arg.base_type == "int" and arg.ptr == "*":
+        elif arg.base_type == "isl_bool" and arg.ptr == "*":
             if arg.name in ["exact", "tight"]:
-                c_name = "cint_"+arg.name
-                pre_call('{c_name} = ffi.new("int[1]")'.format(c_name=c_name))
+                c_name = "cbool_"+arg.name
+                pre_call('{c_name} = ffi.new("isl_bool[1]")'.format(c_name=c_name))
 
                 passed_args.append(c_name)
-                ret_vals.append("{c_name}[0]".format(c_name=c_name))
-                ret_descrs.append("%s (integer)" % arg.name)
+                ret_vals.append("({c_name}[0] == lib.isl_bool_true)".format(c_name=c_name))
+                ret_descrs.append("%s (bool)" % arg.name)
+                check('if {c_name}[0] == lib.isl_bool_error:'.format(c_name=c_name))
+                with Indentation(check):
+                    check('raise Error("call to \\"{0}\\" failed: %s" '
+                            '% _get_last_error_str(_ctx_data))'.format(meth.c_name))
             else:
                 raise SignatureNotSupported("int *")
 
