@@ -309,6 +309,18 @@ def test_align_spaces():
     result = isl.align_spaces(m1, m2)
     assert result.get_var_dict() == m2.get_var_dict()
 
+    a1 = isl.Aff("[t0, t1, t2] -> { [(32)] }")
+    a2 = isl.Aff("[t1, t0] -> { [(0)] }")
+
+    with pytest.raises(isl.Error):
+        a1_aligned = isl.align_spaces(a1, a2)
+
+    a1_aligned = isl.align_spaces(a1, a2, obj_bigger_ok=True)
+    a2_aligned = isl.align_spaces(a2, a1)
+
+    assert a1_aligned == isl.Aff("[t1, t0, t2] -> { [(32)] }")
+    assert a2_aligned == isl.Aff("[t1, t0, t2] -> { [(0)] }")
+
 
 def test_pass_numpy_int():
     np = pytest.importorskip("numpy")
@@ -320,8 +332,24 @@ def test_pass_numpy_int():
     print(c1)
 
 
+def test_isl_align_two():
+    a1 = isl.Aff("[t0, t1, t2] -> { [(32)] }")
+    a2 = isl.Aff("[t1, t0] -> { [(0)] }")
+
+    a1_aligned, a2_aligned = isl.align_two(a1, a2)
+    assert a1_aligned == isl.Aff("[t1, t0, t2] -> { [(32)] }")
+    assert a2_aligned == isl.Aff("[t1, t0, t2] -> { [(0)] }")
+
+    b1 = isl.BasicSet("[n0, n1, n2] -> { [i0, i1] : }")
+    b2 = isl.BasicSet("[n0, n2, n1, n3] -> { [i1, i0, i2] : }")
+
+    b1_aligned, b2_aligned = isl.align_two(b1, b2)
+    assert b1_aligned == isl.BasicSet("[n0, n2, n1, n3] -> { [i1, i0, i2] :  }")
+    assert b2_aligned == isl.BasicSet("[n0, n2, n1, n3] -> { [i1, i0, i2] :  }")
+
+
 def test_bound():
-    print(isl.PwQPolynomial("""[n, m] -> {[i, j] -> i * m + j : 
+    print(isl.PwQPolynomial("""[n, m] -> {[i, j] -> i * m + j :
             0 <= i < n and 0 <= j < m}""").bound(isl.fold.min))
     print(isl.PwQPolynomial("""[n, m] -> {[i, j] -> i * m + j :
             0 <= i < n and 0 <= j < m}""").bound(isl.fold.max))
