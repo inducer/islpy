@@ -1381,7 +1381,7 @@ def write_method_wrapper(gen, cls_name, meth):
                     check('raise Error("call to \\"{0}\\" failed: %s" '
                             '% _get_last_error_str(_ctx_data))'.format(meth.c_name))
             else:
-                raise SignatureNotSupported("int *")
+                raise SignatureNotSupported("isl_bool *")
 
         elif arg.base_type == "isl_val" and arg.ptr == "*" and arg_idx > 0:
             # {{{ val input argument
