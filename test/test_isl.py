@@ -319,6 +319,9 @@ def test_pass_numpy_int():
     c1 = c0.set_constant_val(np.int32(5))
     print(c1)
 
+def test_bound():
+    print(isl.PwQPolynomial('[n, m] -> {[i, j] -> i * m + j : 0 <= i < n and 0 <= j < m}').bound(isl.fold.min))
+    print(isl.PwQPolynomial('[n, m] -> {[i, j] -> i * m + j : 0 <= i < n and 0 <= j < m}').bound(isl.fold.max))
 
 if __name__ == "__main__":
     import sys
