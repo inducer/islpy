@@ -1368,20 +1368,26 @@ def write_method_wrapper(gen, cls_name, meth):
 
             docs.append(":param %s: string" % arg.name)
 
-        elif arg.base_type == "isl_bool" and arg.ptr == "*":
+        elif (arg.base_type == "isl_bool" or arg.base_type == "int") and arg.ptr == "*":
             if arg.name in ["exact", "tight"]:
-                c_name = "cbool_"+arg.name
-                pre_call('{c_name} = ffi.new("isl_bool[1]")'.format(c_name=c_name))
+                c_name = "c{base_type}_".format(base_type=arg.base_type) + arg.name
+                pre_call('{c_name} = ffi.new("{base_type}[1]")'
+                    .format(c_name=c_name, base_type=arg.base_type))
 
                 passed_args.append(c_name)
-                ret_vals.append("({c_name}[0] == lib.isl_bool_true)".format(c_name=c_name))
-                ret_descrs.append("%s (bool)" % arg.name)
-                check('if {c_name}[0] == lib.isl_bool_error:'.format(c_name=c_name))
-                with Indentation(check):
-                    check('raise Error("call to \\"{0}\\" failed: %s" '
-                            '% _get_last_error_str(_ctx_data))'.format(meth.c_name))
+                if arg.base_type == "isl_bool":
+                    ret_vals.append("({c_name}[0] == lib.isl_bool_true)"
+                        .format(c_name=c_name))
+                    ret_descrs.append("%s (bool)" % arg.name)
+                    check('if {c_name}[0] == lib.isl_bool_error:'.format(c_name=c_name))
+                    with Indentation(check):
+                        check('raise Error("call to \\"{0}\\" failed: %s" '
+                                '% _get_last_error_str(_ctx_data))'.format(meth.c_name))
+                else:
+                    ret_vals.append("{c_name}[0]".format(c_name=c_name))
+                    ret_descrs.append("%s (integer)" % arg.name)
             else:
-                raise SignatureNotSupported("isl_bool *")
+                raise SignatureNotSupported("{base_type} *".format(base_type=arg.base_type))
 
         elif arg.base_type == "isl_val" and arg.ptr == "*" and arg_idx > 0:
             # {{{ val input argument
