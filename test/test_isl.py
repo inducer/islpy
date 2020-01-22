@@ -348,6 +348,13 @@ def test_isl_align_two():
     assert b2_aligned == isl.BasicSet("[n0, n2, n1, n3] -> { [i1, i0, i2] :  }")
 
 
+def test_bound():
+    print(isl.PwQPolynomial("""[n, m] -> {[i, j] -> i * m + j :
+            0 <= i < n and 0 <= j < m}""").bound(isl.fold.min))
+    print(isl.PwQPolynomial("""[n, m] -> {[i, j] -> i * m + j :
+            0 <= i < n and 0 <= j < m}""").bound(isl.fold.max))
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
