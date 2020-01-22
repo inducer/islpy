@@ -93,7 +93,7 @@ Global Data
 
 .. data:: DEFAULT_CONTEXT
 
-    ISL objects being unpickled or initialized from strings will be instatiated
+    ISL objects being unpickled or initialized from strings will be instantiated
     within this :class:`Context`.
 
     .. versionadded:: 2015.2
