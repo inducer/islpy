@@ -355,6 +355,13 @@ def test_bound():
             0 <= i < n and 0 <= j < m}""").bound(isl.fold.max))
 
 
+def test_copy_context():
+    ctx = isl.Context()
+    import copy
+    assert copy.copy(ctx).data != ctx.data
+    assert copy.copy(ctx).data != isl.DEFAULT_CONTEXT.data
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
