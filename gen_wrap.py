@@ -1750,6 +1750,7 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
     fdata.read_header("isl/options.h")
     fdata.read_header("isl/ast.h")
     fdata.read_header("isl/ast_build.h")
+    fdata.read_header("isl/ast_type.h")
     fdata.read_header("isl/ilp.h")
 
     if include_barvinok:
