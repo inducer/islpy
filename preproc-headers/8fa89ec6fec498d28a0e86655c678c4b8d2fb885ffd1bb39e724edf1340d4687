@@ -1,0 +1,74 @@
+
+
+
+#include <isl/list.h>
+
+
+
+
+
+struct __isl_export isl_ast_expr;
+typedef struct isl_ast_expr isl_ast_expr;
+
+struct __isl_export isl_ast_node;
+typedef struct isl_ast_node isl_ast_node;
+
+enum isl_ast_expr_op_type {
+	isl_ast_expr_op_error = -1,
+	isl_ast_expr_op_and,
+	isl_ast_expr_op_and_then,
+	isl_ast_expr_op_or,
+	isl_ast_expr_op_or_else,
+	isl_ast_expr_op_max,
+	isl_ast_expr_op_min,
+	isl_ast_expr_op_minus,
+	isl_ast_expr_op_add,
+	isl_ast_expr_op_sub,
+	isl_ast_expr_op_mul,
+	isl_ast_expr_op_div,
+	isl_ast_expr_op_fdiv_q,
+	isl_ast_expr_op_pdiv_q,
+	isl_ast_expr_op_pdiv_r,
+	isl_ast_expr_op_zdiv_r,
+	isl_ast_expr_op_cond,
+	isl_ast_expr_op_select,
+	isl_ast_expr_op_eq,
+	isl_ast_expr_op_le,
+	isl_ast_expr_op_lt,
+	isl_ast_expr_op_ge,
+	isl_ast_expr_op_gt,
+	isl_ast_expr_op_call,
+	isl_ast_expr_op_access,
+	isl_ast_expr_op_member,
+	isl_ast_expr_op_address_of
+};
+#line 75
+enum isl_ast_expr_type {
+	isl_ast_expr_error = -1,
+	isl_ast_expr_op,
+	isl_ast_expr_id,
+	isl_ast_expr_int
+};
+
+enum isl_ast_node_type {
+	isl_ast_node_error = -1,
+	isl_ast_node_for = 1,
+	isl_ast_node_if,
+	isl_ast_node_block,
+	isl_ast_node_mark,
+	isl_ast_node_user
+};
+
+enum isl_ast_loop_type {
+	isl_ast_loop_error = -1,
+	isl_ast_loop_default = 0,
+	isl_ast_loop_atomic,
+	isl_ast_loop_unroll,
+	isl_ast_loop_separate
+};
+
+struct isl_ast_print_options;
+typedef struct isl_ast_print_options isl_ast_print_options;
+
+struct isl_ast_expr;							struct isl_ast_expr_list;						typedef struct isl_ast_expr_list isl_ast_expr_list;						isl_ctx *isl_ast_expr_list_get_ctx(__isl_keep isl_ast_expr_list *list);								__isl_give isl_ast_expr_list *isl_ast_expr_list_from_ast_expr(				__isl_take isl_ast_expr *el);								__isl_give isl_ast_expr_list *isl_ast_expr_list_alloc(isl_ctx *ctx, int n);	__isl_give isl_ast_expr_list *isl_ast_expr_list_copy(				__isl_keep isl_ast_expr_list *list);				__isl_null isl_ast_expr_list *isl_ast_expr_list_free(				__isl_take isl_ast_expr_list *list);									__isl_give isl_ast_expr_list *isl_ast_expr_list_add(				__isl_take isl_ast_expr_list *list,					__isl_take isl_ast_expr *el);					__isl_give isl_ast_expr_list *isl_ast_expr_list_insert(				__isl_take isl_ast_expr_list *list, unsigned pos,				__isl_take struct isl_ast_expr *el);				__isl_give isl_ast_expr_list *isl_ast_expr_list_drop(				__isl_take isl_ast_expr_list *list, unsigned first, unsigned n);									__isl_give isl_ast_expr_list *isl_ast_expr_list_clear(				__isl_take isl_ast_expr_list *list);				__isl_give isl_ast_expr_list *isl_ast_expr_list_swap(				__isl_take isl_ast_expr_list *list, unsigned pos1,			unsigned pos2);							__isl_give isl_ast_expr_list *isl_ast_expr_list_reverse(				__isl_take isl_ast_expr_list *list);									__isl_give isl_ast_expr_list *isl_ast_expr_list_concat(				__isl_take isl_ast_expr_list *list1,					__isl_take isl_ast_expr_list *list2);									isl_size isl_ast_expr_list_size(__isl_keep isl_ast_expr_list *list);	isl_size isl_ast_expr_list_n_ast_expr(__isl_keep isl_ast_expr_list *list);									__isl_give isl_ast_expr *isl_ast_expr_list_get_at(					__isl_keep isl_ast_expr_list *list, int index);			__isl_give struct isl_ast_expr *isl_ast_expr_list_get_ast_expr(				__isl_keep isl_ast_expr_list *list, int index);			__isl_give struct isl_ast_expr_list *isl_ast_expr_list_set_ast_expr(			__isl_take struct isl_ast_expr_list *list, int index,			__isl_take struct isl_ast_expr *el);									isl_stat isl_ast_expr_list_foreach(__isl_keep isl_ast_expr_list *list,		isl_stat (*fn)(__isl_take isl_ast_expr *el, void *user),			void *user);							__isl_give isl_ast_expr_list *isl_ast_expr_list_map(				__isl_take isl_ast_expr_list *list,					__isl_give isl_ast_expr * (*fn)(__isl_take isl_ast_expr *el,				void *user),							void *user);							__isl_give isl_ast_expr_list *isl_ast_expr_list_sort(				__isl_take isl_ast_expr_list *list,					int (*cmp)(__isl_keep struct isl_ast_expr *a,					__isl_keep struct isl_ast_expr *b,						void *user), void *user);				isl_stat isl_ast_expr_list_foreach_scc(__isl_keep isl_ast_expr_list *list,		isl_bool (*follows)(__isl_keep struct isl_ast_expr *a,					__isl_keep struct isl_ast_expr *b, void *user),		void *follows_user,							isl_stat (*fn)(__isl_take isl_ast_expr_list *scc, void *user),		void *fn_user);							__isl_give char *isl_ast_expr_list_to_str(					__isl_keep isl_ast_expr_list *list);				__isl_give isl_printer *isl_printer_print_ast_expr_list(				__isl_take isl_printer *p, __isl_keep isl_ast_expr_list *list);	void isl_ast_expr_list_dump(__isl_keep isl_ast_expr_list *list);
+struct isl_ast_node;							struct __isl_export isl_ast_node_list;						typedef struct isl_ast_node_list isl_ast_node_list;					isl_ctx *isl_ast_node_list_get_ctx(__isl_keep isl_ast_node_list *list);	__isl_constructor								__isl_give isl_ast_node_list *isl_ast_node_list_from_ast_node(				__isl_take isl_ast_node *el);					__isl_constructor								__isl_give isl_ast_node_list *isl_ast_node_list_alloc(isl_ctx *ctx, int n);	__isl_give isl_ast_node_list *isl_ast_node_list_copy(				__isl_keep isl_ast_node_list *list);				__isl_null isl_ast_node_list *isl_ast_node_list_free(				__isl_take isl_ast_node_list *list);				__isl_export									__isl_give isl_ast_node_list *isl_ast_node_list_add(				__isl_take isl_ast_node_list *list,					__isl_take isl_ast_node *el);					__isl_give isl_ast_node_list *isl_ast_node_list_insert(				__isl_take isl_ast_node_list *list, unsigned pos,				__isl_take struct isl_ast_node *el);				__isl_give isl_ast_node_list *isl_ast_node_list_drop(				__isl_take isl_ast_node_list *list, unsigned first, unsigned n);	__isl_export									__isl_give isl_ast_node_list *isl_ast_node_list_clear(				__isl_take isl_ast_node_list *list);				__isl_give isl_ast_node_list *isl_ast_node_list_swap(				__isl_take isl_ast_node_list *list, unsigned pos1,			unsigned pos2);							__isl_give isl_ast_node_list *isl_ast_node_list_reverse(				__isl_take isl_ast_node_list *list);				__isl_export									__isl_give isl_ast_node_list *isl_ast_node_list_concat(				__isl_take isl_ast_node_list *list1,					__isl_take isl_ast_node_list *list2);				__isl_export									isl_size isl_ast_node_list_size(__isl_keep isl_ast_node_list *list);	isl_size isl_ast_node_list_n_ast_node(__isl_keep isl_ast_node_list *list);	__isl_export									__isl_give isl_ast_node *isl_ast_node_list_get_at(					__isl_keep isl_ast_node_list *list, int index);			__isl_give struct isl_ast_node *isl_ast_node_list_get_ast_node(				__isl_keep isl_ast_node_list *list, int index);			__isl_give struct isl_ast_node_list *isl_ast_node_list_set_ast_node(			__isl_take struct isl_ast_node_list *list, int index,			__isl_take struct isl_ast_node *el);				__isl_export									isl_stat isl_ast_node_list_foreach(__isl_keep isl_ast_node_list *list,		isl_stat (*fn)(__isl_take isl_ast_node *el, void *user),			void *user);							__isl_give isl_ast_node_list *isl_ast_node_list_map(				__isl_take isl_ast_node_list *list,					__isl_give isl_ast_node * (*fn)(__isl_take isl_ast_node *el,				void *user),							void *user);							__isl_give isl_ast_node_list *isl_ast_node_list_sort(				__isl_take isl_ast_node_list *list,					int (*cmp)(__isl_keep struct isl_ast_node *a,					__isl_keep struct isl_ast_node *b,						void *user), void *user);				isl_stat isl_ast_node_list_foreach_scc(__isl_keep isl_ast_node_list *list,		isl_bool (*follows)(__isl_keep struct isl_ast_node *a,					__isl_keep struct isl_ast_node *b, void *user),		void *follows_user,							isl_stat (*fn)(__isl_take isl_ast_node_list *scc, void *user),		void *fn_user);							__isl_give char *isl_ast_node_list_to_str(					__isl_keep isl_ast_node_list *list);				__isl_give isl_printer *isl_printer_print_ast_node_list(				__isl_take isl_printer *p, __isl_keep isl_ast_node_list *list);	void isl_ast_node_list_dump(__isl_keep isl_ast_node_list *list);
