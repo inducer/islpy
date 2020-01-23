@@ -362,6 +362,29 @@ def test_copy_context():
     assert copy.copy(ctx).data != isl.DEFAULT_CONTEXT.data
 
 
+def test_ast_node_list_free():
+    # from https://github.com/inducer/islpy/issues/21
+    # by Cambridge Yang
+
+    ctx = isl.Context()
+    schedule_map = isl.UnionMap.read_from_str(ctx, "[N] -> { S0[i] -> [i, 0] : 0 <= i < N; S1[i] -> [i, 1] : 0 <= i < N }")
+    ast_build = isl.AstBuild.from_context(isl.Set.read_from_str(ctx, "[N] -> { : }"))
+    ast = ast_build.node_from_schedule_map(schedule_map)
+
+    print(ast.to_C_str())
+    # Prints below code:
+    # for (int c0 = 0; c0 < N; c0 += 1) {
+    #  S0(c0);
+    #  S1(c0);
+    # }
+
+    # we have S0 and S1 in a ast_node_block, which holds "children" of type ASTNodeList
+    body = ast.for_get_body()
+    assert body.get_type() == isl.ast_node_type.block
+
+    body.block_get_children()
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
