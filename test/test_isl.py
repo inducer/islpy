@@ -367,7 +367,9 @@ def test_ast_node_list_free():
     # by Cambridge Yang
 
     ctx = isl.Context()
-    schedule_map = isl.UnionMap.read_from_str(ctx, "[N] -> { S0[i] -> [i, 0] : 0 <= i < N; S1[i] -> [i, 1] : 0 <= i < N }")
+    schedule_map = isl.UnionMap.read_from_str(
+            ctx, "[N] -> { S0[i] -> [i, 0] : "
+            "0 <= i < N; S1[i] -> [i, 1] : 0 <= i < N }")
     ast_build = isl.AstBuild.from_context(isl.Set.read_from_str(ctx, "[N] -> { : }"))
     ast = ast_build.node_from_schedule_map(schedule_map)
 
@@ -378,7 +380,8 @@ def test_ast_node_list_free():
     #  S1(c0);
     # }
 
-    # we have S0 and S1 in a ast_node_block, which holds "children" of type ASTNodeList
+    # we have S0 and S1 in a ast_node_block, which holds "children" of type
+    # ASTNodeList
     body = ast.for_get_body()
     assert body.get_type() == isl.ast_node_type.block
 
