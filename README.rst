@@ -4,9 +4,9 @@ islpy: Polyhedral Analysis from Python
 .. image:: https://gitlab.tiker.net/inducer/islpy/badges/master/pipeline.svg
     :alt: Gitlab Build Status
     :target: https://gitlab.tiker.net/inducer/islpy/commits/master
-.. image:: https://github.com/inducer/islpy/workflows/CI/badge.svg?branch=master
+.. image:: https://github.com/inducer/islpy/workflows/CI/badge.svg?branch=master&event=push
     :alt: Github Build Status
-    :target: https://github.com/inducer/islpy/actions?query=branch%3Amaster+workflow%3ACI
+    :target: https://github.com/inducer/islpy/actions?query=branch%3Amaster+workflow%3ACI+event%3Apush
 .. image:: https://badge.fury.io/py/islpy.png
     :alt: Python Package Index Release Page
     :target: https://pypi.org/project/islpy/
