@@ -285,7 +285,6 @@ def main():
               'Natural Language :: English',
               'Programming Language :: C++',
               'Programming Language :: Python',
-              'Programming Language :: Python :: 2.7',
               'Programming Language :: Python :: 3',
               'Programming Language :: Python :: 3.5',
               'Programming Language :: Python :: 3.6',
@@ -305,6 +304,7 @@ def main():
 
           setup_requires=["cffi>=1.1.0"],
           cffi_modules=["islpy_cffi_build.py:ffi"],
+          python_requires="~=3.6",
           install_requires=[
               "pytest>=2",
               "cffi>=1.1.0",
