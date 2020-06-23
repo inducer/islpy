@@ -305,6 +305,7 @@ def main():
 
           setup_requires=["cffi>=1.1.0"],
           cffi_modules=["islpy_cffi_build.py:ffi"],
+          python_requires="~=3.6",
           install_requires=[
               "pytest>=2",
               "cffi>=1.1.0",
