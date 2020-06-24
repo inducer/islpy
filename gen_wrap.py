@@ -459,11 +459,11 @@ class Context(object):
             _data = new_ctx.data
             new_ctx._release()
         self.data = _data
-        # whether this Context object owns the isl_ctx object.
+        # self.own iswhether this Context object owns the isl_ctx object.
         # If so, the isl_ctx object will be freed once this object is deleted.
-        # This is only done for default context and is a hack for __getstate__
-        # New pickling method __reduce__ will make this moot, but keep this
-        # here for unpickling previously pickled isl_ctx objects
+        # This is only done for default context and is a hack for __getstate__.
+        # New pickling method __reduce__ will make this unnecessary, but keep
+        # this here for unpickling previously pickled isl_ctx objects.
         self.own = False
 
     @property
@@ -473,9 +473,10 @@ class Context(object):
     def _release(self):
         self.data = None
 
-    def _reset(self, data, own=True):
+    def _reset(self, data, own=True, owning_instance=None):
         self.data = data
         self.own = own
+        self.owning_instance = owning_instance
 
     def __del__(self):
         if self.data is not None and self.own:
