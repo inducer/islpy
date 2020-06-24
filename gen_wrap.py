@@ -466,8 +466,7 @@ class Context(object):
         # this here for unpickling previously pickled isl_ctx objects.
         self.own = False
 
-    @property
-    def context(self):
+    def get_ctx(self):
         return self
 
     def _release(self):
@@ -1134,7 +1133,7 @@ def write_classes_to_wrapper(wrapper_f):
                         if data == ffi.NULL:
                             raise Error("failed to copy instance of {py_cls}")
 
-                        return {py_cls}(_data=data, context=self.context)
+                        return {py_cls}(_data=data, context=self.get_ctx())
                     """
                     .format(cls=cls_name, py_cls=py_cls))
 
@@ -1289,12 +1288,12 @@ def write_method_wrapper(gen, cls_name, meth):
     ret_descrs = []
 
     def emit_context_check(arg_idx, arg_name):
-        pre_call("_ctx = {arg_name}.context".format(arg_name=arg_name))
+        pre_call("_ctx = {arg_name}.get_ctx()".format(arg_name=arg_name))
         if arg_idx == 0:
             pass
         else:
             pre_call("""
-                if _ctx != {arg_name}.context:
+                if _ctx != {arg_name}.get_ctx():
                     raise Error("mismatched context in {arg_name}")
                 """.format(arg_name=arg_name))
 
@@ -1419,7 +1418,7 @@ def write_method_wrapper(gen, cls_name, meth):
                             "be cast to a Val" % _type({name}))
 
                     _cdata_{name} = lib.isl_val_int_from_si(
-                        {arg0_name}.context.data, {name})
+                        {arg0_name}.get_ctx().data, {name})
 
                     if _cdata_{name} == ffi.NULL:
                         raise Error("isl_val_int_from_si failed")
