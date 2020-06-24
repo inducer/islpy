@@ -226,7 +226,6 @@ def _add_functionality():
     # {{{ str, repr, hash
 
     def generic_str(self):
-        print(self.get_ctx(), type(self.get_ctx()))
         prn = Printer.to_str(self.get_ctx())
         getattr(prn, "print_"+self._base_name)(self)
         return prn.get_str()
