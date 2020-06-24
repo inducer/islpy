@@ -173,7 +173,7 @@ def _add_functionality():
 
     # {{{ generic initialization, pickling
 
-    def obj_init(self, s=None, context=None, _data=None):
+    def obj_init(self, s=None, _data=None, context=None):
         """Construct a new object from :class:`str` s.
 
         :arg context: a :class:`islpy.Context` to use. If not supplied, use a
@@ -473,7 +473,7 @@ def _add_functionality():
 
     # {{{ Id
 
-    def id_init(self, context, name=None, user=None, _data=None):
+    def id_init(self, name=None, user=None, _data=None, context=None):
         if _data is not None:
             if name is not None:
                 raise TypeError("may not pass _data and name at the same time")
@@ -793,7 +793,7 @@ def _add_functionality():
 
     # {{{ Val
 
-    def val_init(self, src=None, context=None, _data=None):
+    def val_init(self, src=None, _data=None, context=None):
         if _data is not None:
             if src is not None:
                 raise TypeError("may not pass _data and src at the same time")
