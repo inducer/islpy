@@ -136,14 +136,6 @@ EXPR_CLASSES = tuple(cls for cls in ALL_CLASSES
 def _add_functionality():
     # {{{ Context
 
-    def context_init(self, _data=None):
-        if _data is not None:
-            super(Context, self).__init__(_data=_data, context=self)
-        else:
-            new_ctx = Context.alloc()
-            self._setup(new_ctx.data)
-            new_ctx._release()
-
     def context_getstate(self):
         if self.data == DEFAULT_CONTEXT.data:
             return ("default",)
@@ -152,11 +144,12 @@ def _add_functionality():
 
     def context_setstate(self, data):
         if data[0] == "default":
-            self._setup(DEFAULT_CONTEXT.data)
+            self._reset(DEFAULT_CONTEXT.data, False)
         else:
-            context_init(self)
+            new_ctx = Context.alloc()
+            self._reset(new_ctx.data)
+            new_ctx._release()
 
-    Context.__init__ = context_init
     Context.__getstate__ = context_getstate
     Context.__setstate__ = context_setstate
 

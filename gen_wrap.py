@@ -452,19 +452,35 @@ class _ISLObjectBase(object):
         return not self.__eq__(other)
 
 
-class Context(_ISLObjectBase):
-    def __init__(self, _data, context):
-        raise RuntimeError("This method is stubbed out.")
+class Context(object):
+    def __init__(self, _data=None, own=True):
+        if _data is None:
+            new_ctx = Context.alloc()
+            _data = new_ctx.data
+            new_ctx._release()
+        self.data = _data
+        # whether this Context object owns the isl_ctx object.
+        # If so, the isl_ctx object will be freed once this object is deleted.
+        self.own = own
 
-    def _setup(self, data, context=None):
-        assert not hasattr(self, "data")
-        assert isinstance(data, ffi.CData)
+    @property
+    def context(self):
+        return self
+
+    def _release(self):
+        self.data = None
+
+    def _reset(self, data, own=True):
         self.data = data
-        self.context = self
+        self.own = own
 
     def __del__(self):
-        if self.data is not None:
+        if self.data is not None and self.own:
             lib.isl_ctx_free(self.data)
+
+    def __eq__(self, other):
+        return self.data == other.data
+
 
 class _EnumBase(object):
     @classmethod
