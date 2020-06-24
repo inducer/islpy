@@ -132,9 +132,20 @@ _CHECK_DIM_TYPES = [
 EXPR_CLASSES = tuple(cls for cls in ALL_CLASSES
         if "Aff" in cls.__name__ or "Polynomial" in cls.__name__)
 
+def _get_default_ctx():
+    return DEFAULT_CONTEXT
+
+def _get_a_ctx():
+    return Context.alloc()
 
 def _add_functionality():
     # {{{ Context
+
+    def context_reduce(self):
+        if self.data == DEFAULT_CONTEXT.data:
+            return (_get_default_ctx, ())
+        else:
+            return (_get_a_ctx, ())
 
     def context_getstate(self):
         if self.data == DEFAULT_CONTEXT.data:
@@ -152,6 +163,7 @@ def _add_functionality():
 
     Context.__getstate__ = context_getstate
     Context.__setstate__ = context_setstate
+    Context.__reduce__ = context_reduce
 
     # }}}
 

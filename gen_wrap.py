@@ -453,7 +453,7 @@ class _ISLObjectBase(object):
 
 
 class Context(object):
-    def __init__(self, _data=None, own=True):
+    def __init__(self, _data=None):
         if _data is None:
             new_ctx = Context.alloc()
             _data = new_ctx.data
@@ -461,7 +461,10 @@ class Context(object):
         self.data = _data
         # whether this Context object owns the isl_ctx object.
         # If so, the isl_ctx object will be freed once this object is deleted.
-        self.own = own
+        # This is only done for default context and is a hack for __getstate__
+        # New pickling method __reduce__ will make this moot, but keep this
+        # here for unpickling previously pickled isl_ctx objects
+        self.own = False
 
     @property
     def context(self):
