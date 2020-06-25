@@ -150,23 +150,6 @@ def _add_functionality():
         else:
             return (_get_a_ctx, ())
 
-    def context_getstate(self):
-        if self.data == DEFAULT_CONTEXT.data:
-            return ("default",)
-        else:
-            return (None,)
-
-    def context_setstate(self, data):
-        if data[0] == "default":
-            self._reset(DEFAULT_CONTEXT.data, own=False,
-                owning_instance=DEFAULT_CONTEXT)
-        else:
-            new_ctx = Context.alloc()
-            self._reset(new_ctx.data)
-            new_ctx._release()
-
-    Context.__getstate__ = context_getstate
-    Context.__setstate__ = context_setstate
     Context.__reduce__ = context_reduce
 
     # }}}
