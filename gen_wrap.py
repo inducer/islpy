@@ -466,7 +466,7 @@ class Context(object):
     def _release(self):
         self.data = None
 
-    def _reset(self, data, own=True):
+    def _reset(self, data):
         self.data = data
 
     def __del__(self):
