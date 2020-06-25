@@ -1280,9 +1280,8 @@ def write_method_wrapper(gen, cls_name, meth):
     ret_descrs = []
 
     def emit_context_check(arg_idx, arg_name):
-        pre_call("_ctx = {arg_name}.get_ctx()".format(arg_name=arg_name))
         if arg_idx == 0:
-            pass
+            pre_call("_ctx = {arg_name}.get_ctx()".format(arg_name=arg_name))
         else:
             pre_call("""
                 if _ctx != {arg_name}.get_ctx():
