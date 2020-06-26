@@ -133,32 +133,24 @@ EXPR_CLASSES = tuple(cls for cls in ALL_CLASSES
         if "Aff" in cls.__name__ or "Polynomial" in cls.__name__)
 
 
+def _get_default_ctx():
+    return DEFAULT_CONTEXT
+
+
+def _get_a_ctx():
+    return Context.alloc()
+
+
 def _add_functionality():
     # {{{ Context
 
-    def context_init(self, _data=None):
-        if _data is not None:
-            super(Context, self).__init__(_data)
-        else:
-            new_ctx = Context.alloc()
-            self._setup(new_ctx.data)
-            new_ctx._release()
-
-    def context_getstate(self):
+    def context_reduce(self):
         if self.data == DEFAULT_CONTEXT.data:
-            return ("default",)
+            return (_get_default_ctx, ())
         else:
-            return (None,)
+            return (_get_a_ctx, ())
 
-    def context_setstate(self, data):
-        if data[0] == "default":
-            self._setup(DEFAULT_CONTEXT.data)
-        else:
-            context_init(self)
-
-    Context.__init__ = context_init
-    Context.__getstate__ = context_getstate
-    Context.__setstate__ = context_setstate
+    Context.__reduce__ = context_reduce
 
     # }}}
 
@@ -175,7 +167,8 @@ def _add_functionality():
             if s is not None:
                 raise TypeError("may not pass _data and string at the same time")
 
-            _isl._ISLObjectBase.__init__(self, _data)
+            assert context is not None
+            _isl._ISLObjectBase.__init__(self, _data, context=context)
         else:
             if s is None:
                 raise TypeError("'s' argument not supplied")
@@ -192,7 +185,7 @@ def _add_functionality():
                 self.data = None
                 raise
             else:
-                self._setup(new_me._release())
+                self._setup(new_me._release(), context)
 
     def generic_getstate(self):
         ctx = self.get_ctx()
@@ -203,7 +196,7 @@ def _add_functionality():
     def generic_setstate(self, data):
         ctx, new_str = data
         new_inst = self.read_from_str(ctx, new_str)
-        self._setup(new_inst._release())
+        self._setup(new_inst._release(), ctx)
 
     for cls in ALL_CLASSES:
         if hasattr(cls, "read_from_str"):
@@ -467,7 +460,7 @@ def _add_functionality():
             if name is not None:
                 raise TypeError("may not pass _data and name at the same time")
 
-            _isl._ISLObjectBase.__init__(self, _data)
+            _isl._ISLObjectBase.__init__(self, _data, context)
             return
 
         if name is None:
@@ -477,7 +470,7 @@ def _add_functionality():
             context = DEFAULT_CONTEXT
 
         new_me = self.alloc(context, name, user)
-        self._setup(new_me._release())
+        self._setup(new_me._release(), context)
 
     Id.__init__ = id_init
     #Id.user = property(Id.get_user)  # FIXME: reenable
@@ -787,7 +780,7 @@ def _add_functionality():
             if src is not None:
                 raise TypeError("may not pass _data and src at the same time")
 
-            _isl._ISLObjectBase.__init__(self, _data)
+            _isl._ISLObjectBase.__init__(self, _data, context)
             return
 
         if src is None:
@@ -803,7 +796,7 @@ def _add_functionality():
         else:
             raise TypeError("'src' must be int or string")
 
-        self._setup(new_me._release())
+        self._setup(new_me._release(), context)
 
     def val_rsub(self, other):
         return -self + other

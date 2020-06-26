@@ -407,12 +407,6 @@ class IslTypeError(Error, TypeError):
 
 _context_use_map = {{}}
 
-def _deref_ctx(ctx_data, ctx_iptr):
-    _context_use_map[ctx_iptr] -= 1
-    if _context_use_map[ctx_iptr] == 0:
-        del _context_use_map[ctx_iptr]
-        lib.isl_ctx_free(ctx_data)
-
 
 def _get_last_error_str(ctx_data):
     code = lib.isl_ctx_last_error(ctx_data)
@@ -426,55 +420,61 @@ def _get_last_error_str(ctx_data):
 
 
 class _ISLObjectBase(object):
-    def __init__(self, _data):
-        self._setup(_data)
+    def __init__(self, _data, context):
+        self._setup(_data, context)
 
-    def _setup(self, data):
+    def _setup(self, data, context):
         assert not hasattr(self, "data")
         assert isinstance(data, ffi.CData)
-        self.data =  data
-
-        self._set_ctx_data()
-        iptr = self._ctx_iptr
-        _context_use_map[iptr] = _context_use_map.get(iptr, 0) + 1
+        self.data = data
+        self.context = context
 
     def _reset(self, data):
         assert self.data is not None
         assert isinstance(data, ffi.CData)
 
-        _deref_ctx(self._ctx_data, self._ctx_iptr)
         self.data = data
-
-        self._set_ctx_data()
-        iptr = self._ctx_iptr
-        _context_use_map[iptr] = _context_use_map.get(iptr, 0) + 1
-
-    def _set_ctx_data(self):
-        self._ctx_data = self._get_ctx_data()
-        self._ctx_iptr = int(ffi.cast("intptr_t", self._get_ctx_data()))
 
     def _release(self):
         if self.data is None:
             raise Error("cannot release already-released object")
-
         data = self.data
-        if _deref_ctx is not None:
-            _deref_ctx(self._ctx_data, self._ctx_iptr)
-        else:
-            # This can happen if we're called super-late in cleanup.
-            # Since everything else is already mopped up, we really
-            # can't do what it takes to mop up this context.
-            # So we leak it (i.e. leave it for the OS to clean up.)
-            pass
-
         self.data = None
         return data
+
+    def get_ctx(self):
+        return self.context
 
     def __eq__(self, other):
         return (type(self) == type(other) and self.data == other.data)
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+
+class Context(object):
+    def __init__(self, _data=None):
+        if _data is None:
+            new_ctx = Context.alloc()
+            _data = new_ctx.data
+            new_ctx._release()
+        self.data = _data
+
+    def get_ctx(self):
+        return self
+
+    def _release(self):
+        self.data = None
+
+    def _reset(self, data):
+        self.data = data
+
+    def __del__(self):
+        if self.data is not None:
+            lib.isl_ctx_free(self.data)
+
+    def __eq__(self, other):
+        return self.data == other.data
 
 
 class _EnumBase(object):
@@ -1091,6 +1091,8 @@ def write_classes_to_wrapper(wrapper_f):
     gen("# {{{ declare classes")
     gen("")
     for cls_name in CLASSES:
+        if cls_name == "ctx":
+            continue
         py_cls = isl_class_to_py_class(cls_name)
         gen("class {cls}(_ISLObjectBase):".format(cls=py_cls))
         with Indentation(gen):
@@ -1099,9 +1101,6 @@ def write_classes_to_wrapper(wrapper_f):
 
             if cls_name == "ctx":
                 gen("""
-                    def _get_ctx_data(self):
-                        return self.data
-
                     def __del__(self):
                         if self.data is not None:
                             self._release()
@@ -1110,13 +1109,9 @@ def write_classes_to_wrapper(wrapper_f):
 
             else:
                 gen("""
-                    def _get_ctx_data(self):
-                        return lib.isl_{cls}_get_ctx(self.data)
-
                     def __del__(self):
                         if self.data is not None:
                             lib.isl_{cls}_free(self.data)
-                            _deref_ctx(self._ctx_data, self._ctx_iptr)
                     """
                     .format(cls=cls_name))
                 gen("")
@@ -1130,7 +1125,7 @@ def write_classes_to_wrapper(wrapper_f):
                         if data == ffi.NULL:
                             raise Error("failed to copy instance of {py_cls}")
 
-                        return {py_cls}(_data=data)
+                        return {py_cls}(_data=data, context=self.get_ctx())
                     """
                     .format(cls=cls_name, py_cls=py_cls))
 
@@ -1176,7 +1171,7 @@ def gen_callback_wrapper(gen, cb, func_name, has_userptr):
             passed_args.append("_py_%s" % arg.name)
 
             pre_call(
-                    "_py_{name} = {py_cls}(_data={name})"
+                    "_py_{name} = {py_cls}(_data={name}, context=_ctx)"
                     .format(
                         name=arg.name,
                         py_cls=isl_class_to_py_class(arg.base_type)))
@@ -1286,10 +1281,10 @@ def write_method_wrapper(gen, cls_name, meth):
 
     def emit_context_check(arg_idx, arg_name):
         if arg_idx == 0:
-            pre_call("_ctx_data = {arg_name}._ctx_data".format(arg_name=arg_name))
+            pre_call("_ctx = {arg_name}.get_ctx()".format(arg_name=arg_name))
         else:
             pre_call("""
-                if _ctx_data != {arg_name}._ctx_data:
+                if _ctx != {arg_name}.get_ctx():
                     raise Error("mismatched context in {arg_name}")
                 """.format(arg_name=arg_name))
 
@@ -1382,7 +1377,7 @@ def write_method_wrapper(gen, cls_name, meth):
                     check('if {c_name}[0] == lib.isl_bool_error:'.format(c_name=c_name))
                     with Indentation(check):
                         check('raise Error("call to \\"{0}\\" failed: %s" '
-                                '% _get_last_error_str(_ctx_data))'.format(meth.c_name))
+                                '% _get_last_error_str(_ctx.data))'.format(meth.c_name))
                 else:
                     ret_vals.append("{c_name}[0]".format(c_name=c_name))
                     ret_descrs.append("%s (integer)" % arg.name)
@@ -1413,12 +1408,12 @@ def write_method_wrapper(gen, cls_name, meth):
                             "be cast to a Val" % _type({name}))
 
                     _cdata_{name} = lib.isl_val_int_from_si(
-                        {arg0_name}._get_ctx_data(), {name})
+                        {arg0_name}.get_ctx().data, {name})
 
                     if _cdata_{name} == ffi.NULL:
                         raise Error("isl_val_int_from_si failed")
 
-                    {val_name} = Val(_data=_cdata_{name})
+                    {val_name} = Val(_data=_cdata_{name}, context=_ctx)
                 """
                 .format(**fmt_args))
 
@@ -1499,7 +1494,7 @@ def write_method_wrapper(gen, cls_name, meth):
                 if _retptr_{name} == ffi.NULL:
                     _ret_{name} = None
                 else:
-                    _ret_{name} = {py_cls}(_data=_retptr_{name}[0])
+                    _ret_{name} = {py_cls}(_data=_retptr_{name}[0], context=_ctx)
                 """
                 .format(name=arg.name, cls=arg.base_type, py_cls=py_cls))
 
@@ -1536,13 +1531,13 @@ def write_method_wrapper(gen, cls_name, meth):
         check("if _result == lib.isl_stat_error:")
         with Indentation(check):
             check('raise Error("call to \\"{0}\\" failed: %s" '
-                    '% _get_last_error_str(_ctx_data))'.format(meth.c_name))
+                    '% _get_last_error_str(_ctx.data))'.format(meth.c_name))
 
     elif meth.return_base_type == "isl_bool" and not meth.return_ptr:
         check("if _result == lib.isl_bool_error:")
         with Indentation(check):
             check('raise Error("call to \\"{0}\\" failed: %s" '
-                    '% _get_last_error_str(_ctx_data))'.format(meth.c_name))
+                    '% _get_last_error_str(_ctx.data))'.format(meth.c_name))
 
         ret_vals.insert(0, "_result == lib.isl_bool_true")
         ret_descrs.insert(0, "bool")
@@ -1576,16 +1571,23 @@ def write_method_wrapper(gen, cls_name, meth):
                 raise SignatureNotSupported("non-give return")
 
             py_ret_cls = isl_class_to_py_class(ret_cls)
-            safety(
+            if ret_cls == "ctx":
+                safety(
                     "_result = None if "
                     "(_result == ffi.NULL or _result is None) "
                     "else {0}(_data=_result)"
+                    .format(py_ret_cls))
+            else:
+                safety(
+                    "_result = None if "
+                    "(_result == ffi.NULL or _result is None) "
+                    "else {0}(_data=_result, context=_ctx)"
                     .format(py_ret_cls))
 
             check("""
                 if _result is None:
                     raise Error("call to {c_method} failed: %s"
-                        % _get_last_error_str(_ctx_data))
+                        % _get_last_error_str(_ctx.data))
                 """
                 .format(c_method=meth.c_name))
 
@@ -1797,6 +1799,9 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
                     wrapper_gen("")
 
                     for meth in methods:
+                        if meth.name.endswith("get_ctx"):
+                            continue
+
                         if meth.name.endswith("_si") or meth.name.endswith("_ui"):
                             val_versions = [
                                     meth2
