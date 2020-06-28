@@ -25,7 +25,7 @@
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx.ext.pngmath']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx.ext.imgmath']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'islpy'
-copyright = u'2011, Andreas Kloeckner'
+copyright = u'2011-16, Andreas Kloeckner'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -49,7 +49,9 @@ copyright = u'2011, Andreas Kloeckner'
 #
 # The short X.Y version.
 ver_dic = {}
-exec(compile(open("../islpy/version.py").read(), "../islpy/version.py", 'exec'), ver_dic)
+with open("../islpy/version.py") as vfile:
+    exec(compile(vfile.read(), "../islpy/version.py", 'exec'), ver_dic)
+
 version = ".".join(str(x) for x in ver_dic["VERSION"])
 # The full version, including alpha/beta/rc tags.
 release = ver_dic["VERSION_TEXT"]
@@ -91,31 +93,23 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ---------------------------------------------------
 
-try:
-    import sphinx_bootstrap_theme
-except:
-    from warnings import warn
-    warn("I would like to use the sphinx bootstrap theme, but can't find it.\n"
-            "'pip install sphinx_bootstrap_theme' to fix.")
-else:
-    # Activate the theme.
-    html_theme = 'bootstrap'
-    html_theme_path = sphinx_bootstrap_theme.get_html_theme_path()
+html_theme = "alabaster"
 
-    # Theme options are theme-specific and customize the look and feel of a theme
-    # further.  For a list of options available for each theme, see the
-    # documentation.
-    html_theme_options = {
-            "navbar_fixed_top": "true",
-            "navbar_site_name": "Contents",
-            'bootstrap_version': '3',
-            'source_link_position': 'footer',
+html_theme_options = {
+        "extra_nav_links": {
+            "🚀 Github": "https://github.com/inducer/islpy",
+            "💾 Download Releases": "https://pypi.python.org/pypi/islpy",
             }
+        }
 
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
-# documentation.
-#html_theme_options = {}
+html_sidebars = {
+    '**': [
+        'about.html',
+        'navigation.html',
+        'relations.html',
+        'searchbox.html',
+    ]
+}
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -256,7 +250,7 @@ def autodoc_process_signature(app, what, name, obj, options, signature,
 
 
 def autodoc_process_docstring(app, what, name, obj, options, lines):
-    from inspect import isclass, isroutine, ismethod
+    from inspect import isclass, isroutine
     UNDERSCORE_WHITELIST = ["__len__", "__hash__", "__eq__", "__ne__"]
     if isclass(obj) and obj.__name__[0].isupper():
         methods = [nm for nm in dir(obj)
@@ -265,7 +259,7 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
 
         def gen_method_string(meth):
             result = ":meth:`%s`" % meth
-            if not ismethod(getattr(obj, meth)):
+            if getattr(obj, "_" + meth + "_is_static", False):
                 result += " (static)"
 
             return result
