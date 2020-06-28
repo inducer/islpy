@@ -100,10 +100,8 @@ void islpy_expose_part1(py::module &m)
   // wrap_aff.enable_pickling();
   MAKE_WRAP(pw_aff, PwAff);
   // wrap_pw_aff.enable_pickling();
-#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
   MAKE_WRAP(union_pw_aff, UnionPwAff);
   // wrap_union_pw_aff.enable_pickling();
-#endif
   MAKE_WRAP(multi_id, MultiId);
   MAKE_WRAP(multi_aff, MultiAff);
   // wrap_multi_aff.enable_pickling();
@@ -113,10 +111,8 @@ void islpy_expose_part1(py::module &m)
   // wrap_pw_multi_aff.enable_pickling();
   MAKE_WRAP(union_pw_multi_aff, UnionPwMultiAff);
   // wrap_union_pw_multi_aff.enable_pickling();
-#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
   MAKE_WRAP(multi_union_pw_aff, MultiUnionPwAff);
   // wrap_multi_union_pw_aff.enable_pickling();
-#endif
 
   MAKE_WRAP(id, Id);
   wrap_id.def("__eq__", islpy::id_eq, py::arg("other"),
