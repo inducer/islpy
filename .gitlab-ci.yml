@@ -1,27 +1,75 @@
-Python 2.7:
+Python 3:
   script:
-  - py_version=2.7
+  - export PY_EXE=python3
   - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
   - ". ./build-and-test-py-project.sh"
   tags:
-  - python2.7
+  - python3
   except:
   - tags
-Python 3.4:
+  artifacts:
+    reports:
+      junit: test/pytest.xml
+
+Python 3 small integer opt:
   script:
-  - py_version=3.4
+  - export PY_EXE=python3
   - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
+  - ./configure.py --use-imath-sio
   - ". ./build-and-test-py-project.sh"
   tags:
-  - python3.4
+  - python3
   except:
   - tags
-Python 2.6:
+  artifacts:
+    reports:
+      junit: test/pytest.xml
+
+Python 3 + Barvinok:
   script:
-  - py_version=2.6
+  - git clean -fdx
+  - python3 -m venv .env
+  - source .env/bin/activate
+  - python -m ensurepip
+  - pip install cffi pcpp
+  - "./build-with-barvinok.sh"
+  tags:
+  - python3
+  except:
+  - tags
+  artifacts:
+    reports:
+      junit: test/pytest.xml
+
+PyPy3:
+  script:
+  - export PY_EXE=pypy3
   - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
   - ". ./build-and-test-py-project.sh"
+  allow_failure: true
   tags:
-  - python2.6
+  - pypy
   except:
   - tags
+  artifacts:
+    reports:
+      junit: test/pytest.xml
+
+Documentation:
+  script:
+  - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-docs.sh
+  - ". ./build-docs.sh"
+  tags:
+  - python3
+  only:
+  - master
+
+Flake8:
+  script:
+  - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/prepare-and-run-flake8.sh
+  - ". ./prepare-and-run-flake8.sh islpy test"
+  tags:
+  - python3
+  except:
+  - tags
+

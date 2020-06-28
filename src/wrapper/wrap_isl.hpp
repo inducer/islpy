@@ -1,5 +1,6 @@
 #include "wrap_helpers.hpp"
 #include <isl/ctx.h>
+#include <isl/id.h>
 #include <isl/space.h>
 #include <isl/set.h>
 #include <isl/map.h>
@@ -13,8 +14,8 @@
 #include <isl/polynomial.h>
 #include <isl/aff.h>
 #include <isl/aff.h>
+#include <isl/ilp.h>
 #include <isl/vertices.h>
-#include <isl/band.h>
 #include <isl/schedule.h>
 #if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
 #include <isl/schedule_node.h>
@@ -28,15 +29,15 @@
 #include <barvinok/isl.h>
 #endif
 
+#include <iostream>
 #include <stdexcept>
-#include <boost/python.hpp>
-#include <boost/unordered_map.hpp>
+#include <pybind11/pybind11.h>
 
 
 // TODO: flow.h
 // TODO: better error reporting
 
-namespace py = boost::python;
+namespace py = pybind11;
 
 namespace isl
 {
@@ -50,7 +51,7 @@ namespace isl
 
   struct ctx;
 
-  typedef boost::unordered_map<isl_ctx *, unsigned> ctx_use_map_t;
+  typedef std::unordered_map<isl_ctx *, unsigned> ctx_use_map_t;
   extern ctx_use_map_t ctx_use_map;
 
   inline void deref_ctx(isl_ctx *ctx)
@@ -144,31 +145,26 @@ namespace isl
   WRAP_CLASS(multi_val);
   WRAP_CLASS(vec);
   WRAP_CLASS(mat);
-  WRAP_CLASS(id);
+  WRAP_CLASS(fixed_box);
 
   WRAP_CLASS(aff);
-
   struct pw_aff
   {
     WRAP_CLASS_CONTENT(pw_aff);
     MAKE_CAST_CTOR(pw_aff, aff, isl_pw_aff_from_aff);
   };
-
-#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
   WRAP_CLASS(union_pw_aff);
-#endif
-
   WRAP_CLASS(multi_aff);
   WRAP_CLASS(multi_pw_aff);
   WRAP_CLASS(pw_multi_aff);
   WRAP_CLASS(union_pw_multi_aff);
-#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
   WRAP_CLASS(multi_union_pw_aff);
-#endif
+
+  WRAP_CLASS(id);
+  WRAP_CLASS(multi_id);
 
   WRAP_CLASS(constraint);
   WRAP_CLASS(space);
-
   struct local_space
   {
     WRAP_CLASS_CONTENT(local_space);
@@ -205,6 +201,7 @@ namespace isl
   WRAP_CLASS(vertex);
   WRAP_CLASS(cell);
   WRAP_CLASS(vertices);
+  WRAP_CLASS(stride_info);
 
   WRAP_CLASS(qpolynomial);
   WRAP_CLASS(pw_qpolynomial);
@@ -214,34 +211,31 @@ namespace isl
   WRAP_CLASS(union_pw_qpolynomial_fold);
   WRAP_CLASS(term);
 
-  // matches order in isl_declaration_macros.h
+  // matches order in gen_wrap.py
 
   WRAP_CLASS(id_list);
-
   WRAP_CLASS(val_list);
-  WRAP_CLASS(aff_list);
-  WRAP_CLASS(pw_aff_list);
-  WRAP_CLASS(constraint_list);
-
   WRAP_CLASS(basic_set_list);
-#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
   WRAP_CLASS(basic_map_list);
-#endif
   WRAP_CLASS(set_list);
-#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
   WRAP_CLASS(map_list);
   WRAP_CLASS(union_set_list);
-#endif
-
+  WRAP_CLASS(constraint_list);
+  WRAP_CLASS(aff_list);
+  WRAP_CLASS(pw_aff_list);
+  WRAP_CLASS(pw_multi_aff_list);
   WRAP_CLASS(ast_expr_list);
   WRAP_CLASS(ast_node_list);
-  WRAP_CLASS(band_list);
+  WRAP_CLASS(pw_qpolynomial_list);
+  WRAP_CLASS(pw_qpolynomial_fold_list);
+  WRAP_CLASS(union_pw_aff_list);
+  WRAP_CLASS(union_pw_multi_aff_list);
+  WRAP_CLASS(union_map_list);
 
   // end match
 
   WRAP_CLASS(id_to_ast_expr);
 
-  WRAP_CLASS(band);
   WRAP_CLASS(schedule);
   WRAP_CLASS(schedule_constraints);
 #if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
@@ -261,23 +255,6 @@ namespace isl
   WRAP_CLASS(ast_build);
   WRAP_CLASS(ast_print_options);
 
-  inline ctx *alloc_ctx()
-  {
-    isl_ctx *result = isl_ctx_alloc();
-    if (result)
-    {
-      try
-      { return new ctx(result); }
-      catch (...)
-      {
-        isl_ctx_free(result);
-        throw;
-      }
-    }
-    else
-      PYTHON_ERROR(RuntimeError, "failed to create context");
-  }
-
   class format { };
 
   inline void my_decref(void *user)
@@ -291,7 +268,7 @@ namespace isl
 
 
 #define MAKE_WRAP(name, py_name) \
-  py::class_<isl::name, boost::noncopyable> wrap_##name(#py_name, py::no_init); \
+  py::class_<isl::name> wrap_##name(m, #py_name); \
   wrap_##name.def("is_valid", &isl::name::is_valid, "Return whether current object is still valid."); \
   wrap_##name.attr("_base_name") = #name; \
   wrap_##name.attr("_isl_name") = "isl_"#name;

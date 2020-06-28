@@ -5,7 +5,7 @@ namespace isl
 #include "gen-wrap-part3.inc"
 }
 
-void islpy_expose_part3()
+void islpy_expose_part3(py::module &m)
 {
   MAKE_WRAP(qpolynomial_fold, QPolynomialFold);
   MAKE_WRAP(pw_qpolynomial_fold, PwQPolynomialFold);
@@ -17,7 +17,6 @@ void islpy_expose_part3()
 
   MAKE_WRAP(term, Term);
 
-  MAKE_WRAP(band, Band);
   MAKE_WRAP(schedule, Schedule);
   MAKE_WRAP(schedule_constraints, ScheduleConstraints);
 #if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)

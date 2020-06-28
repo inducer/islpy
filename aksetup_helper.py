@@ -1,16 +1,19 @@
 import setuptools  # noqa
 from setuptools import Extension
+import sys
+from setuptools.command.build_ext import (  # noqa: N812
+        build_ext as BaseBuildExtCommand)
 
 
 def count_down_delay(delay):
     from time import sleep
-    import sys
     while delay:
         sys.stdout.write("Continuing in %d seconds...   \r" % delay)
         sys.stdout.flush()
         delay -= 1
         sleep(1)
     print("")
+
 
 DASH_SEPARATOR = 75 * "-"
 
@@ -23,12 +26,20 @@ def setup(*args, **kwargs):
         raise
     except SystemExit:
         raise
-    except:
+    except Exception:
         print(DASH_SEPARATOR)
         print("Sorry, your build failed. Try rerunning configure.py with "
                 "different options.")
         print(DASH_SEPARATOR)
         raise
+
+
+def get_numpy_incpath():
+    from imp import find_module
+    # avoid actually importing numpy, it screws up distutils
+    file, pathname, descr = find_module("numpy")
+    from os.path import join
+    return join(pathname, "core", "include")
 
 
 class NumpyExtension(Extension):
@@ -40,15 +51,11 @@ class NumpyExtension(Extension):
         self._include_dirs = self.include_dirs
         del self.include_dirs  # restore overwritten property
 
-    def get_numpy_incpath(self):
-        from imp import find_module
-        # avoid actually importing numpy, it screws up distutils
-        file, pathname, descr = find_module("numpy")
-        from os.path import join
-        return join(pathname, "core", "include")
+    def get_additional_include_dirs(self):
+        return [get_numpy_incpath()]
 
     def get_include_dirs(self):
-        return self._include_dirs + [self.get_numpy_incpath()]
+        return self._include_dirs + self.get_additional_include_dirs()
 
     def set_include_dirs(self, value):
         self._include_dirs = value
@@ -59,38 +66,44 @@ class NumpyExtension(Extension):
     include_dirs = property(get_include_dirs, set_include_dirs, del_include_dirs)
 
 
-class PyUblasExtension(NumpyExtension):
-    def get_module_include_path(self, name):
-        from pkg_resources import Requirement, resource_filename
-        return resource_filename(Requirement.parse(name), "%s/include" % name)
+class ExtensionUsingNumpy(Extension):
+    """Unlike :class:`NumpyExtension`, this class does not require numpy to be
+    importable upon extension module creation, allowing ``setup_requires=["numpy"]``
+    to work. On the other hand, it requires the use of::
 
-    @property
-    def include_dirs(self):
-        return self._include_dirs + [
-                self.get_numpy_incpath(),
-                self.get_module_include_path("pyublas"),
-                ]
+        setup(...,
+            cmdclass={'build_ext': NumpyBuildExtCommand})
+
+    or
+
+        setup(...,
+            cmdclass={'build_ext': PybindBuildExtCommand})
+    """
 
 
-class HedgeExtension(PyUblasExtension):
-    @property
-    def include_dirs(self):
-        return self._include_dirs + [
-                self.get_numpy_incpath(),
-                self.get_module_include_path("pyublas"),
-                self.get_module_include_path("hedge"),
-                ]
+class NumpyBuildExtCommand(BaseBuildExtCommand):
+    def build_extension(self, extension):
+        # We add the numpy include dir right before building the
+        # extension, in order to avoid having to import numpy when
+        # the setup script is imported, which would prevent
+        # installation before manual installation of numpy.
+        if isinstance(extension, ExtensionUsingNumpy):
+            numpy_incpath = get_numpy_incpath()
+            if numpy_incpath not in extension.include_dirs:
+                extension.include_dirs.append(numpy_incpath)
+
+        BaseBuildExtCommand.build_extension(self, extension)
 
 
 # {{{ tools
 
-def flatten(list):
+def flatten(lst):
     """For an iterable of sub-iterables, generate each member of each
     sub-iterable in turn, i.e. a flattened version of that super-iterable.
 
     Example: Turn [[a,b,c],[d,e,f]] into [a,b,c,d,e,f].
     """
-    for sublist in list:
+    for sublist in lst:
         for j in sublist:
             yield j
 
@@ -128,7 +141,9 @@ def get_config(schema=None, warn_about_no_config=True):
 
         count_down_delay(delay=10)
 
-    return expand_options(schema.read_config())
+    config = expand_options(schema.read_config())
+    schema.update_config_from_and_modify_command_line(config, sys.argv)
+    return config
 
 
 def hack_distutils(debug=False, fast_link=True, what_opt=3):
@@ -143,7 +158,6 @@ def hack_distutils(debug=False, fast_link=True, what_opt=3):
                     break
         return optlist
 
-    import sys
     if not sys.platform.lower().startswith("win"):
         from distutils import sysconfig
 
@@ -162,7 +176,10 @@ def hack_distutils(debug=False, fast_link=True, what_opt=3):
                     cflags.append("-DNDEBUG")
 
             cvars['OPT'] = str.join(' ', cflags)
-            cvars["CFLAGS"] = cvars["BASECFLAGS"] + " " + cvars["OPT"]
+            if "BASECFLAGS" in cvars:
+                cvars["CFLAGS"] = cvars["BASECFLAGS"] + " " + cvars["OPT"]
+            else:
+                assert "CFLAGS" in cvars
 
         if fast_link:
             for varname in ["LDSHARED", "BLDSHARED"]:
@@ -208,7 +225,7 @@ def expand_value(v, options):
         for i in v:
             try:
                 exp_i = expand_value(i, options)
-            except:
+            except Exception:
                 pass
             else:
                 result.append(exp_i)
@@ -233,7 +250,6 @@ class ConfigSchema:
         from os.path import expanduser
         self.user_conf_file = expanduser("~/.aksetup-defaults.py")
 
-        import sys
         if not sys.platform.lower().startswith("win"):
             self.global_conf_file = "/etc/aksetup-defaults.py"
         else:
@@ -282,7 +298,7 @@ class ConfigSchema:
             if value is not None:
                 filevars[key] = value
 
-        keys = filevars.keys()
+        keys = list(filevars.keys())
         keys.sort()
 
         outf = open(filename, "w")
@@ -328,23 +344,44 @@ class ConfigSchema:
         import os
         return os.access(self.get_conf_file(), os.R_OK)
 
-    def read_config(self, warn_if_none=True):
+    def update_from_python_snippet(self, config, py_snippet, filename):
+        filevars = {}
+        exec(compile(py_snippet, filename, "exec"), filevars)
+
+        for key, value in filevars.items():
+            if key in self.optdict:
+                config[key] = value
+            elif key == "__builtins__":
+                pass
+            else:
+                raise KeyError("invalid config key in %s: %s" % (
+                        filename, key))
+
+    def update_config_from_and_modify_command_line(self, config, argv):
+        cfg_prefix = "--conf:"
+
+        i = 0
+        while i < len(argv):
+            arg = argv[i]
+
+            if arg.startswith(cfg_prefix):
+                del argv[i]
+                self.update_from_python_snippet(
+                        config, arg[len(cfg_prefix):], "<command line>")
+            else:
+                i += 1
+
+        return config
+
+    def read_config(self):
         import os
         cfile = self.get_conf_file()
 
         result = self.get_default_config_with_files()
         if os.access(cfile, os.R_OK):
-            filevars = {}
-            exec(compile(open(cfile, "r").read(), cfile, "exec"), filevars)
-
-            for key, value in filevars.items():
-                if key in self.optdict:
-                    result[key] = value
-                elif key == "__builtins__":
-                    pass
-                else:
-                    raise KeyError("invalid config key in %s: %s" % (
-                            cfile, key))
+            with open(cfile, "r") as inf:
+                py_snippet = inf.read()
+            self.update_from_python_snippet(result, py_snippet, cfile)
 
         return result
 
@@ -479,12 +516,15 @@ class Libraries(StringListOption):
                 help=help or ("Library names for %s (without lib or .so)"
                 % (human_name or humanize(lib_name))))
 
+# }}}
+
+
+# {{{ configure options for specific software
 
 class BoostLibraries(Libraries):
     def __init__(self, lib_base_name, default_lib_name=None):
         if default_lib_name is None:
             if lib_base_name == "python":
-                import sys
                 default_lib_name = "boost_python-py%d%d" % sys.version_info[:2]
             else:
                 default_lib_name = "boost_%s" % lib_base_name
@@ -492,7 +532,7 @@ class BoostLibraries(Libraries):
         Libraries.__init__(self, "BOOST_%s" % lib_base_name.upper(),
                 [default_lib_name],
                 help="Library names for Boost C++ %s library (without lib or .so)"
-                    % humanize(lib_base_name))
+                % humanize(lib_base_name))
 
 
 def set_up_shipped_boost_if_requested(project_name, conf, source_path=None,
@@ -506,7 +546,6 @@ def set_up_shipped_boost_if_requested(project_name, conf, source_path=None,
         (only relevant in shipped mode)
     """
     from os.path import exists
-    import sys
 
     if source_path is None:
         source_path = "bpl-subset/bpl_subset"
@@ -605,6 +644,10 @@ def make_boost_base_options():
             help="The compiler with which Boost C++ was compiled, e.g. gcc43"),
         ]
 
+# }}}
+
+
+# {{{ configure frontend
 
 def configure_frontend():
     from optparse import OptionParser
@@ -618,8 +661,6 @@ def configure_frontend():
         print("*** configure run. If you don't want this, delete the file")
         print("*** %s." % schema.get_conf_file())
         print("************************************************************")
-
-    import sys
 
     description = "generate a configuration file for this software package"
     parser = OptionParser(description=description)
@@ -658,6 +699,8 @@ def configure_frontend():
 
         substitute(substs, "Makefile")
 
+# }}}
+
 
 def substitute(substitutions, fname):
     import re
@@ -667,17 +710,20 @@ def substitute(substitutions, fname):
     fname_in = fname+".in"
     lines = open(fname_in, "r").readlines()
     new_lines = []
-    for l in lines:
+    for line in lines:
         made_change = True
         while made_change:
             made_change = False
-            match = var_re.search(l)
+            match = var_re.search(line)
             if match:
                 varname = match.group(1)
-                l = l[:match.start()] + str(substitutions[varname]) + l[match.end():]
+                line = (
+                        line[:match.start()]
+                        + str(substitutions[varname])
+                        + line[match.end():])
                 made_change = True
 
-            match = string_var_re.search(l)
+            match = string_var_re.search(line)
             if match:
                 varname = match.group(1)
                 subst = substitutions[varname]
@@ -686,12 +732,11 @@ def substitute(substitutions, fname):
                 else:
                     subst = '"%s"' % subst
 
-                l = l[:match.start()] + subst + l[match.end():]
+                line = line[:match.start()] + subst + line[match.end():]
                 made_change = True
-        new_lines.append(l)
+        new_lines.append(line)
     new_lines.insert(1, "# DO NOT EDIT THIS FILE -- "
             "it was generated by configure.py\n")
-    import sys
     new_lines.insert(2, "# %s\n" % (" ".join(sys.argv)))
     open(fname, "w").write("".join(new_lines))
 
@@ -700,9 +745,12 @@ def substitute(substitutions, fname):
     chmod(fname, infile_stat_res.st_mode)
 
 
+# {{{ git bits
+
 def _run_git_command(cmd):
     git_error = None
     from subprocess import Popen, PIPE
+    stdout = None
     try:
         popen = Popen(["git"] + cmd, stdout=PIPE)
         stdout, stderr = popen.communicate()
@@ -722,8 +770,11 @@ def _run_git_command(cmd):
         print(git_error)
         print("Hit Ctrl-C now if you'd like to think about the situation.")
         print(DASH_SEPARATOR)
-        count_down_delay(delay=5)
-    return stdout.decode("utf-8"), git_error
+        count_down_delay(delay=0)
+    if stdout:
+        return stdout.decode("utf-8"), git_error
+    else:
+        return '', "(subprocess call to git did not succeed)"
 
 
 def check_git_submodules():
@@ -800,3 +851,110 @@ def check_git_submodules():
                     print(DASH_SEPARATOR)
                     print("git submodules initialized successfully")
                     print(DASH_SEPARATOR)
+
+# }}}
+
+
+# {{{ pybind11
+
+def check_pybind11():
+    try:
+        import pybind11  # noqa
+    except ImportError:
+        print(DASH_SEPARATOR)
+        print("Pybind11 is not installed.")
+        print(DASH_SEPARATOR)
+        print("Very likely, the build process after this message will fail.")
+        print("")
+        print("Simply press Ctrl+C and type")
+        print("python -m pip install pybind11")
+        print("to fix this. If you don't, the build will continue ")
+        print("in a few seconds.")
+        print("")
+        print("[1] https://pybind11.readthedocs.io/en/stable/")
+        print(DASH_SEPARATOR)
+
+        from aksetup_helper import count_down_delay
+        count_down_delay(delay=10)
+
+
+# {{{ (modified) boilerplate from https://github.com/pybind/python_example/blob/2ed5a68759cd6ff5d2e5992a91f08616ef457b5c/setup.py  # noqa
+
+class get_pybind_include(object):  # noqa: N801
+    """Helper class to determine the pybind11 include path
+
+    The purpose of this class is to postpone importing pybind11
+    until it is actually installed, so that the ``get_include()``
+    method can be invoked. """
+
+    def __init__(self, user=False):
+        self.user = user
+
+    def __str__(self):
+        import pybind11
+        return pybind11.get_include(self.user)
+
+
+# As of Python 3.6, CCompiler has a `has_flag` method.
+# cf http://bugs.python.org/issue26689
+def has_flag(compiler, flagname):
+    """Return a boolean indicating whether a flag name is supported on
+    the specified compiler.
+    """
+    import tempfile
+    with tempfile.NamedTemporaryFile('w', suffix='.cpp', delete=False) as f:
+        f.write('int main (int argc, char **argv) { return 0; }')
+        fname = f.name
+    try:
+        compiler.compile([fname], extra_postargs=[flagname])
+    except setuptools.distutils.errors.CompileError:
+        return False
+    return True
+
+
+def cpp_flag(compiler):
+    """Return the -std=c++[11/14] compiler flag.
+
+    The c++14 is prefered over c++11 (when it is available).
+    """
+    if has_flag(compiler, '-std=gnu++14'):
+        return '-std=gnu++14'
+    elif has_flag(compiler, '-std=c++14'):
+        return '-std=c++14'
+    elif has_flag(compiler, '-std=c++11'):
+        return '-std=c++11'
+    else:
+        raise RuntimeError('Unsupported compiler -- at least C++11 support '
+                           'is needed!')
+
+
+class PybindBuildExtCommand(NumpyBuildExtCommand):
+    """A custom build extension for adding compiler-specific options."""
+    c_opts = {
+        'msvc': ['/EHsc'],
+        'unix': [],
+    }
+
+    if sys.platform == 'darwin':
+        c_opts['unix'] += ['-stdlib=libc++', '-mmacosx-version-min=10.7']
+
+    def build_extensions(self):
+        ct = self.compiler.compiler_type
+        opts = self.c_opts.get(ct, [])
+        if ct in ['unix', 'mingw32']:
+            opts.append('-DVERSION_INFO="%s"' % self.distribution.get_version())
+            opts.append(cpp_flag(self.compiler))
+            if has_flag(self.compiler, '-fvisibility=hidden'):
+                opts.append('-fvisibility=hidden')
+        elif ct == 'msvc':
+            opts.append('/DVERSION_INFO=\\"%s\\"' % self.distribution.get_version())
+        for ext in self.extensions:
+            ext.extra_compile_args = ext.extra_compile_args + opts
+
+        NumpyBuildExtCommand.build_extensions(self)
+
+# }}}
+
+# }}}
+
+# vim: foldmethod=marker
