@@ -22,8 +22,7 @@ PYBIND11_MODULE(_isl, m)
           }
           catch (isl::error &err)
           {
-            py::object err_obj = py::cast(err);
-            PyErr_SetObject(ISLError.ptr(), err_obj.ptr());
+            ISLError(err.what());
           }
         });
 
