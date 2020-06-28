@@ -98,8 +98,11 @@ void islpy_expose_part1(py::module &m)
 
   MAKE_WRAP(aff, Aff);
   // wrap_aff.enable_pickling();
+
   MAKE_WRAP(pw_aff, PwAff);
+  wrap_pw_aff.def(py::init<isl::aff &>());
   // wrap_pw_aff.enable_pickling();
+
   MAKE_WRAP(union_pw_aff, UnionPwAff);
   // wrap_union_pw_aff.enable_pickling();
   MAKE_WRAP(multi_id, MultiId);
@@ -130,6 +133,7 @@ void islpy_expose_part1(py::module &m)
   // wrap_constraint.enable_pickling();
   MAKE_WRAP(space, Space);
   MAKE_WRAP(local_space, LocalSpace);
+  wrap_local_space.def(py::init<isl::space &>());
 
 #include "gen-expose-part1.inc"
 }
