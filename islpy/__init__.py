@@ -1,11 +1,129 @@
-from __future__ import division
-from __future__ import absolute_import
+__copyright__ = "Copyright (C) 2011-20 Andreas Kloeckner"
 
+__license__ = """
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-from islpy._isl import *  # noqa
-from islpy.version import *  # noqa
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+"""
+
+import islpy._isl as _isl
+from islpy.version import VERSION, VERSION_TEXT  # noqa
 import six
 from six.moves import range
+
+
+Error = _isl.Error
+
+# {{{ name imports
+
+Context = _isl.Context
+IdList = _isl.IdList
+ValList = _isl.ValList
+BasicSetList = _isl.BasicSetList
+BasicMapList = _isl.BasicMapList
+SetList = _isl.SetList
+MapList = _isl.MapList
+UnionSetList = _isl.UnionSetList
+ConstraintList = _isl.ConstraintList
+AffList = _isl.AffList
+PwAffList = _isl.PwAffList
+AstExprList = _isl.AstExprList
+AstNodeList = _isl.AstNodeList
+IdToAstExpr = _isl.IdToAstExpr
+Printer = _isl.Printer
+Val = _isl.Val
+MultiVal = _isl.MultiVal
+Vec = _isl.Vec
+Mat = _isl.Mat
+Aff = _isl.Aff
+PwAff = _isl.PwAff
+UnionPwAff = _isl.UnionPwAff
+MultiAff = _isl.MultiAff
+MultiPwAff = _isl.MultiPwAff
+PwMultiAff = _isl.PwMultiAff
+UnionPwMultiAff = _isl.UnionPwMultiAff
+UnionPwAffList = _isl.UnionPwAffList
+MultiUnionPwAff = _isl.MultiUnionPwAff
+Id = _isl.Id
+Constraint = _isl.Constraint
+Space = _isl.Space
+LocalSpace = _isl.LocalSpace
+BasicSet = _isl.BasicSet
+BasicMap = _isl.BasicMap
+Set = _isl.Set
+Map = _isl.Map
+UnionMap = _isl.UnionMap
+UnionSet = _isl.UnionSet
+Point = _isl.Point
+Vertex = _isl.Vertex
+Cell = _isl.Cell
+Vertices = _isl.Vertices
+StrideInfo = _isl.StrideInfo
+QPolynomialFold = _isl.QPolynomialFold
+PwQPolynomialFold = _isl.PwQPolynomialFold
+UnionPwQPolynomialFold = _isl.UnionPwQPolynomialFold
+UnionPwQPolynomial = _isl.UnionPwQPolynomial
+QPolynomial = _isl.QPolynomial
+PwQPolynomial = _isl.PwQPolynomial
+Term = _isl.Term
+ScheduleConstraints = _isl.ScheduleConstraints
+ScheduleNode = _isl.ScheduleNode
+Schedule = _isl.Schedule
+AccessInfo = _isl.AccessInfo
+Flow = _isl.Flow
+Restriction = _isl.Restriction
+UnionAccessInfo = _isl.UnionAccessInfo
+UnionFlow = _isl.UnionFlow
+AstExpr = _isl.AstExpr
+AstNode = _isl.AstNode
+AstPrintOptions = _isl.AstPrintOptions
+AstBuild = _isl.AstBuild
+
+error = _isl.error
+stat = _isl.stat
+dim_type = _isl.dim_type
+schedule_node_type = _isl.schedule_node_type
+ast_expr_op_type = _isl.ast_expr_op_type
+ast_expr_type = _isl.ast_expr_type
+ast_node_type = _isl.ast_node_type
+ast_loop_type = _isl.ast_loop_type
+fold = _isl.fold
+format = _isl.format
+yaml_style = _isl.yaml_style
+bound = _isl.bound
+on_error = _isl.on_error
+schedule_algorithm = _isl.schedule_algorithm
+
+# backward compatibility
+ast_op_type = _isl.ast_expr_op_type
+
+ALL_CLASSES = [Context, IdList, ValList, BasicSetList, BasicMapList, SetList,
+        MapList, UnionSetList, ConstraintList, AffList, PwAffList, AstExprList,
+        AstNodeList, IdToAstExpr, Printer, Val, MultiVal, Vec, Mat, Aff, PwAff,
+        UnionPwAff, MultiAff, MultiPwAff, PwMultiAff, UnionPwMultiAff,
+        UnionPwAffList, MultiUnionPwAff, Id, Constraint, Space, LocalSpace,
+        BasicSet, BasicMap, Set, Map, UnionMap, UnionSet, Point, Vertex, Cell,
+        Vertices, StrideInfo, QPolynomialFold, PwQPolynomialFold,
+        UnionPwQPolynomialFold, UnionPwQPolynomial, QPolynomial, PwQPolynomial,
+        Term, ScheduleConstraints, ScheduleNode, Schedule, AccessInfo,
+        Flow, Restriction, UnionAccessInfo, UnionFlow, AstExpr, AstNode,
+        AstPrintOptions, AstBuild]
+
+# }}}
 
 
 _CHECK_DIM_TYPES = [
@@ -165,7 +283,7 @@ def _add_functionality():
 
         return result
 
-    def space_get_var_dict(self, dimtype=None):
+    def space_get_var_dict(self, dimtype=None, ignore_out=False):
         """Return a dictionary mapping variable names to tuples of
         (:class:`dim_type`, index).
 
@@ -181,6 +299,9 @@ def _add_functionality():
 
         if dimtype is None:
             types = _CHECK_DIM_TYPES
+            if ignore_out:
+                types = types[:]
+                types.remove(dim_type.out)
         else:
             types = [dimtype]
 
@@ -435,7 +556,8 @@ def _add_functionality():
         :param dimtype: None to get all variables, otherwise
             one of :class:`dim_type`.
         """
-        return self.get_space().get_var_dict(dimtype)
+        return self.get_space().get_var_dict(
+                dimtype, ignore_out=isinstance(self, EXPR_CLASSES))
 
     def obj_get_var_ids(self, dimtype):
         """Return a list of :class:`Id` instances for :class:`dim_type` *dimtype*."""
@@ -502,6 +624,18 @@ def _add_functionality():
 
     # }}}
 
+    # {{{ QPolynomial
+
+    def qpolynomial_get_terms(self):
+        """Get the list of :class:`Term` instances in this :class:`QPolynomial`."""
+        result = []
+        self.foreach_term(result.append)
+        return result
+
+    QPolynomial.get_terms = qpolynomial_get_terms
+
+    # }}}
+
     # {{{ PwQPolynomial
 
     def pwqpolynomial_eval_with_dict(self, value_dict):
@@ -535,16 +669,24 @@ def _add_functionality():
 
         # everything else is piecewise
 
-        number_pw_aff = PwAff.empty(template.get_space())
-        for set, _ in template.get_pieces():
-            number_pw_aff = set.indicator_function().cond(
-                    number_aff, number_pw_aff)
+        if template.get_pieces():
+            number_pw_aff = PwAff.empty(template.get_space())
+            for set, _ in template.get_pieces():
+                number_pw_aff = set.indicator_function().cond(
+                        number_aff, number_pw_aff)
+        else:
+            number_pw_aff = PwAff.alloc(
+                    Set.universe(template.domain().space),
+                    number_aff)
 
         if isinstance(template, PwAff):
             return number_pw_aff
 
-        else:
+        elif isinstance(template, PwQPolynomial):
             return PwQPolynomial.from_pw_aff(number_pw_aff)
+
+        else:
+            raise TypeError("unexpected template type")
 
     ARITH_CLASSES = (Aff, PwAff, QPolynomial, PwQPolynomial)  # noqa
 
@@ -820,6 +962,9 @@ def _add_functionality():
 _add_functionality()
 
 
+DEFAULT_CONTEXT = Context()
+
+
 def _back_to_basic(new_obj, old_obj):
     # Work around set_dim_id not being available for Basic{Set,Map}
     if isinstance(old_obj, BasicSet) and isinstance(new_obj, Set):
@@ -849,47 +994,56 @@ def _set_dim_id(obj, dt, idx, id):
     return _back_to_basic(obj.set_dim_id(dt, idx, id), obj)
 
 
-def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
+def _align_dim_type(template_dt, obj, template, obj_bigger_ok, obj_names,
+        template_names):
+
+    # {{{ deal with Aff, PwAff
+
     # The technique below will not work for PwAff et al, because there is *only*
     # the 'param' dim_type, and we are not allowed to move dims around in there.
     # We'll make isl do the work, using align_params.
 
-    if tgt_dt == dim_type.param and isinstance(obj, (Aff, PwAff)):
-        if not isinstance(tgt, Space):
-            tgt_space = tgt.space
+    if template_dt == dim_type.param and isinstance(obj, (Aff, PwAff)):
+        if not isinstance(template, Space):
+            template_space = template.space
         else:
-            tgt_space = tgt
-        if (not obj_bigger_ok
-                or obj.space.dim(dim_type.param) == tgt_space.dim(dim_type.param)):
-            return obj.align_params(tgt_space)
+            template_space = template
 
-    if None in tgt_names:
-        all_nones = [None] * len(tgt_names)
-        if tgt_names == all_nones and obj_names == all_nones:
+        if not obj_bigger_ok:
+            if (obj.dim(template_dt) > template.dim(template_dt)
+                    or not set(obj.get_var_dict()) <= set(template.get_var_dict())):
+                raise Error("obj has leftover dimensions after alignment")
+        return obj.align_params(template_space)
+
+    # }}}
+
+    if None in template_names:
+        all_nones = [None] * len(template_names)
+        if template_names == all_nones and obj_names == all_nones:
             # that's ok
             return obj
 
-        raise RuntimeError("tgt may not contain any unnamed dimensions")
+        raise Error("template may not contain any unnamed dimensions")
 
     obj_names = set(obj_names) - set([None])
-    tgt_names = set(tgt_names) - set([None])
+    template_names = set(template_names) - set([None])
 
-    names_in_both = obj_names & tgt_names
+    names_in_both = obj_names & template_names
 
     tgt_idx = 0
-    while tgt_idx < tgt.dim(tgt_dt):
-        tgt_id = tgt.get_dim_id(tgt_dt, tgt_idx)
+    while tgt_idx < template.dim(template_dt):
+        tgt_id = template.get_dim_id(template_dt, tgt_idx)
         tgt_name = tgt_id.name
 
         if tgt_name in names_in_both:
-            if (obj.dim(tgt_dt) > tgt_idx
-                    and tgt_name == obj.get_dim_name(tgt_dt, tgt_idx)):
+            if (obj.dim(template_dt) > tgt_idx
+                    and tgt_name == obj.get_dim_name(template_dt, tgt_idx)):
                 pass
 
             else:
                 src_dt, src_idx = obj.get_var_dict()[tgt_name]
 
-                if src_dt == tgt_dt:
+                if src_dt == template_dt:
                     assert src_idx > tgt_idx
 
                     # isl requires move_dims to be between different types.
@@ -900,86 +1054,184 @@ def _align_dim_type(tgt_dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names):
 
                     other_dt_dim = obj.dim(other_dt)
                     obj = obj.move_dims(other_dt, other_dt_dim, src_dt, src_idx, 1)
-                    obj = obj.move_dims(tgt_dt, tgt_idx, other_dt, other_dt_dim, 1)
+                    obj = obj.move_dims(
+                            template_dt, tgt_idx, other_dt, other_dt_dim, 1)
                 else:
-                    obj = obj.move_dims(tgt_dt, tgt_idx, src_dt, src_idx, 1)
+                    obj = obj.move_dims(template_dt, tgt_idx, src_dt, src_idx, 1)
 
             # names are same, make Ids the same, too
-            obj = _set_dim_id(obj, tgt_dt, tgt_idx, tgt_id)
+            obj = _set_dim_id(obj, template_dt, tgt_idx, tgt_id)
 
             tgt_idx += 1
         else:
-            obj = obj.insert_dims(tgt_dt, tgt_idx, 1)
-            obj = _set_dim_id(obj, tgt_dt, tgt_idx, tgt_id)
+            obj = obj.insert_dims(template_dt, tgt_idx, 1)
+            obj = _set_dim_id(obj, template_dt, tgt_idx, tgt_id)
 
             tgt_idx += 1
 
-    if tgt_idx < obj.dim(tgt_dt) and not obj_bigger_ok:
-        raise ValueError("obj has leftover dimensions")
+    if tgt_idx < obj.dim(template_dt) and not obj_bigger_ok:
+        raise Error("obj has leftover dimensions after alignment")
 
     return obj
 
 
-def align_spaces(obj, tgt, obj_bigger_ok=False, across_dim_types=False):
+def align_spaces(obj, template, obj_bigger_ok=False, across_dim_types=None):
     """
-    Try to make the space in which *obj* lives the same as that of *tgt* by
+    Try to make the space in which *obj* lives the same as that of *template* by
     adding/matching named dimensions.
 
     :param obj_bigger_ok: If *True*, no error is raised if the resulting *obj*
-        has more dimensions than *tgt*.
+        has more dimensions than *template*.
     """
+
+    if across_dim_types is not None:
+        from warnings import warn
+        warn("across_dim_types is deprecated and should no longer be used. "
+                "It never had any effect anyway.",
+                DeprecationWarning, stacklevel=2)
 
     have_any_param_domains = (
             isinstance(obj, (Set, BasicSet))
-            and isinstance(tgt, (Set, BasicSet))
-            and (obj.is_params() or tgt.is_params()))
+            and isinstance(template, (Set, BasicSet))
+            and (obj.is_params() or template.is_params()))
     if have_any_param_domains:
         if obj.is_params():
             obj = type(obj).from_params(obj)
-        if tgt.is_params():
-            tgt = type(tgt).from_params(tgt)
+        if template.is_params():
+            template = type(template).from_params(template)
 
-    if isinstance(tgt, EXPR_CLASSES):
+    if isinstance(template, EXPR_CLASSES):
         dim_types = _CHECK_DIM_TYPES[:]
         dim_types.remove(dim_type.out)
     else:
         dim_types = _CHECK_DIM_TYPES
 
-    if across_dim_types:
-        obj_names = [
-                obj.get_dim_name(dt, i)
-                for dt in dim_types
-                for i in range(obj.dim(dt))
-                ]
-        tgt_names = [
-                tgt.get_dim_name(dt, i)
-                for dt in dim_types
-                for i in range(tgt.dim(dt))
-                ]
+    obj_names = [
+            obj.get_dim_name(dt, i)
+            for dt in dim_types
+            for i in range(obj.dim(dt))
+            ]
+    template_names = [
+            template.get_dim_name(dt, i)
+            for dt in dim_types
+            for i in range(template.dim(dt))
+            ]
 
-        for dt in dim_types:
-            obj = _align_dim_type(dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names)
-    else:
-        for dt in dim_types:
-            obj_names = [obj.get_dim_name(dt, i) for i in range(obj.dim(dt))]
-            tgt_names = [tgt.get_dim_name(dt, i) for i in range(tgt.dim(dt))]
-
-            obj = _align_dim_type(dt, obj, tgt, obj_bigger_ok, obj_names, tgt_names)
+    for dt in dim_types:
+        obj = _align_dim_type(
+                dt, obj, template, obj_bigger_ok, obj_names, template_names)
 
     return obj
 
 
-def align_two(obj1, obj2, across_dim_types=False):
+def align_two(obj1, obj2, across_dim_types=None):
     """Align the spaces of two objects, potentially modifying both of them.
 
     See also :func:`align_spaces`.
     """
 
-    obj1 = align_spaces(obj1, obj2, obj_bigger_ok=True,
-            across_dim_types=across_dim_types)
-    obj2 = align_spaces(obj2, obj1, obj_bigger_ok=True,
-            across_dim_types=across_dim_types)
+    if across_dim_types is not None:
+        from warnings import warn
+        warn("across_dim_types is deprecated and should no longer be used. "
+                "It never had any effect anyway.",
+                DeprecationWarning, stacklevel=2)
+
+    obj1 = align_spaces(obj1, obj2, obj_bigger_ok=True)
+    obj2 = align_spaces(obj2, obj1, obj_bigger_ok=True)
     return (obj1, obj2)
+
+
+def make_zero_and_vars(set_vars, params=[], ctx=None):
+    """
+    :arg set_vars: an iterable of variable names, or a comma-separated string
+    :arg params: an iterable of variable names, or a comma-separated string
+
+    :return: a dictionary from variable names (in *set_vars* and *params*)
+        to :class:`PwAff` instances that represent each of the
+        variables. They key '0' is also include and represents
+        a :class:`PwAff` zero constant.
+
+    .. versionadded:: 2016.1.1
+
+    This function is intended to make it relatively easy to construct sets
+    programmatically without resorting to string manipulation.
+
+    Usage example::
+
+        v = isl.make_zero_and_vars("i,j,k", "n")
+
+        myset = (
+                v[0].le_set(v["i"] + v["j"])
+                &
+                (v["i"] + v["j"]).lt_set(v["n"])
+                &
+                (v[0].le_set(v["i"]))
+                &
+                (v["i"].le_set(13 + v["n"]))
+                )
+    """
+    if ctx is None:
+        ctx = DEFAULT_CONTEXT
+
+    if isinstance(set_vars, str):
+        set_vars = [s.strip() for s in set_vars.split(",")]
+    if isinstance(params, str):
+        params = [s.strip() for s in params.split(",")]
+
+    space = Space.create_from_names(ctx, set=set_vars, params=params)
+    return affs_from_space(space)
+
+
+def affs_from_space(space):
+    """
+    :return: a dictionary from variable names (in *set_vars* and *params*)
+        to :class:`PwAff` instances that represent each of the
+        variables *in*space*. They key '0' is also include and represents
+        a :class:`PwAff` zero constant.
+
+    .. versionadded:: 2016.2
+
+    This function is intended to make it relatively easy to construct sets
+    programmatically without resorting to string manipulation.
+
+    Usage example::
+
+        s = isl.Set("[n] -> {[i,j,k]: 0<=i,j,k<n}")
+        v = isl.affs_from_space(s.space)
+
+        myset = (
+                v[0].le_set(v["i"] + v["j"])
+                &
+                (v["i"] + v["j"]).lt_set(v["n"])
+                &
+                (v[0].le_set(v["i"]))
+                &
+                (v["i"].le_set(13 + v["n"]))
+                )
+    """
+
+    result = {}
+
+    zero = Aff.zero_on_domain(LocalSpace.from_space(space))
+    result[0] = PwAff.from_aff(zero)
+
+    var_dict = zero.get_var_dict()
+    for name, (dt, idx) in var_dict.items():
+        result[name] = PwAff.from_aff(zero.set_coefficient_val(dt, idx, 1))
+
+    return result
+
+
+class SuppressedWarnings:
+    def __init__(self, ctx):
+        self.ctx = ctx
+
+    def __enter__(self):
+        self.prev_on_error = self.ctx.get_on_error()
+        self.ctx.set_on_error(on_error.CONTINUE)
+
+    def __exit__(self, type, value, traceback):
+        self.ctx.set_on_error(self.prev_on_error)
 
 
 # vim: foldmethod=marker
