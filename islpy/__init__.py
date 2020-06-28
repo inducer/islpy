@@ -831,8 +831,8 @@ def _add_functionality():
 
             my_ismethod = ismethod(method)
             for meth_superclass in type(method).__mro__:
-                if "function" in meth_superclass.__name__:
-                    # inspect.ismethod does not work on Boost.Py callables in Py3,
+                if "instancemethod" in meth_superclass.__name__:
+                    # inspect.ismethod does not work on pybind11 callables,
                     # hence this hack.
                     my_ismethod = True
                     break
