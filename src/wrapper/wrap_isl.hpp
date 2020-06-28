@@ -140,6 +140,31 @@ namespace isl
       }
   };
 
+  // matches order in gen_wrap.py
+
+  // {{{ part 1
+
+  WRAP_CLASS(id_list);
+  WRAP_CLASS(val_list);
+  WRAP_CLASS(basic_set_list);
+  WRAP_CLASS(basic_map_list);
+  WRAP_CLASS(set_list);
+  WRAP_CLASS(map_list);
+  WRAP_CLASS(union_set_list);
+  WRAP_CLASS(constraint_list);
+  WRAP_CLASS(aff_list);
+  WRAP_CLASS(pw_aff_list);
+  WRAP_CLASS(pw_multi_aff_list);
+  WRAP_CLASS(ast_expr_list);
+  WRAP_CLASS(ast_node_list);
+  WRAP_CLASS(pw_qpolynomial_list);
+  WRAP_CLASS(pw_qpolynomial_fold_list);
+  WRAP_CLASS(union_pw_aff_list);
+  WRAP_CLASS(union_pw_multi_aff_list);
+  WRAP_CLASS(union_map_list);
+
+  WRAP_CLASS(id_to_ast_expr);
+
   WRAP_CLASS(printer);
   WRAP_CLASS(val);
   WRAP_CLASS(multi_val);
@@ -170,6 +195,10 @@ namespace isl
     WRAP_CLASS_CONTENT(local_space);
     MAKE_CAST_CTOR(local_space, space, isl_local_space_from_space);
   };
+
+  // }}}
+
+  // {{{ part 2
 
   WRAP_CLASS(basic_set);
   WRAP_CLASS(basic_map);
@@ -203,6 +232,10 @@ namespace isl
   WRAP_CLASS(vertices);
   WRAP_CLASS(stride_info);
 
+  // }}}
+
+  // {{{ part 3
+
   WRAP_CLASS(qpolynomial);
   WRAP_CLASS(pw_qpolynomial);
   WRAP_CLASS(qpolynomial_fold);
@@ -211,51 +244,28 @@ namespace isl
   WRAP_CLASS(union_pw_qpolynomial_fold);
   WRAP_CLASS(term);
 
-  // matches order in gen_wrap.py
-
-  WRAP_CLASS(id_list);
-  WRAP_CLASS(val_list);
-  WRAP_CLASS(basic_set_list);
-  WRAP_CLASS(basic_map_list);
-  WRAP_CLASS(set_list);
-  WRAP_CLASS(map_list);
-  WRAP_CLASS(union_set_list);
-  WRAP_CLASS(constraint_list);
-  WRAP_CLASS(aff_list);
-  WRAP_CLASS(pw_aff_list);
-  WRAP_CLASS(pw_multi_aff_list);
-  WRAP_CLASS(ast_expr_list);
-  WRAP_CLASS(ast_node_list);
-  WRAP_CLASS(pw_qpolynomial_list);
-  WRAP_CLASS(pw_qpolynomial_fold_list);
-  WRAP_CLASS(union_pw_aff_list);
-  WRAP_CLASS(union_pw_multi_aff_list);
-  WRAP_CLASS(union_map_list);
-
-  // end match
-
-  WRAP_CLASS(id_to_ast_expr);
-
   WRAP_CLASS(schedule);
   WRAP_CLASS(schedule_constraints);
-#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
   WRAP_CLASS(schedule_node);
-#endif
 
   WRAP_CLASS(access_info);
   WRAP_CLASS(flow);
   WRAP_CLASS(restriction);
-#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
   WRAP_CLASS(union_access_info);
   WRAP_CLASS(union_flow);
-#endif
 
   WRAP_CLASS(ast_expr);
   WRAP_CLASS(ast_node);
-  WRAP_CLASS(ast_build);
   WRAP_CLASS(ast_print_options);
+  WRAP_CLASS(ast_build);
+
+  // }}}
 
   class format { };
+  class yaml_style { };
+  class bound { };
+  class on_error { };
+  class schedule_algorithm { };
 
   inline void my_decref(void *user)
   {
@@ -273,3 +283,4 @@ namespace isl
   wrap_##name.attr("_base_name") = #name; \
   wrap_##name.attr("_isl_name") = "isl_"#name;
 
+// vim: foldmethod=marker

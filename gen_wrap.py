@@ -155,13 +155,13 @@ PART_TO_CLASSES = {
         ],
 
         "part3": [
+            "qpolynomial", "pw_qpolynomial",
             "qpolynomial_fold", "pw_qpolynomial_fold",
             "union_pw_qpolynomial_fold",
             "union_pw_qpolynomial",
-            "qpolynomial", "pw_qpolynomial",
             "term",
 
-            "band", "schedule", "schedule_constraints",
+            "schedule", "schedule_constraints",
             "schedule_node",
 
             "access_info", "flow", "restriction",
@@ -188,144 +188,24 @@ CLASS_MAP = {
 
 ENUMS = {
     # ctx.h
-    "isl_error": """
-        isl_error_none,
-        isl_error_abort,
-        isl_error_alloc,
-        isl_error_unknown,
-        isl_error_internal,
-        isl_error_invalid,
-        isl_error_quota,
-        isl_error_unsupported,
-    """,
-    "isl_stat": """
-        isl_stat_error,
-        isl_stat_ok,
-    """,
-    "isl_bool": """
-        isl_bool_error,
-        isl_bool_false,
-        isl_bool_true,
-    """,
+    "isl_error",
+    "isl_stat",
+    "isl_bool",
+
     # space.h
-    "isl_dim_type": """
-        isl_dim_cst,
-        isl_dim_param,
-        isl_dim_in,
-        isl_dim_out,
-        isl_dim_set,
-        isl_dim_div,
-        isl_dim_all,
-    """,
+    "isl_dim_type",
 
     # schedule_type.h
-    "isl_schedule_node_type": """
-        isl_schedule_node_error,
-        isl_schedule_node_band,
-        isl_schedule_node_context,
-        isl_schedule_node_domain,
-        isl_schedule_node_expansion,
-        isl_schedule_node_extension,
-        isl_schedule_node_filter,
-        isl_schedule_node_leaf,
-        isl_schedule_node_guard,
-        isl_schedule_node_mark,
-        isl_schedule_node_sequence,
-        isl_schedule_node_set,
-    """,
+    "isl_schedule_node_type",
 
     # ast_type.h
-    "isl_ast_expr_op_type": """
-        isl_ast_op_error,
-        isl_ast_op_and,
-        isl_ast_op_and_then,
-        isl_ast_op_or,
-        isl_ast_op_or_else,
-        isl_ast_op_max,
-        isl_ast_op_min,
-        isl_ast_op_minus,
-        isl_ast_op_add,
-        isl_ast_op_sub,
-        isl_ast_op_mul,
-        isl_ast_op_div,
-        isl_ast_op_fdiv_q,
-        isl_ast_op_pdiv_q,
-        isl_ast_op_pdiv_r,
-        isl_ast_op_zdiv_r,
-        isl_ast_op_cond,
-        isl_ast_op_select,
-        isl_ast_op_eq,
-        isl_ast_op_le,
-        isl_ast_op_lt,
-        isl_ast_op_ge,
-        isl_ast_op_gt,
-        isl_ast_op_call,
-        isl_ast_op_access,
-        isl_ast_op_member,
-        isl_ast_op_address_of,
-    """,
-    "isl_ast_expr_type": """
-        isl_ast_expr_error,
-        isl_ast_expr_op,
-        isl_ast_expr_id,
-        isl_ast_expr_int,
-    """,
-    "isl_ast_node_type": """
-        isl_ast_node_error,
-        isl_ast_node_for,
-        isl_ast_node_if,
-        isl_ast_node_block,
-        isl_ast_node_mark,
-        isl_ast_node_user,
-    """,
-    "isl_ast_loop_type": """
-        isl_ast_loop_error,
-        isl_ast_loop_default,
-        isl_ast_loop_atomic,
-        isl_ast_loop_unroll,
-        isl_ast_loop_separate,
-    """,
+    "isl_ast_expr_op_type",
+    "isl_ast_expr_type",
+    "isl_ast_node_type",
+    "isl_ast_loop_type",
 
     # polynomial_type.h
-    "isl_fold": """
-        isl_fold_min,
-        isl_fold_max,
-        isl_fold_list,
-    """,
-
-    # printer.h
-    "isl_format": """
-        ISL_FORMAT_ISL,
-        ISL_FORMAT_POLYLIB,
-        ISL_FORMAT_POLYLIB_CONSTRAINTS,
-        ISL_FORMAT_OMEGA,
-        ISL_FORMAT_C,
-        ISL_FORMAT_LATEX,
-        ISL_FORMAT_EXT_POLYLIB,
-    """,
-
-    "isl_yaml_style": """
-        ISL_YAML_STYLE_BLOCK,
-        ISL_YAML_STYLE_FLOW,
-    """,
-
-    # options.h
-
-    "isl_bound": """
-        ISL_BOUND_BERNSTEIN,
-        ISL_BOUND_RANGE,
-    """,
-
-    "isl_on_error": """
-        ISL_ON_ERROR_WARN,
-        ISL_ON_ERROR_CONTINUE,
-        ISL_ON_ERROR_ABORT,
-    """,
-
-    "isl_schedule_algorithm": """
-        ISL_SCHEDULE_ALGORITHM_ISL,
-        ISL_SCHEDULE_ALGORITHM_FEAUTRIER,
-    """,
+    "isl_fold",
     }
 
 TYPEDEFD_ENUMS = ["isl_stat", "isl_bool"]
@@ -708,12 +588,13 @@ class FunctionData:
         assert c_name.startswith("isl_"), c_name
         name = c_name[4:]
 
-        found_class = False
-        for cls in CLASSES:
-            if name.startswith(cls):
-                found_class = True
-                name = name[len(cls)+1:]
-                break
+        # find longest class name match
+        class_name = None
+        for it_cls_name in CLASSES:
+            if (name.startswith(it_cls_name)
+                    and (class_name is None
+                        or len(class_name) < len(it_cls_name))):
+                class_name = it_cls_name
 
         # Don't be tempted to chop off "_val"--the "_val" versions of
         # some methods are incompatible with the isl_int ones.
@@ -725,26 +606,21 @@ class FunctionData:
         # To avoid breaking user code in non-obvious ways, the new
         # names are carried over to the Python level.
 
-        if not found_class:
-            # for fake_cls, cls in CLASS_MAP.items():
-            #     if name.startswith(fake_cls):
-            #         found_class = True
-            #         break
+        if class_name is not None:
+            name = name[len(class_name)+1:]
+        else:
             if name.startswith("bool_"):
                 return
             if name.startswith("options_"):
-                found_class = True
-                cls = "ctx"
+                class_name = "ctx"
                 name = name[len("options_"):]
             elif name.startswith("equality_") or name.startswith("inequality_"):
-                found_class = True
-                cls = "constraint"
+                class_name = "constraint"
             elif name == "ast_op_type_set_print_name":
-                found_class = True
-                cls = "printer"
+                class_name = "printer"
                 name = "ast_op_type_set_print_name"
 
-        assert found_class, name
+        assert class_name is not None
 
         if name in ["free", "cow", "dump"]:
             return
@@ -752,13 +628,13 @@ class FunctionData:
         try:
             args = [parse_arg(arg) for arg in args]
         except BadArg:
-            print("SKIP: %s %s" % (cls, name))
+            print("SKIP: %s %s" % (class_name, name))
             return
 
         if name in PYTHON_RESERVED_WORDS:
             name = name + "_"
 
-        if cls == "options":
+        if class_name == "options":
             assert name.startswith("set_") or name.startswith("get_"), (name, c_name)
             name = name[:4]+"option_"+name[4:]
 
@@ -776,13 +652,13 @@ class FunctionData:
         words = [w for w in words if w not in ["struct", "enum"]]
         return_base_type = " ".join(words)
 
-        cls_meth_list = self.classes_to_methods.setdefault(cls, [])
+        cls_meth_list = self.classes_to_methods.setdefault(class_name, [])
 
         if c_name in self.seen_c_names:
             return
 
         cls_meth_list.append(Method(
-                cls, name, c_name,
+                class_name, name, c_name,
                 return_semantics, return_base_type, return_ptr,
                 args, is_exported=is_exported, is_constructor=is_constructor))
 
