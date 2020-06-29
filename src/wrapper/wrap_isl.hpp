@@ -87,7 +87,7 @@ namespace isl
           throw error(#cast_func " failed"); \
         \
         m_valid = true; \
-        ref_ctx(m_ctx);
+        ref_ctx(m_ctx); \
       }
 
 #define WRAP_CLASS_CONTENT(name) \
