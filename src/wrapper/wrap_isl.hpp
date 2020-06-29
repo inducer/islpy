@@ -81,13 +81,13 @@ namespace isl
         \
         isl_##from_type *copy = isl_##from_type##_copy(data.m_data); \
         if (!copy) \
-          throw std::runtime_error("isl_" #from_type "_copy failed"); \
+          throw error("isl_" #from_type "_copy failed"); \
         m_data = cast_func(copy); \
         if (!m_data) \
-          throw std::runtime_error(#cast_func " failed"); \
+          throw error(#cast_func " failed"); \
         \
         m_valid = true; \
-        ctx_use_map[m_ctx] += 1; \
+        ref_ctx(m_ctx);
       }
 
 #define WRAP_CLASS_CONTENT(name) \
