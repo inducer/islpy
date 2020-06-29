@@ -358,8 +358,8 @@ def test_bound():
 def test_copy_context():
     ctx = isl.Context()
     import copy
-    assert copy.copy(ctx).data != ctx.data
-    assert copy.copy(ctx).data != isl.DEFAULT_CONTEXT.data
+    assert not ctx._wraps_same_instance_as(copy.copy(ctx))
+    assert not isl.DEFAULT_CONTEXT._wraps_same_instance_as(copy.copy(ctx))
 
 
 def test_ast_node_list_free():
