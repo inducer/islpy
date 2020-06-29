@@ -153,8 +153,16 @@ def _add_functionality():
         else:
             self._reset_instance(Context())
 
+    def context_eq(self, other):
+        return isinstance(other, Context) and self._wraps_same_instance_as(other)
+
+    def context_ne(self, other):
+        return not self.__eq__(other)
+
     Context.__getstate__ = context_getstate
     Context.__setstate__ = context_setstate
+    Context.__eq__ = context_eq
+    Context.__ne__ = context_ne
 
     # }}}
 
