@@ -58,12 +58,8 @@ def test_error_on_invalid_index():
     my_set = isl.Set("{ [k, l] : 3l >= -k and 3l <= 10 - k "
                    "and k >=0 and k <= 2 }", context=ctx)
     p = my_set.sample_point()
-    try:
+    with pytest.raises(isl.Error):
         p.get_coordinate_val(isl.dim_type.set, 99999999)
-    except isl.Error:
-        pass
-    else:
-        assert False
 
 
 def test_pwqpoly():
