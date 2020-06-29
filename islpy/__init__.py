@@ -224,10 +224,22 @@ def _add_functionality():
         return "%s(\"%s\")" % (
                 type(self).__name__, prn.get_str())
 
+    def generic_hash(self):
+        return hash((type(self), str(self)))
+
+    def generic_isl_hash(self):
+        return self.get_hash()
+
     for cls in ALL_CLASSES:
         if hasattr(cls, "_base_name") and hasattr(Printer, "print_"+cls._base_name):
             cls.__str__ = generic_str
             cls.__repr__ = generic_repr
+
+            if not hasattr(cls, "get_hash"):
+                cls.__hash__ = generic_hash
+
+        if hasattr(cls, "get_hash"):
+            cls.__hash__ = generic_isl_hash
 
     # }}}
 
