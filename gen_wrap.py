@@ -1114,7 +1114,7 @@ def write_wrapper(outf, meth):
         else:
             processed_return_type = "py::object"
             isl_obj_ret_val = \
-                    "py::object(handle_from_new_ptr(new %s(result)))" % ret_cls
+                    "handle_from_new_ptr(uptr_result.release())"
 
             if extra_ret_vals:
                 isl_obj_ret_val = "py::make_tuple(%s, %s)" % (
@@ -1133,17 +1133,13 @@ def write_wrapper(outf, meth):
             body.append("""
                 if (result)
                 {
-                  try
-                  { return %(ret_val)s; }
-                  catch (...)
-                  {
-                    isl_%(ret_cls)s_free(result);
-                    throw;
-                  }
+                    std::unique_ptr <isl::%(ret_cls)s>
+                        uptr_result(new %(ret_cls)s(result));
+                    return %(ret_val)s;
                 }
                 else
                 {
-                  throw isl::error("call to isl_%(cls)s_%(name)s failed");
+                    throw isl::error("call to isl_%(cls)s_%(name)s failed");
                 }
                 """ % {
                     "ret_cls": ret_cls,
