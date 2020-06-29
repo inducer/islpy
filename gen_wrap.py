@@ -177,6 +177,7 @@ PART_TO_CLASSES = {
             "id_to_ast_expr",
 
             # others
+            "ctx",
             "printer",  "val", "multi_val", "vec", "mat", "fixed_box",
             "aff", "pw_aff", "union_pw_aff",
             "multi_aff", "multi_pw_aff", "pw_multi_aff", "union_pw_multi_aff",

@@ -22,33 +22,30 @@ namespace islpy
 
 void islpy_expose_part1(py::module &m)
 {
-  {
-    typedef isl::ctx cls;
-    py::class_<cls, std::shared_ptr<cls> >
-      wrap_ctx(m, "Context");
-    wrap_ctx.def(py::init(
-          []()
+  py::class_<isl::ctx, std::shared_ptr<isl::ctx> >
+    wrap_ctx(m, "Context");
+  wrap_ctx.def(py::init(
+        []()
+        {
+          isl_ctx *result = isl_ctx_alloc();
+          if (result)
           {
-            isl_ctx *result = isl_ctx_alloc();
-            if (result)
+            try
+            { return new isl::ctx(result); }
+            catch (...)
             {
-              try
-              { return new isl::ctx(result); }
-              catch (...)
-              {
-                isl_ctx_free(result);
-                throw;
-              }
+              isl_ctx_free(result);
+              throw;
             }
-            else
-              PYTHON_ERROR(RuntimeError, "failed to create context");
-          }));
-    wrap_ctx.attr("_base_name") = "ctx";
-    wrap_ctx.attr("_isl_name") = "isl_ctx";
-    wrap_ctx.def("_is_valid", &cls::is_valid);
-    wrap_ctx.def("_reset_instance", &cls::reset_instance);
-    wrap_ctx.def("_wraps_same_instance_as", &cls::wraps_same_instance_as);
-  }
+          }
+          else
+            PYTHON_ERROR(RuntimeError, "failed to create context");
+        }));
+  wrap_ctx.attr("_base_name") = "ctx";
+  wrap_ctx.attr("_isl_name") = "isl_ctx";
+  wrap_ctx.def("_is_valid", &isl::ctx::is_valid);
+  wrap_ctx.def("_reset_instance", &isl::ctx::reset_instance);
+  wrap_ctx.def("_wraps_same_instance_as", &isl::ctx::wraps_same_instance_as);
 
   // {{{ lists
 
