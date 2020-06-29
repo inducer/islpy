@@ -51,6 +51,47 @@ def       for       lambda    try
 """.split()
 
 
+class Retry(RuntimeError):
+    pass
+
+
+class BadArg(ValueError):
+    pass
+
+
+class Undocumented(ValueError):
+    pass
+
+
+class SignatureNotSupported(ValueError):
+    pass
+
+
+def to_py_class(cls):
+    if cls.startswith("isl_"):
+        cls = cls[4:]
+
+    if cls == "ctx":
+        return "Context"
+
+    upper_next = True
+    result = ""
+
+    for c in cls:
+        if c == "_":
+            upper_next = True
+        else:
+            if upper_next:
+                result += c.upper()
+                upper_next = False
+            else:
+                result += c
+
+    result = result.replace("Qpoly", "QPoly")
+
+    return result
+
+
 # {{{ data model
 
 class Argument:
@@ -220,7 +261,7 @@ SAFE_TYPES = list(ENUMS) + ["int", "unsigned", "uint32_t", "size_t", "double",
         "long", "unsigned long", "isl_size"]
 SAFE_IN_TYPES = SAFE_TYPES + ["const char *", "char *"]
 
-# {{{ parser
+# {{{ parser helpers
 
 DECL_RE = re.compile(r"""
     (?:__isl_overload\s*)?
@@ -283,47 +324,6 @@ def split_at_unparenthesized_commas(s):
         i += 1
 
     yield s[last_start:i]
-
-
-def to_py_class(cls):
-    if cls.startswith("isl_"):
-        cls = cls[4:]
-
-    if cls == "ctx":
-        return "Context"
-
-    upper_next = True
-    result = ""
-
-    for c in cls:
-        if c == "_":
-            upper_next = True
-        else:
-            if upper_next:
-                result += c.upper()
-                upper_next = False
-            else:
-                result += c
-
-    result = result.replace("Qpoly", "QPoly")
-
-    return result
-
-
-class Retry(RuntimeError):
-    pass
-
-
-class BadArg(ValueError):
-    pass
-
-
-class Undocumented(ValueError):
-    pass
-
-
-class SignatureNotSupported(ValueError):
-    pass
 
 
 def parse_arg(arg):
@@ -394,6 +394,10 @@ def preprocess_with_macros(macro_header_contents, code):
 
     return sio_output.getvalue()
 
+# }}}
+
+
+# {{{ FunctionData (includes parser)
 
 class FunctionData:
     def __init__(self, include_dirs):
@@ -466,6 +470,8 @@ class FunctionData:
             outf.write(prepro_header)
 
         return prepro_header
+
+    # {{{ read_header
 
     def read_header(self, fname):
         lines = self.get_preprocessed_header(fname).split("\n")
@@ -540,6 +546,10 @@ class FunctionData:
 
                 if not STRUCT_DECL_RE.search(decl):
                     self.parse_decl(decl)
+
+    # }}}
+
+    # {{{ parse_decl
 
     def parse_decl(self, decl):
         decl_match = DECL_RE.match(decl)
@@ -663,6 +673,8 @@ class FunctionData:
                 args, is_exported=is_exported, is_constructor=is_constructor))
 
         self.seen_c_names.add(c_name)
+
+    # }}}
 
 # }}}
 
