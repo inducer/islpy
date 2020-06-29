@@ -45,18 +45,9 @@ void islpy_expose_part1(py::module &m)
           }));
     wrap_ctx.attr("_base_name") = "ctx";
     wrap_ctx.attr("_isl_name") = "isl_ctx";
-  }
-
-#define CONST(NAME) cls.attr(#NAME) = ISL_##NAME
-  {
-    py::class_<isl::constants> cls(m, "constants");
-    CONST(BOUND_BERNSTEIN);
-    CONST(BOUND_RANGE);
-    CONST(ON_ERROR_WARN);
-    CONST(ON_ERROR_CONTINUE);
-    CONST(ON_ERROR_ABORT);
-    CONST(SCHEDULE_ALGORITHM_ISL);
-    CONST(SCHEDULE_ALGORITHM_FEAUTRIER);
+    wrap_ctx.def("_is_valid", &cls::is_valid);
+    wrap_ctx.def("_reset_instance", &cls::reset_instance);
+    wrap_ctx.def("_wraps_same_instance_as", &cls::wraps_same_instance_as);
   }
 
   // {{{ lists
@@ -97,25 +88,31 @@ void islpy_expose_part1(py::module &m)
   MAKE_WRAP(fixed_box, FixedBox);
 
   MAKE_WRAP(aff, Aff);
-  // wrap_aff.enable_pickling();
+  WRAP_ENABLE_PICKLING(aff);
 
   MAKE_WRAP(pw_aff, PwAff);
   wrap_pw_aff.def(py::init<isl::aff &>());
-  // wrap_pw_aff.enable_pickling();
+  WRAP_ENABLE_PICKLING(pw_aff);
 
   MAKE_WRAP(union_pw_aff, UnionPwAff);
-  // wrap_union_pw_aff.enable_pickling();
+  WRAP_ENABLE_PICKLING(union_pw_aff);
+
   MAKE_WRAP(multi_id, MultiId);
+
   MAKE_WRAP(multi_aff, MultiAff);
-  // wrap_multi_aff.enable_pickling();
+  WRAP_ENABLE_PICKLING(multi_aff);
+
   MAKE_WRAP(multi_pw_aff, MultiPwAff);
-  // wrap_multi_pw_aff.enable_pickling();
+  WRAP_ENABLE_PICKLING(multi_pw_aff);
+
   MAKE_WRAP(pw_multi_aff, PwMultiAff);
-  // wrap_pw_multi_aff.enable_pickling();
+  WRAP_ENABLE_PICKLING(pw_multi_aff);
+
   MAKE_WRAP(union_pw_multi_aff, UnionPwMultiAff);
-  // wrap_union_pw_multi_aff.enable_pickling();
+  WRAP_ENABLE_PICKLING(union_pw_multi_aff);
+
   MAKE_WRAP(multi_union_pw_aff, MultiUnionPwAff);
-  // wrap_multi_union_pw_aff.enable_pickling();
+  WRAP_ENABLE_PICKLING(multi_union_pw_aff);
 
   MAKE_WRAP(id, Id);
   wrap_id.def("__eq__", islpy::id_eq, py::arg("other"),
@@ -130,7 +127,8 @@ void islpy_expose_part1(py::module &m)
       ":return: bool ");
 
   MAKE_WRAP(constraint, Constraint);
-  // wrap_constraint.enable_pickling();
+  WRAP_ENABLE_PICKLING(constraint);
+
   MAKE_WRAP(space, Space);
   MAKE_WRAP(local_space, LocalSpace);
   wrap_local_space.def(py::init<isl::space &>());

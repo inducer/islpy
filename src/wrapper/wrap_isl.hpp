@@ -54,6 +54,15 @@ namespace isl
   typedef std::unordered_map<isl_ctx *, unsigned> ctx_use_map_t;
   extern ctx_use_map_t ctx_use_map;
 
+  inline void ref_ctx(isl_ctx *data)
+  {
+    ctx_use_map_t::iterator it(ctx_use_map.find(data));
+    if (it == ctx_use_map.end())
+      ctx_use_map[data] = 1;
+    else
+      ctx_use_map[data] += 1;
+  }
+
   inline void deref_ctx(isl_ctx *ctx)
   {
     ctx_use_map[ctx] -= 1;
@@ -89,10 +98,14 @@ namespace isl
       isl_##name        *m_data; \
       \
       name(isl_##name *data) \
-      : m_valid(true), m_data(data) \
+      : m_valid(data != nullptr), m_data(data) \
+      /* nullptr is passed to create a (temporarily invalid) instance during unpickling */ \
       { \
-        m_ctx = isl_##name##_get_ctx(data); \
-        ctx_use_map[m_ctx] += 1; \
+        if (data) \
+        {  \
+          m_ctx = isl_##name##_get_ctx(data); \
+          ctx_use_map[m_ctx] += 1; \
+        } \
       } \
       \
       void invalidate() \
@@ -113,6 +126,24 @@ namespace isl
           isl_##name##_free(m_data); \
           deref_ctx(m_ctx); \
         } \
+      } \
+      \
+      void steal_instance(name &other) \
+      { \
+        if (m_valid) \
+        { \
+          isl_##name##_free(m_data); \
+          deref_ctx(m_ctx); \
+          m_valid = false; \
+        } \
+        m_valid = other.m_valid; \
+        if (m_valid) \
+        { \
+          m_ctx = other.m_ctx; \
+          ref_ctx(m_ctx); \
+          m_data = other.m_data; \
+          other.invalidate(); \
+        } \
       }
 
   struct ctx \
@@ -123,20 +154,29 @@ namespace isl
       ctx(isl_ctx *data)
       : m_data(data)
       {
-        ctx_use_map_t::iterator it(ctx_use_map.find(m_data));
-        if (it == ctx_use_map.end())
-          ctx_use_map[data] = 1;
-        else
-          ctx_use_map[m_data] += 1;
+        ref_ctx(data);
       }
 
       bool is_valid() const
       {
         return true;
       }
+
       ~ctx()
       {
         deref_ctx(m_data);
+      }
+
+      void reset_instance(ctx &other)
+      {
+        ref_ctx(other.m_data);
+        deref_ctx(m_data);
+        m_data = other.m_data;
+      }
+
+      bool wraps_same_instance_as(ctx const &other)
+      {
+        return m_data == other.m_data;
       }
   };
 
@@ -279,8 +319,24 @@ namespace isl
 
 #define MAKE_WRAP(name, py_name) \
   py::class_<isl::name> wrap_##name(m, #py_name, py::dynamic_attr()); \
-  wrap_##name.def("is_valid", &isl::name::is_valid, "Return whether current object is still valid."); \
+  wrap_##name.def("_is_valid", &isl::name::is_valid); \
   wrap_##name.attr("_base_name") = #name; \
-  wrap_##name.attr("_isl_name") = "isl_"#name;
+  wrap_##name.attr("_isl_name") = "isl_"#name; \
+  wrap_##name.def("_steal_instance", &isl::name::steal_instance); \
+
+#define WRAP_ENABLE_PICKLING(name) \
+  wrap_##name.def(py::pickle( \
+        [](isl::name const &p) /* __getstate__ */ \
+        { \
+          std::cerr << "__getstate__ called for islpy object : should never happen" << std::endl; \
+          abort(); \
+          return py::none(); \
+        }, \
+        [](py::none obj) /* __setstate__ */ \
+        { \
+          std::cerr << "__getstate__ called for islpy object : should never happen" << std::endl; \
+          return isl::name(nullptr); \
+        } \
+        ))
 
 // vim: foldmethod=marker

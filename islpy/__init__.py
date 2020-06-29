@@ -139,14 +139,35 @@ DEFAULT_CONTEXT = Context()
 def _add_functionality():
     import islpy._isl as _isl  # noqa
 
+    # {{{ Context
+
+    def context_getstate(self):
+        if self._wraps_same_instance_as(DEFAULT_CONTEXT):
+            return ("default",)
+        else:
+            return (None,)
+
+    def context_setstate(self, data):
+        if data[0] == "default":
+            self._reset_instance(DEFAULT_CONTEXT)
+        else:
+            self._reset_instance(Context())
+
+    Context.__getstate__ = context_getstate
+    Context.__setstate__ = context_setstate
+
+    # }}}
+
     # {{{ generic initialization, pickling
 
-    def obj_new_from_string(cls, s, context=None):
+    def obj_new_from_string(cls, s=None, context=None):
         """Construct a new object from :class:`str` s.
 
         :arg context: a :class:`islpy.Context` to use. If not supplied, use a
             global default context.
         """
+        if s is None:
+            return cls._prev_new(cls)
 
         if context is None:
             context = DEFAULT_CONTEXT
@@ -159,16 +180,26 @@ def _add_functionality():
         assert self._made_from_string
         del self._made_from_string
 
-    def generic_getinitargs(self):
-        prn = Printer.to_str(self.get_ctx())
-        getattr(prn, "print_"+self._base_name)(self)
-        return (prn.get_str(),)
+    def generic_getstate(self):
+        ctx = self.get_ctx()
+        prn = Printer.to_str(ctx)
+        prn = getattr(prn, "print_"+self._base_name)(self)
+        return (ctx, prn.get_str())
+
+    def generic_setstate(self, data):
+        ctx, new_str = data
+        self._prev_setstate(None)
+        self._steal_instance(self.read_from_str(ctx, new_str))
 
     for cls in ALL_CLASSES:
         if hasattr(cls, "read_from_str"):
-            cls.__new__ = staticmethod(obj_new_from_string)
+            cls._prev_new = cls.__new__
+            cls.__new__ = obj_new_from_string
             cls.__init__ = obj_bogus_init
-            cls.__getinitargs__ = generic_getinitargs
+        if hasattr(cls, "__setstate__") and cls is not Context:
+            cls.__getstate__ = generic_getstate
+            cls._prev_setstate = cls.__setstate__
+            cls.__setstate__ = generic_setstate
 
     # }}}
 
