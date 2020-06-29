@@ -1128,11 +1128,12 @@ def write_wrapper(outf, meth):
         if extra_ret_vals:
             if len(extra_ret_vals) == 1:
                 processed_return_type = "py::object"
-                body.append("return py::object(%s);" % extra_ret_vals[0])
+                body.append("return py::object(result, %s);" % extra_ret_vals[0])
                 ret_descr = extra_ret_descrs[0]
             else:
                 processed_return_type = "py::object"
-                body.append("return py::make_tuple(%s);" % ", ".join(extra_ret_vals))
+                body.append("return py::make_tuple(result, %s);"
+                        % ", ".join(extra_ret_vals))
                 ret_descr = "tuple: (%s)" % (", ".join(extra_ret_descrs))
         else:
             body.append("return result;")
