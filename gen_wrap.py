@@ -818,12 +818,16 @@ def write_wrapper(outf, meth):
 
             docs.append(":param %s: string" % arg.name)
 
-        elif arg.base_type == "int" and arg.ptr == "*":
+        elif arg.base_type in ["int", "isl_bool"] and arg.ptr == "*":
             if arg.name in ["exact", "tight"]:
-                body.append("int arg_%s;" % arg.name)
+                body.append("%s arg_%s;" % (arg.base_type, arg.name))
                 passed_args.append("&arg_%s" % arg.name)
-                extra_ret_vals.append("arg_%s" % arg.name)
-                extra_ret_descrs.append("%s (integer)" % arg.name)
+                if arg.base_type == "isl_bool":
+                    extra_ret_vals.append("(bool) arg_%s" % arg.name)
+                else:
+                    extra_ret_vals.append("arg_%s" % arg.name)
+                extra_ret_descrs.append("%s (%s)" % (
+                    arg.name, to_py_class(arg.base_type)))
                 arg_names.pop()
             else:
                 raise SignatureNotSupported("int *")
