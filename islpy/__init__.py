@@ -838,7 +838,6 @@ def _add_functionality():
 
     def add_upcasts(basic_class, special_class, upcast_method):
         from functools import update_wrapper
-        from inspect import ismethod
 
         for method_name in dir(special_class):
             # do not overwrite existing methods
@@ -847,13 +846,11 @@ def _add_functionality():
 
             method = getattr(special_class, method_name)
 
-            my_ismethod = ismethod(method)
+            my_ismethod = callable(method)
             for meth_superclass in type(method).__mro__:
-                if "instancemethod" in meth_superclass.__name__:
-                    # inspect.ismethod does not work on pybind11 callables,
-                    # hence this hack.
-                    my_ismethod = True
-                    break
+                # Here we're desperately trying to filter out static methods.
+                if "builtin_function_or_method" in meth_superclass.__name__:
+                    my_ismethod = False
 
             if my_ismethod:
                 def make_wrapper(method, upcast):
