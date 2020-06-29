@@ -86,27 +86,13 @@ See also :ref:`gen-remarks`.
 User-visible Changes
 ====================
 
-Version 2016.2
+Version 2014.3
 --------------
+
 .. note::
 
     This version is currently in development and can be obtained from
     islpy's version control.
-
-* Update for isl 0.17
-* Add :func:`make_zero_and_vars`
-
-Version 2016.1.1
-----------------
-
-* Add :func:`make_zero_and_vars`
-* Do not turn on small-integer optimization by default
-  (to avoid build trouble on old compilers)
-
-Version 2016.1
---------------
-
-* Update for isl 0.16
 
 Version 2014.2.1
 ----------------

@@ -37,6 +37,7 @@ visitlog.py
 dist
 *.egg*
 MANIFEST
+*.patch
 *.LOCAL.[0-9]*
 *.REMOTE.[0-9]*
 *.BASE.[0-9]*
@@ -47,10 +48,3 @@ setuptools-*.tar.gz
 core
 src/wrapper/gen-*
 .dirty-git-ok
-wrapped-functions.h
-_isl_cffi.c
-_isl.py
-name_list.py
-islpy_cffi_build.py
-
-.cache
