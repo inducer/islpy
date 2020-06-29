@@ -1039,21 +1039,38 @@ def write_wrapper(outf, meth):
 
     # {{{ return value processing
 
-    if meth.return_base_type in ["int", "isl_stat"] and not meth.return_ptr:
+    if meth.return_base_type == "int" and not meth.return_ptr:
+        # {{{ integer return
+
+        if meth.name.startswith("is_") or meth.name.startswith("has_"):
+            processed_return_type = "bool"
+
+        ret_descr = processed_return_type
+
+        if extra_ret_vals:
+            if len(extra_ret_vals) == 1:
+                processed_return_type = "py::object"
+                body.append("return py::object(%s);" % extra_ret_vals[0])
+                ret_descr = extra_ret_descrs[0]
+            else:
+                processed_return_type = "py::object"
+                body.append("return py::make_tuple(%s);" % ", ".join(extra_ret_vals))
+                ret_descr = "tuple: (%s)" % (", ".join(extra_ret_descrs))
+        else:
+            body.append("return result;")
+
+        # }}}
+
+    elif meth.return_base_type == "isl_stat" and not meth.return_ptr:
         # {{{ error code
 
         body.append("""
-            #if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
-              if (result == isl_stat_error)
-            #else
-              if (result == -1)
-            #endif
+            if (result == isl_stat_error)
             {
               throw isl::error("call to isl_%(cls)s_%(name)s failed");
             }""" % {"cls": meth.cls, "name": meth.name})
 
-        if meth.name.startswith("is_") or meth.name.startswith("has_"):
-            processed_return_type = "bool"
+        assert not (meth.name.startswith("is_") or meth.name.startswith("has_"))
 
         ret_descr = processed_return_type
 
