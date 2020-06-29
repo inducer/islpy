@@ -133,7 +133,7 @@ ALL_CLASSES = tuple(getattr(_isl, cls) for cls in dir(_isl) if cls[0].isupper())
 EXPR_CLASSES = tuple(cls for cls in ALL_CLASSES
         if "Aff" in cls.__name__ or "Polynomial" in cls.__name__)
 
-_DEFAULT_CONTEXT = Context()
+DEFAULT_CONTEXT = Context()
 
 
 def _add_functionality():
@@ -149,7 +149,7 @@ def _add_functionality():
         """
 
         if context is None:
-            context = _DEFAULT_CONTEXT
+            context = DEFAULT_CONTEXT
 
         result = cls.read_from_str(context, s)
         result._made_from_string = True
@@ -444,7 +444,7 @@ def _add_functionality():
 
     def id_new(cls, name, user=None, context=None):
         if context is None:
-            context = _DEFAULT_CONTEXT
+            context = DEFAULT_CONTEXT
 
         result = cls.alloc(context, name, user)
         result._made_from_python = True
@@ -748,7 +748,7 @@ def _add_functionality():
 
     def val_new(cls, src, context=None):
         if context is None:
-            context = _DEFAULT_CONTEXT
+            context = DEFAULT_CONTEXT
 
         if isinstance(src, six.string_types):
             result = cls.read_from_str(context, src)
@@ -960,9 +960,6 @@ def _add_functionality():
 
 
 _add_functionality()
-
-
-DEFAULT_CONTEXT = Context()
 
 
 def _back_to_basic(new_obj, old_obj):
