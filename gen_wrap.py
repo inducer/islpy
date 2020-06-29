@@ -631,7 +631,7 @@ class FunctionData:
 
         assert class_name is not None
 
-        if name in ["free", "cow", "dump"]:
+        if name in ["free", "cow"]:
             return
 
         try:
