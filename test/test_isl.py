@@ -250,7 +250,7 @@ def test_codegen():
         ast = b.ast_from_schedule(m)
         p = isl.Printer.to_str(isl.DEFAULT_CONTEXT)
         p = p.set_output_format(isl.format.C)
-        p.flush()
+        p = p.flush()
         p = p.print_ast_node(ast)
         return p.get_str()
 
