@@ -103,8 +103,12 @@ class Argument:
 
 
 class CallbackArgument:
-    def __init__(self, name, return_base_type, return_ptr, args):
+    def __init__(self, name,
+            return_semantics, return_decl_words, return_base_type, return_ptr, args):
         self.name = name
+        self.return_semantics = return_semantics
+        assert isinstance(return_decl_words, list)
+        self.return_decl_words = return_decl_words
         self.return_base_type = return_base_type
         self.return_ptr = return_ptr
         self.args = args
@@ -330,14 +334,22 @@ def parse_arg(arg):
         arg_match = FUNC_PTR_RE.match(arg)
         assert arg_match is not None, "fptr: %s" % arg
 
-        return_base_type = arg_match.group(1)
+        return_semantics, ret_words = filter_semantics(
+                arg_match.group(1).split())
+        return_decl_words = ret_words[:-1]
+        return_base_type = ret_words[-1]
+
         return_ptr = arg_match.group(2)
         name = arg_match.group(3)
         args = [parse_arg(i.strip())
                 for i in split_at_unparenthesized_commas(arg_match.group(4))]
 
         return CallbackArgument(name.strip(),
-                return_base_type.strip(), return_ptr.strip(), args)
+                return_semantics,
+                return_decl_words,
+                return_base_type,
+                return_ptr.strip(),
+                args)
 
     words = arg.split()
     semantics, words = filter_semantics(words)
@@ -681,8 +693,9 @@ class FunctionData:
 # {{{ get_callback
 
 def get_callback(cb_name, cb):
-    body = []
+    pre_call = []
     passed_args = []
+    post_call = []
 
     assert cb.args[-1].name == "user"
 
@@ -693,54 +706,109 @@ def get_callback(cb_name, cb):
                     arg.base_type, arg.ptr))
             arg_cls = arg.base_type[4:]
 
-            if arg.semantics is not SEM_TAKE:
-                raise SignatureNotSupported("non-take callback arg")
-
             passed_args.append("arg_%s" % arg.name)
 
-            body.append("""
-                std::unique_ptr<%(arg_cls)s> wrapped_arg_%(name)s(
-                    new %(arg_cls)s(c_arg_%(name)s));
+            pre_call.append("""
+                %(arg_cls)s *wrapped_arg_%(name)s(new %(arg_cls)s(c_arg_%(name)s));
                 py::object arg_%(name)s(
-                    handle_from_new_ptr(wrapped_arg_%(name)s.get()));
-                wrapped_arg_%(name)s.release();
+                    handle_from_new_ptr(wrapped_arg_%(name)s));
                 """ % dict(
                     arg_cls=arg_cls,
                     name=arg.name,
                     ))
+
+            if arg.semantics is SEM_TAKE:
+                # We (the callback) are supposed to free the object, so
+                # just let the unique_ptr get rid of it.
+                pass
+            elif arg.semantics is SEM_KEEP:
+                # The caller wants to keep this object, so we simply tell our
+                # wrapper to stop managing it after the call completes.
+                post_call.append("""
+                    wrapped_arg_%(name)s->invalidate();
+                    """ % {"name": arg.name})
+            else:
+                raise SignatureNotSupported("unsupported callback arg semantics")
+
         else:
             raise SignatureNotSupported("unsupported callback arg: %s %s" % (
                 arg.base_type, arg.ptr))
 
+    if cb.return_base_type in SAFE_IN_TYPES and not cb.return_ptr:
+        ret_type = "%s %s" % (cb.return_base_type, cb.return_ptr)
+        if cb.return_base_type == "isl_stat":
+            post_call.append("""
+                if (retval.ptr() == Py_None)
+                {
+                    return isl_stat_ok;
+                }
+                """)
+        else:
+            post_call.append("""
+                if (retval.ptr() == Py_None)
+                {
+                    throw isl::error("callback returned None");
+                }
+                """)
+        post_call.append("""
+                else
+                    return py::cast<%(ret_type)s>(retval);
+            """ % {
+                "ret_type": ret_type,
+                }
+            )
+        if cb.return_base_type == "isl_bool":
+            error_return = "isl_bool_error"
+        else:
+            error_return = "isl_stat_error"
+
+    elif cb.return_base_type.startswith("isl_") and cb.return_ptr == "*":
+        if cb.return_semantics is None:
+            raise SignatureNotSupported("callback return with unspecified semantics")
+        elif cb.return_semantics is not SEM_GIVE:
+            raise SignatureNotSupported("callback return with non-GIVE semantics")
+
+        ret_type = "%s %s" % (cb.return_base_type, cb.return_ptr)
+        post_call.append("""
+            if (retval.ptr() == Py_None)
+            {
+                return nullptr;
+            }
+            else
+            {
+                isl::%(ret_type_name)s *wrapper_retval =
+                    py::cast<isl::%(ret_type_name)s *>(retval);
+                isl_%(ret_type_name)s *unwrapped_retval =
+                    wrapper_retval->m_data;
+                wrapper_retval->invalidate();
+                return unwrapped_retval;
+            }
+            """ % {
+                "ret_type_name": cb.return_base_type[4:],
+                }
+            )
+        error_return = "nullptr"
+
+    else:
+        raise SignatureNotSupported("non-int callback")
+
     return """
         static %(ret_type)s %(cb_name)s(%(input_args)s)
         {
-            py::object &py_cb = *reinterpret_cast<py::object *>(c_arg_user);
+            py::object py_cb = py::reinterpret_borrow<py::object>(
+                (PyObject *) c_arg_user);
             try
             {
-              %(body)s
+              %(pre_call)s
               py::object retval = py_cb(%(passed_args)s);
-              if (retval.ptr() == Py_None)
-              {
-                #if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
-                  return isl_stat_ok;
-                #else
-                  return 0;
-                #endif
-              }
-              else
-                return py::cast<%(ret_type)s>(retval);
+              %(post_call)s
             }
             catch (py::error_already_set &err)
             {
               std::cout << "[islpy warning] A Python exception occurred in "
                 "a call back function, ignoring:" << std::endl;
               PyErr_Print();
-              #if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
-                return isl_stat_error;
-              #else
-                return -1;
-              #endif
+              return %(error_return)s;
             }
             catch (std::exception &e)
             {
@@ -748,21 +816,20 @@ def get_callback(cb_name, cb):
                 "a Python callback query:" << std::endl
                 << e.what() << std::endl;
               std::cout << "[islpy] Aborting now." << std::endl;
-              #if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
-                return isl_stat_error;
-              #else
-                return -1;
-              #endif
+              return %(error_return)s;
             }
         }
         """ % dict(
-                ret_type="%s %s" % (cb.return_base_type, cb.return_ptr),
+                ret_type=ret_type,
                 cb_name=cb_name,
                 input_args=(
                     ", ".join("%s %sc_arg_%s" % (arg.base_type, arg.ptr, arg.name)
                         for arg in cb.args)),
-                body="\n".join(body),
-                passed_args=", ".join(passed_args))
+                pre_call="\n".join(pre_call),
+                passed_args=", ".join(passed_args),
+                post_call="\n".join(post_call),
+                error_return=error_return,
+                )
 
 # }}}
 
@@ -789,18 +856,29 @@ def write_wrapper(outf, meth):
         arg_names.append(arg.name)
 
         if isinstance(arg, CallbackArgument):
-            if arg.return_base_type not in SAFE_IN_TYPES or arg.return_ptr:
-                raise SignatureNotSupported("non-int callback")
+            has_userptr = (
+                    arg_idx + 1 < len(meth.args)
+                    and meth.args[arg_idx+1].name.endswith("user"))
+            if not has_userptr:
+                raise SignatureNotSupported(
+                        "callback signature without user pointer")
+            else:
+                arg_idx += 1
 
-            arg_idx += 1
             if meth.args[arg_idx].name != "user":
                 raise SignatureNotSupported("unexpected callback signature")
 
             cb_name = "cb_%s_%s_%s" % (meth.cls, meth.name, arg.name)
 
+            if (meth.cls in ["ast_build", "ast_print_options"]
+                    and meth.name.startswith("set_")):
+                extra_ret_vals.append("py_%s" % arg.name)
+                extra_ret_descrs.append("(opaque handle to "
+                        "manage callback lifetime)")
+
             input_args.append("py::object py_%s" % arg.name)
             passed_args.append(cb_name)
-            passed_args.append("&py_%s" % arg.name)
+            passed_args.append("py_%s.ptr()" % arg.name)
 
             preamble.append(get_callback(cb_name, arg))
 
