@@ -3,12 +3,17 @@ include isl/*.h
 include isl/imath/*.c
 include isl/imath/*.h
 include isl/imath_wrap/*.h
+include isl/imath_wrap/*.c
 include isl/include/isl/*.h
+include isl/include/isl/*.c
 include isl/include/isl/deprecated/*.h
 include isl-supplementary/isl/*.h
 include isl-supplementary/*.h
 
-include isl_declaration_macros_expanded_v*.h
+include build-with-barvinok.sh
+
+include preproc-headers/*
+
 include src/wrapper/*.h
 include src/wrapper/*.hpp
 include src/wrapper/*.cpp
@@ -16,7 +21,7 @@ include src/wrapper/*.cpp
 include gen_wrap.py
 
 include test/*.py
-include example/*.py
+include examples/*.py
 
 include doc/*.rst
 include doc/images/*png
@@ -32,5 +37,5 @@ include README_SETUP.txt
 
 include README.rst
 
-recursive-include bpl-subset/bpl_subset/boost *.h *.hpp *.cpp *.html *.inl *.ipp *.pl *.txt
-recursive-include bpl-subset/bpl_subset/libs *.h *.hpp *.cpp *.html *.inl *.ipp *.pl *.txt
+include isl/LICENSE
+include isl/imath/LICENSE

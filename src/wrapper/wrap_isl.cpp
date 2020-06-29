@@ -1,8 +1,8 @@
 #include "wrap_isl.hpp"
 
-void islpy_expose_part1();
-void islpy_expose_part2();
-void islpy_expose_part3();
+void islpy_expose_part1(py::module &m);
+void islpy_expose_part2(py::module &m);
+void islpy_expose_part3(py::module &m);
 
 namespace isl
 {
@@ -10,31 +10,28 @@ namespace isl
 }
 
 
-
-namespace
+PYBIND11_MODULE(_isl, m)
 {
-  py::handle<> ISLError;
+  static py::exception<isl::error> ISLError(m, "Error", NULL);
+  py::register_exception_translator(
+        [](std::exception_ptr p)
+        {
+          try
+          {
+            if (p) std::rethrow_exception(p);
+          }
+          catch (isl::error &err)
+          {
+            ISLError(err.what());
+          }
+        });
 
-  void translate_isl_error(const isl::error &err)
-  {
-    PyErr_SetObject(ISLError.get(), py::object(err.what()).ptr());
-  }
-}
-
-
-
-BOOST_PYTHON_MODULE(_isl)
-{
-  ISLError = py::handle<>(PyErr_NewException("islpy.Error", PyExc_RuntimeError, NULL));
-  py::scope().attr("Error") = ISLError;
-  py::register_exception_translator<isl::error>(translate_isl_error);
-
-  py::docstring_options doc_opt(true, false, false);
+  // py::docstring_options doc_opt(true, false, false);
 
   /*
   {
     typedef isl_options cls;
-    py::class_<cls>("Options")
+    py::class_<cls>(m, "Options")
       .DEF_SIMPLE_RW_MEMBER(lp_solver)
       .DEF_SIMPLE_RW_MEMBER(ilp_solver)
       .DEF_SIMPLE_RW_MEMBER(pip)
@@ -54,8 +51,7 @@ BOOST_PYTHON_MODULE(_isl)
   }
   */
 
-#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
-  py::enum_<isl_error>("error")
+  py::enum_<isl_error>(m, "error")
     .ENUM_VALUE(isl_error_, none)
     .ENUM_VALUE(isl_error_, abort)
     .ENUM_VALUE(isl_error_, unknown)
@@ -64,13 +60,12 @@ BOOST_PYTHON_MODULE(_isl)
     .ENUM_VALUE(isl_error_, unsupported)
     ;
 
-  py::enum_<isl_stat>("stat")
+  py::enum_<isl_stat>(m, "stat")
     .ENUM_VALUE(isl_stat_, error)
     .ENUM_VALUE(isl_stat_, ok)
     ;
-#endif
 
-  py::enum_<isl_dim_type>("dim_type")
+  py::enum_<isl_dim_type>(m, "dim_type")
     .ENUM_VALUE(isl_dim_, cst)
     .ENUM_VALUE(isl_dim_, param)
     .value("in_", isl_dim_in)
@@ -80,48 +75,65 @@ BOOST_PYTHON_MODULE(_isl)
     .ENUM_VALUE(isl_dim_, all)
     ;
 
-  py::enum_<isl_fold>("fold")
+  py::enum_<isl_schedule_node_type>(m, "schedule_node_type")
+    .ENUM_VALUE(isl_schedule_node_, error)
+    .ENUM_VALUE(isl_schedule_node_, band)
+    .ENUM_VALUE(isl_schedule_node_, context)
+    .ENUM_VALUE(isl_schedule_node_, domain)
+    .ENUM_VALUE(isl_schedule_node_, expansion)
+    .ENUM_VALUE(isl_schedule_node_, extension)
+    .ENUM_VALUE(isl_schedule_node_, filter)
+    .ENUM_VALUE(isl_schedule_node_, leaf)
+    .ENUM_VALUE(isl_schedule_node_, guard)
+    .ENUM_VALUE(isl_schedule_node_, mark)
+    .ENUM_VALUE(isl_schedule_node_, sequence)
+    .ENUM_VALUE(isl_schedule_node_, set)
+    ;
+
+  py::enum_<isl_ast_expr_op_type>(m, "ast_expr_op_type")
+    .ENUM_VALUE(isl_ast_expr_op_, error)
+    .ENUM_VALUE(isl_ast_expr_op_, and)
+    .ENUM_VALUE(isl_ast_expr_op_, and_then)
+    .ENUM_VALUE(isl_ast_expr_op_, or)
+    .ENUM_VALUE(isl_ast_expr_op_, or_else)
+    .ENUM_VALUE(isl_ast_expr_op_, max)
+    .ENUM_VALUE(isl_ast_expr_op_, min)
+    .ENUM_VALUE(isl_ast_expr_op_, minus)
+    .ENUM_VALUE(isl_ast_expr_op_, add)
+    .ENUM_VALUE(isl_ast_expr_op_, sub)
+    .ENUM_VALUE(isl_ast_expr_op_, mul)
+    .ENUM_VALUE(isl_ast_expr_op_, div)
+    .ENUM_VALUE(isl_ast_expr_op_, fdiv_q)
+    .ENUM_VALUE(isl_ast_expr_op_, pdiv_q)
+    .ENUM_VALUE(isl_ast_expr_op_, pdiv_r)
+    .ENUM_VALUE(isl_ast_expr_op_, zdiv_r)
+    .ENUM_VALUE(isl_ast_expr_op_, cond)
+    .ENUM_VALUE(isl_ast_expr_op_, select)
+    .ENUM_VALUE(isl_ast_expr_op_, eq)
+    .ENUM_VALUE(isl_ast_expr_op_, le)
+    .ENUM_VALUE(isl_ast_expr_op_, lt)
+    .ENUM_VALUE(isl_ast_expr_op_, ge)
+    .ENUM_VALUE(isl_ast_expr_op_, gt)
+    .ENUM_VALUE(isl_ast_expr_op_, call)
+    .ENUM_VALUE(isl_ast_expr_op_, access)
+    .ENUM_VALUE(isl_ast_expr_op_, member)
+    .ENUM_VALUE(isl_ast_expr_op_, address_of)
+    ;
+
+  py::enum_<isl_fold>(m, "fold")
     .ENUM_VALUE(isl_fold_, min)
     .ENUM_VALUE(isl_fold_, max)
     .ENUM_VALUE(isl_fold_, list)
     ;
 
-  py::enum_<isl_ast_op_type>("ast_op_type")
-    .ENUM_VALUE(isl_ast_op_, error)
-    .ENUM_VALUE(isl_ast_op_, and)
-    .ENUM_VALUE(isl_ast_op_, and_then)
-    .ENUM_VALUE(isl_ast_op_, or)
-    .ENUM_VALUE(isl_ast_op_, or_else)
-    .ENUM_VALUE(isl_ast_op_, max)
-    .ENUM_VALUE(isl_ast_op_, min)
-    .ENUM_VALUE(isl_ast_op_, minus)
-    .ENUM_VALUE(isl_ast_op_, add)
-    .ENUM_VALUE(isl_ast_op_, sub)
-    .ENUM_VALUE(isl_ast_op_, mul)
-    .ENUM_VALUE(isl_ast_op_, div)
-    .ENUM_VALUE(isl_ast_op_, fdiv_q)
-    .ENUM_VALUE(isl_ast_op_, pdiv_q)
-    .ENUM_VALUE(isl_ast_op_, pdiv_r)
-    .ENUM_VALUE(isl_ast_op_, cond)
-    .ENUM_VALUE(isl_ast_op_, select)
-    .ENUM_VALUE(isl_ast_op_, eq)
-    .ENUM_VALUE(isl_ast_op_, le)
-    .ENUM_VALUE(isl_ast_op_, lt)
-    .ENUM_VALUE(isl_ast_op_, ge)
-    .ENUM_VALUE(isl_ast_op_, gt)
-    .ENUM_VALUE(isl_ast_op_, call)
-    .ENUM_VALUE(isl_ast_op_, access)
-    .ENUM_VALUE(isl_ast_op_, member)
-    ;
-
-  py::enum_<isl_ast_expr_type>("ast_expr_type")
+  py::enum_<isl_ast_expr_type>(m, "ast_expr_type")
     .ENUM_VALUE(isl_ast_expr_, error)
     .ENUM_VALUE(isl_ast_expr_, op)
     .ENUM_VALUE(isl_ast_expr_, id)
     .ENUM_VALUE(isl_ast_expr_, int)
     ;
 
-  py::enum_<isl_ast_node_type>("ast_node_type")
+  py::enum_<isl_ast_node_type>(m, "ast_node_type")
     .ENUM_VALUE(isl_ast_node_, error)
     .ENUM_VALUE(isl_ast_node_, for)
     .ENUM_VALUE(isl_ast_node_, if)
@@ -129,19 +141,45 @@ BOOST_PYTHON_MODULE(_isl)
     .ENUM_VALUE(isl_ast_node_, user)
     ;
 
-#define FORMAT_ATTR(name) cls_format.attr(#name) = ISL_FORMAT_##name
-  py::class_<isl::format> cls_format("format", py::no_init);
-  FORMAT_ATTR(ISL);
-  FORMAT_ATTR(POLYLIB);
-  FORMAT_ATTR(POLYLIB_CONSTRAINTS);
-  FORMAT_ATTR(OMEGA);
-  FORMAT_ATTR(C);
-  FORMAT_ATTR(LATEX);
-  FORMAT_ATTR(EXT_POLYLIB);
+  py::enum_<isl_ast_loop_type>(m, "ast_loop_type")
+    .ENUM_VALUE(isl_ast_loop_, error)
+    .ENUM_VALUE(isl_ast_loop_, default)
+    .ENUM_VALUE(isl_ast_loop_, atomic)
+    .ENUM_VALUE(isl_ast_loop_, unroll)
+    .ENUM_VALUE(isl_ast_loop_, separate)
+    ;
 
-  islpy_expose_part1();
-  islpy_expose_part2();
-  islpy_expose_part3();
+#define ADD_MACRO_ATTR(cls_name, prefix, name) cls_name.attr(#name) = prefix##name
+
+  py::class_<isl::format> cls_format(m, "format");
+  ADD_MACRO_ATTR(cls_format, ISL_FORMAT_, ISL);
+  ADD_MACRO_ATTR(cls_format, ISL_FORMAT_, POLYLIB);
+  ADD_MACRO_ATTR(cls_format, ISL_FORMAT_, POLYLIB_CONSTRAINTS);
+  ADD_MACRO_ATTR(cls_format, ISL_FORMAT_, OMEGA);
+  ADD_MACRO_ATTR(cls_format, ISL_FORMAT_, C);
+  ADD_MACRO_ATTR(cls_format, ISL_FORMAT_, LATEX);
+  ADD_MACRO_ATTR(cls_format, ISL_FORMAT_, EXT_POLYLIB);
+
+  py::class_<isl::yaml_style> cls_yaml_style(m, "yaml_style");
+  ADD_MACRO_ATTR(cls_yaml_style, ISL_YAML_STYLE_, BLOCK);
+  ADD_MACRO_ATTR(cls_yaml_style, ISL_YAML_STYLE_, FLOW);
+
+  py::class_<isl::bound> cls_bound(m, "bound");
+  ADD_MACRO_ATTR(cls_bound, ISL_BOUND_, BERNSTEIN);
+  ADD_MACRO_ATTR(cls_bound, ISL_BOUND_, RANGE);
+
+  py::class_<isl::on_error> cls_on_error(m, "on_error");
+  ADD_MACRO_ATTR(cls_on_error, ISL_ON_ERROR_, WARN);
+  ADD_MACRO_ATTR(cls_on_error, ISL_ON_ERROR_, CONTINUE);
+  ADD_MACRO_ATTR(cls_on_error, ISL_ON_ERROR_, ABORT);
+
+  py::class_<isl::schedule_algorithm> cls_schedule_algorithm(m, "schedule_algorithm");
+  ADD_MACRO_ATTR(cls_schedule_algorithm, ISL_SCHEDULE_ALGORITHM_, ISL);
+  ADD_MACRO_ATTR(cls_schedule_algorithm, ISL_SCHEDULE_ALGORITHM_, FEAUTRIER);
+
+  islpy_expose_part1(m);
+  islpy_expose_part2(m);
+  islpy_expose_part3(m);
 
   py::implicitly_convertible<isl::basic_set, isl::set>();
   py::implicitly_convertible<isl::basic_map, isl::map>();

@@ -62,6 +62,11 @@ an idea.
 
     misc
     reference
+    ref_fundamental
+    ref_ast
+    ref_flow.rst
+    ref_schedule
+    ref_containers
 
 Indices and tables
 ------------------

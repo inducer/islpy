@@ -1,21 +1,10 @@
-Reference guide
-===============
+Reference guide: Overview
+=========================
 
 .. module:: islpy
 .. moduleauthor:: Andreas Kloeckner <inform@tiker.net>
 
 .. _gen-remarks:
-
-Table of Contents
-^^^^^^^^^^^^^^^^^
-
-.. toctree::
-    :maxdepth: 3
-
-    reference
-
-.. Referring to this document makes sphinx spew 'circular reference' warnings.
-.. "self" would apparently be the correct way, but it does not work.
 
 General Remarks
 ^^^^^^^^^^^^^^^
@@ -82,12 +71,35 @@ Error Reporting
 
 .. exception:: Error
 
+Convenience
+^^^^^^^^^^^
+
+.. autofunction:: make_zero_and_vars
+
+.. autofunction:: affs_from_space
+
+
+Lifetime Helpers
+^^^^^^^^^^^^^^^^
+
+.. class:: ffi_callback_handle
+
+    Some callbacks, notably those in :class:`AstBuild`, need to outlive the
+    function call to which they're passed. These callback return a callback
+    handle that must be kept alive until the callback is no longer needed.
+
+Global Data
+^^^^^^^^^^^
+
+.. data:: DEFAULT_CONTEXT
+
+    ISL objects being unpickled or initialized from strings will be instantiated
+    within this :class:`Context`.
+
+    .. versionadded:: 2015.2
+
 Symbolic Constants
 ^^^^^^^^^^^^^^^^^^
-
-.. autoclass:: format
-    :members:
-    :undoc-members:
 
 .. autoclass:: error
     :members:
@@ -104,10 +116,6 @@ Symbolic Constants
     :undoc-members:
     :exclude-members: names, values
 
-.. autoclass:: constants
-    :members:
-    :undoc-members:
-
 .. autoclass:: ast_op_type
     :members:
     :undoc-members:
@@ -120,333 +128,15 @@ Symbolic Constants
     :members:
     :undoc-members:
 
-Basic Building Blocks
-^^^^^^^^^^^^^^^^^^^^^
-
-Context
--------
-
-.. class:: Context()
-
-Id
---
-
-.. autoclass:: Id
+.. autoclass:: format
     :members:
+    :undoc-members:
 
-Space
------
-
-(formerly called :class:`Dim`. A compatibility alias is in place.)
-
-.. autoclass:: Space
+.. autoclass:: yaml_style
     :members:
+    :undoc-members:
 
-Local Space
------------
 
-.. autoclass:: LocalSpace
-    :members:
-
-Constraints
------------
-
-.. autoclass:: Constraint
-    :members:
-
-Value
------
-
-.. autoclass:: Val
-    :members:
-
-Multi-Value
------------
-
-.. autoclass:: MultiVal
-    :members:
-
-Vector
-------
-
-.. autoclass:: Vec
-    :members:
-
-Matrix
-------
-
-.. autoclass:: Mat
-    :members:
-
-Sets and Maps
-^^^^^^^^^^^^^
-
-Basic Set
----------
-
-.. autoclass:: BasicSet
-    :members:
-
-Basic Map
----------
-
-.. autoclass:: BasicMap
-    :members:
-
-Set
----
-
-.. autoclass:: Set
-    :members:
-
-Map
----
-
-.. autoclass:: Map
-    :members:
-
-Union Set
----------
-
-.. autoclass:: UnionSet
-    :members:
-
-Union Map
----------
-
-.. autoclass:: UnionMap
-    :members:
-
-Geometric Entities
-^^^^^^^^^^^^^^^^^^
-
-Point
------
-
-.. autoclass:: Point
-    :members:
-
-Vertex
-------
-
-.. autoclass:: Vertex
-    :members:
-
-Vertices
---------
-
-.. autoclass:: Vertices
-    :members:
-
-Cell
-----
-
-.. autoclass:: Cell
-    :members:
-
-Quasi-Affine Expressions
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-Quasi-Affine Expression
------------------------
-
-.. autoclass:: Aff
-    :members:
-
-Piecewise Quasi-Affine Expression
----------------------------------
-
-.. autoclass:: PwAff
-    :members:
-
-Union of Piecewise Quasi-Affine Expressions
--------------------------------------------
-
-.. autoclass:: UnionPwAff
-    :members:
-
-Multiple Union of Piecewise Quasi-Affine Expressions
-----------------------------------------------------
-
-.. autoclass:: MultiUnionPwAff
-    :members:
-
-
-Multiply Affine Expressions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Multiply Affine Expression
---------------------------
-
-.. autoclass:: MultiAff
-    :members:
-
-Piecewise Multiply Affine Expression
-------------------------------------
-
-.. autoclass:: PwMultiAff
-    :members:
-
-Union of Piecewise Multiply Affine Expressions
-----------------------------------------------
-
-.. autoclass:: UnionPwMultiAff
-    :members:
-
-Quasipolynomials
-^^^^^^^^^^^^^^^^
-
-Term
-----
-
-.. autoclass:: Term
-    :members:
-
-QPolynomial
------------
-
-.. autoclass:: QPolynomial
-    :members:
-
-PwQPolynomial
--------------
-
-.. autoclass:: PwQPolynomial
-    :members:
-
-UnionPwQPolynomial
-------------------
-
-.. autoclass:: UnionPwQPolynomial
-    :members:
-
-QPolynomialFold
----------------
-
-.. autoclass:: QPolynomialFold
-    :members:
-
-PwQPolynomial
--------------
-
-.. autoclass:: PwQPolynomialFold
-    :members:
-
-UnionPwQPolynomialFold
-----------------------
-
-.. autoclass:: UnionPwQPolynomialFold
-    :members:
-
-Scheduling
-^^^^^^^^^^
-
-Band
-----
-
-.. autoclass:: Band
-    :members:
-
-Schedule
---------
-
-.. autoclass:: Schedule
-    :members:
-
-.. autoclass:: ScheduleNode
-    :members:
-
-ScheduleConstraints
--------------------
-
-.. autoclass:: ScheduleConstraints
-    :members:
-
-Dataflow
-^^^^^^^^
-
-Access Info
------------
-
-.. autoclass:: AccessInfo
-    :members:
-.. autoclass:: UnionAccessInfo
-    :members:
-
-Restriction
------------
-
-.. autoclass:: Restriction
-    :members:
-
-Flow
-----
-
-.. autoclass:: Flow
-    :members:
-.. autoclass:: UnionFlow
-    :members:
-
-Abstract Syntax Trees
-^^^^^^^^^^^^^^^^^^^^^
-
-.. versionadded:: 2014.1
-
-.. autoclass:: AstExpr
-    :members:
-
-.. autoclass:: AstNode
-    :members:
-
-.. autoclass:: AstBuild
-    :members:
-
-.. autoclass:: AstPrintOptions
-    :members:
-
-Lists
-^^^^^
-
-.. autoclass:: IdList
-    :members:
-
-.. autoclass:: ValList
-    :members:
-
-
-.. autoclass:: BasicSetList
-    :members:
-
-.. autoclass:: BasicMapList
-    :members:
-
-.. autoclass:: SetList
-    :members:
-
-.. autoclass:: MapList
-    :members:
-
-.. autoclass:: UnionSetList
-    :members:
-
-.. autoclass:: AffList
-    :members:
-
-
-.. autoclass:: BandList
-    :members:
-
-.. autoclass:: AstExprList
-    :members:
-
-.. autoclass:: AstNodeList
-    :members:
-
-Dictionaries
-^^^^^^^^^^^^
-
-.. autoclass:: IdToAstExpr
-    :members:
 
 Output
 ^^^^^^
