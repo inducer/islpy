@@ -215,12 +215,12 @@ def _add_functionality():
 
     def generic_str(self):
         prn = Printer.to_str(self.get_ctx())
-        prn = getattr(prn, "print_"+self._base_name)(self)
+        getattr(prn, "print_"+self._base_name)(self)
         return prn.get_str()
 
     def generic_repr(self):
         prn = Printer.to_str(self.get_ctx())
-        prn = getattr(prn, "print_"+self._base_name)(self)
+        getattr(prn, "print_"+self._base_name)(self)
         return "%s(\"%s\")" % (
                 type(self).__name__, prn.get_str())
 

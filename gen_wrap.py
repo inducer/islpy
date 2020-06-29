@@ -135,8 +135,6 @@ class Method:
 
     @property
     def is_mutator(self):
-        # FIXME
-        return False
         return (not self.is_static
                 and self.args[0].semantics is SEM_TAKE
                 and self.return_ptr == "*" == self.args[0].ptr
@@ -904,64 +902,67 @@ def write_wrapper(outf, meth):
         elif arg.base_type.startswith("isl_") and arg.ptr == "*":
             # {{{ isl types input arguments
 
-            need_nonconst = False
-
             arg_cls = arg.base_type[4:]
             arg_descr = ":param %s: :class:`%s`" % (arg.name, to_py_class(arg_cls))
 
-            if arg.semantics is None and arg.base_type != "isl_ctx":
-                raise Undocumented(meth)
-
-            checks.append("""
-                if (!arg_%(name)s.is_valid())
-                  throw isl::error(
-                    "passed invalid arg to isl_%(meth)s for %(name)s");
-                """ % dict(name=arg.name, meth="%s_%s" % (meth.cls, meth.name)))
-
-            copyable = arg_cls not in NON_COPYABLE
-            if arg.semantics is SEM_TAKE:
-                if copyable:
-                    checks.append("""
-                        if (!arg_%(name)s.is_valid())
-                          throw isl::error(
-                            "passed invalid arg to isl_%(meth)s for %(name)s");
-                        std::unique_ptr<%(cls)s> auto_arg_%(name)s;
-                        {
-                            isl_%(cls)s *tmp_ptr =
-                                isl_%(cls)s_copy(arg_%(name)s.m_data);
-                            if (!tmp_ptr)
-                                throw isl::error("failed to copy arg "
-                                    "%(name)s on entry to %(meth)s");
-                            auto_arg_%(name)s = std::unique_ptr<%(cls)s>(
-                                new %(cls)s(tmp_ptr));
-                        }
-                        """ % dict(
-                            name=arg.name,
-                            meth="%s_%s" % (meth.cls, meth.name),
-                            cls=arg_cls))
-
-                    post_call.append("auto_arg_%s.release();" % arg.name)
-                    passed_args.append("auto_arg_%s->m_data" % arg.name)
-
-                else:
-                    need_nonconst = True
-
-                    if not (arg_idx == 0 and meth.is_mutator):
-                        post_call.append("arg_%s.invalidate();" % arg.name)
-
-                    passed_args.append("arg_%s.m_data" % arg.name)
-
-                    if arg_idx == 0 and meth.is_mutator:
-                        arg_descr += " (mutated in-place)"
-                    else:
-                        arg_descr += " (:ref:`becomes invalid <auto-invalidation>`)"
-            else:
+            if arg_idx == 0 and meth.is_mutator:
+                arg_descr += " (mutated in-place)"
+                input_args.append("py::object py_%s" % arg.name)
+                checks.append("""
+                    isl::%(cls)s &arg_%(name)s(
+                        py::cast<isl::%(cls)s &>(py_%(name)s));
+                    if (!arg_%(name)s.is_valid())
+                      throw isl::error(
+                        "passed invalid arg to isl_%(meth)s for %(name)s");
+                    """ % dict(
+                        name=arg.name,
+                        meth="%s_%s" % (meth.cls, meth.name),
+                        cls=arg_cls))
                 passed_args.append("arg_%s.m_data" % arg.name)
+                post_call.append("arg_%s.invalidate();" % arg.name)
+                arg_descr += " (mutated in-place)"
 
-            if need_nonconst:
-                input_args.append("%s &%s" % (arg_cls, "arg_"+arg.name))
             else:
-                input_args.append("%s const &%s" % (arg_cls, "arg_"+arg.name))
+                if arg.semantics is None and arg.base_type != "isl_ctx":
+                    raise Undocumented(meth)
+
+                checks.append("""
+                    if (!arg_%(name)s.is_valid())
+                      throw isl::error(
+                        "passed invalid arg to isl_%(meth)s for %(name)s");
+                    """ % dict(name=arg.name, meth="%s_%s" % (meth.cls, meth.name)))
+
+                if arg.semantics is SEM_TAKE:
+                    if arg_cls not in NON_COPYABLE:
+                        input_args.append(
+                                "%s const &%s" % (arg_cls, "arg_"+arg.name))
+                        checks.append("""
+                            std::unique_ptr<%(cls)s> auto_arg_%(name)s;
+                            {
+                                isl_%(cls)s *tmp_ptr =
+                                    isl_%(cls)s_copy(arg_%(name)s.m_data);
+                                if (!tmp_ptr)
+                                    throw isl::error("failed to copy arg "
+                                        "%(name)s on entry to %(meth)s");
+                                auto_arg_%(name)s = std::unique_ptr<%(cls)s>(
+                                    new %(cls)s(tmp_ptr));
+                            }
+                            """ % dict(
+                                name=arg.name,
+                                meth="%s_%s" % (meth.cls, meth.name),
+                                cls=arg_cls))
+
+                        post_call.append("auto_arg_%s.release();" % arg.name)
+                        passed_args.append("auto_arg_%s->m_data" % arg.name)
+
+                    else:
+                        input_args.append("%s &%s" % (arg_cls, "arg_"+arg.name))
+                        post_call.append("arg_%s.invalidate();" % arg.name)
+                        passed_args.append("arg_%s.m_data" % arg.name)
+                        arg_descr += " (:ref:`becomes invalid <auto-invalidation>`)"
+                else:
+                    passed_args.append("arg_%s.m_data" % arg.name)
+                    input_args.append("%s const &%s" % (arg_cls, "arg_"+arg.name))
 
             docs.append(arg_descr)
 
@@ -1117,9 +1118,9 @@ def write_wrapper(outf, meth):
                 meth.mutator_veto = True
                 raise Retry()
 
-            processed_return_type = "isl::%s &" % ret_cls
-            body.append("arg_%s.m_data = result;" % meth.args[0].name)
-            body.append("return arg_%s;" % meth.args[0].name)
+            processed_return_type = "py::object"
+            body.append("arg_%s.take_possession_of(result);" % meth.args[0].name)
+            body.append("return py_%s;" % meth.args[0].name)
 
             ret_descr = ":class:`%s` (self)" % to_py_class(ret_cls)
         else:
@@ -1252,18 +1253,12 @@ def write_exposer(outf, meth, arg_names, doc_str):
 
     doc_str_arg = ", \"%s\"" % doc_str.replace("\n", "\\n")
 
-    extra_stuff = args_str+doc_str_arg
-    if meth.is_mutator:
-        # FIXME
-        raise NotImplementedError
-        extra_stuff = extra_stuff+", py::return_self<>()"
-
     wrap_class = CLASS_MAP.get(meth.cls, meth.cls)
 
     for exp_py_name in [py_name]+extra_py_names:
         outf.write("wrap_%s.def%s(\"%s\", %s%s);\n" % (
             wrap_class, "_static" if meth.is_static else "",
-            exp_py_name, func_name, extra_stuff))
+            exp_py_name, func_name, args_str+doc_str_arg))
 
 # }}}
 

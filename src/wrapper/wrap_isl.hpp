@@ -98,20 +98,20 @@ namespace isl
       isl_##name        *m_data; \
       \
       name(isl_##name *data) \
-      : m_valid(data != nullptr), m_data(data) \
-      /* nullptr is passed to create a (temporarily invalid) instance during unpickling */ \
+      : m_valid(false), m_data(nullptr) \
+      /* passing nullptr is allowed to create a (temporarily invalid) */ \
+      /* instance during unpickling */ \
       { \
-        if (data) \
-        {  \
-          m_ctx = isl_##name##_get_ctx(data); \
-          ctx_use_map[m_ctx] += 1; \
-        } \
+        take_possession_of(data); \
       } \
       \
       void invalidate() \
       { \
-        deref_ctx(m_ctx); \
-        m_valid = false; \
+        if (m_valid) \
+        { \
+          deref_ctx(m_ctx); \
+          m_valid = false; \
+        } \
       } \
       \
       bool is_valid() const \
@@ -121,14 +121,10 @@ namespace isl
       \
       ~name() \
       { \
-        if (m_valid) \
-        { \
-          isl_##name##_free(m_data); \
-          deref_ctx(m_ctx); \
-        } \
+        free_instance(); \
       } \
       \
-      void steal_instance(name &other) \
+      void free_instance() \
       { \
         if (m_valid) \
         { \
@@ -136,14 +132,24 @@ namespace isl
           deref_ctx(m_ctx); \
           m_valid = false; \
         } \
-        m_valid = other.m_valid; \
-        if (m_valid) \
+      } \
+      \
+      void take_possession_of(isl_##name *data) \
+      { \
+        free_instance(); \
+        if (data) \
         { \
-          m_ctx = other.m_ctx; \
+          m_data = data; \
+          m_valid = true; \
+          m_ctx = isl_##name##_get_ctx(data); \
           ref_ctx(m_ctx); \
-          m_data = other.m_data; \
-          other.invalidate(); \
         } \
+      } \
+      \
+      void steal_instance(name &other) \
+      { \
+        take_possession_of(other.m_data); \
+        other.invalidate(); \
       }
 
   struct ctx \
