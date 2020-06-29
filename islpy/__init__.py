@@ -831,41 +831,78 @@ def _add_functionality():
     # note: automatic upcasts for method arguments are provided through
     # 'implicitly_convertible' on the C++ side of the wrapper.
 
-    class UpcastWrapper(object):
-        def __init__(self, method, upcast):
-            self.method = method
-            self.upcast = upcast
+    def make_new_upcast_wrapper(method, upcast):
+        # This function provides a scope in which method and upcast
+        # are not changed from one iteration of the enclosing for
+        # loop to the next.
+
+        def wrapper(basic_instance, *args, **kwargs):
+            special_instance = upcast(basic_instance)
+            return method(special_instance, *args, **kwargs)
+
+        return wrapper
+
+    def make_existing_upcast_wrapper(basic_method, special_method, upcast):
+        # This function provides a scope in which method and upcast
+        # are not changed from one iteration of the enclosing for
+        # loop to the next.
+
+        def wrapper(basic_instance, *args, **kwargs):
+            try:
+                return basic_method(basic_instance, *args, **kwargs)
+            except TypeError:
+                pass
+
+            special_instance = upcast(basic_instance)
+            return special_method(special_instance, *args, **kwargs)
+
+        return wrapper
 
     def add_upcasts(basic_class, special_class, upcast_method):
         from functools import update_wrapper
 
+        def my_ismethod(class_, method_name):
+            if method_name.startswith("_"):
+                return False
+
+            method = getattr(class_, method_name)
+
+            if not callable(method):
+                return False
+
+            # Here we're desperately trying to filter out static methods,
+            # based on what seems to be a common feature.
+            if any("builtin_function_or_method" in meth_superclass.__name__
+                    for meth_superclass in type(method).__mro__):
+                return False
+
+            return True
+
         for method_name in dir(special_class):
-            # do not overwrite existing methods
-            if hasattr(basic_class, method_name):
+            special_method = getattr(special_class, method_name)
+
+            if not my_ismethod(special_class, method_name):
                 continue
 
-            method = getattr(special_class, method_name)
+            if hasattr(basic_class, method_name):
+                # method already exists in basic class
+                basic_method = getattr(basic_class, method_name)
 
-            my_ismethod = callable(method)
-            for meth_superclass in type(method).__mro__:
-                # Here we're desperately trying to filter out static methods.
-                if "builtin_function_or_method" in meth_superclass.__name__:
-                    my_ismethod = False
+                if not my_ismethod(basic_class, method_name):
+                    continue
 
-            if my_ismethod:
-                def make_wrapper(method, upcast):
-                    # This function provides a scope in which method and upcast
-                    # are not changed from one iteration of the enclosing for
-                    # loop to the next.
+                wrapper = make_existing_upcast_wrapper(
+                        basic_method, special_method, upcast_method)
+                setattr(
+                        basic_class, method_name,
+                        update_wrapper(wrapper, basic_method))
+            else:
+                # method does not yet exists in basic class
 
-                    def wrapper(basic_instance, *args, **kwargs):
-                        special_instance = upcast(basic_instance)
-                        return method(special_instance, *args, **kwargs)
-
-                    return wrapper
-
-                wrapper = make_wrapper(method, upcast_method)
-                setattr(basic_class, method_name, update_wrapper(wrapper, method))
+                wrapper = make_new_upcast_wrapper(special_method, upcast_method)
+                setattr(
+                        basic_class, method_name,
+                        update_wrapper(wrapper, special_method))
 
     for args_triple in [
             (BasicSet, Set, Set.from_basic_set),
