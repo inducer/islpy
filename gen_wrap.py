@@ -1024,6 +1024,8 @@ def write_wrapper(outf, meth):
     # {{{ return value processing
 
     if meth.return_base_type in ["int", "isl_stat"] and not meth.return_ptr:
+        # {{{ error code
+
         body.append("""
             #if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
               if (result == isl_stat_error)
@@ -1051,7 +1053,11 @@ def write_wrapper(outf, meth):
         else:
             body.append("return result;")
 
+        # }}}
+
     elif meth.return_base_type == "isl_bool" and not meth.return_ptr:
+        # {{{ bool
+
         body.append("""
             if (result == isl_bool_error)
             {
@@ -1073,12 +1079,18 @@ def write_wrapper(outf, meth):
         else:
             body.append("return result;")
 
+        # }}}
+
     elif meth.return_base_type in SAFE_TYPES and not meth.return_ptr:
+        # {{{ enums etc
+
         if extra_ret_vals:
             raise NotImplementedError("extra ret val with safe type")
 
         body.append("return result;")
         ret_descr = processed_return_type
+
+        # }}}
 
     elif meth.return_base_type.startswith("isl_"):
         assert meth.return_ptr == "*", meth
