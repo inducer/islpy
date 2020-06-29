@@ -328,13 +328,11 @@ namespace isl
   wrap_##name.def(py::pickle( \
         [](isl::name const &p) /* __getstate__ */ \
         { \
-          std::cerr << "__getstate__ called for islpy object : should never happen" << std::endl; \
-          abort(); \
+          throw isl::error("__getstate__ called for islpy object"); \
           return py::none(); \
         }, \
         [](py::none obj) /* __setstate__ */ \
         { \
-          std::cerr << "__getstate__ called for islpy object : should never happen" << std::endl; \
           return isl::name(nullptr); \
         } \
         ))
