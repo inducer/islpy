@@ -77,8 +77,6 @@ namespace isl
       name(from_type &data) \
       : m_data(nullptr) \
       { \
-        m_ctx = isl_##from_type##_get_ctx(data.m_data); \
-        \
         isl_##from_type *copy = isl_##from_type##_copy(data.m_data); \
         if (!copy) \
           throw error("isl_" #from_type "_copy failed"); \
@@ -86,12 +84,10 @@ namespace isl
         if (!m_data) \
           throw error(#cast_func " failed"); \
         \
-        ref_ctx(m_ctx); \
+        ref_ctx(get_ctx()); \
       }
 
 #define WRAP_CLASS_CONTENT(name) \
-    private: \
-      isl_ctx           *m_ctx; \
     public: \
       isl_##name        *m_data; \
       \
@@ -103,11 +99,16 @@ namespace isl
         take_possession_of(data); \
       } \
       \
+      isl_ctx *get_ctx() \
+      { \
+        return isl_##name##_get_ctx(m_data); \
+      } \
+      \
       void invalidate() \
       { \
         if (m_data) \
         { \
-          unref_ctx(m_ctx); \
+          unref_ctx(get_ctx()); \
           m_data = nullptr; \
         } \
       } \
@@ -126,8 +127,8 @@ namespace isl
       { \
         if (m_data) \
         { \
+          unref_ctx(get_ctx()); \
           isl_##name##_free(m_data); \
-          unref_ctx(m_ctx); \
           m_data = nullptr; \
         } \
       } \
@@ -138,8 +139,7 @@ namespace isl
         if (data) \
         { \
           m_data = data; \
-          m_ctx = isl_##name##_get_ctx(data); \
-          ref_ctx(m_ctx); \
+          ref_ctx(get_ctx()); \
         } \
       } \
 
