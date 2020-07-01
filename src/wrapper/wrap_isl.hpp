@@ -145,12 +145,6 @@ namespace isl
           ref_ctx(m_ctx); \
         } \
       } \
-      \
-      void steal_instance(name &other) \
-      { \
-        take_possession_of(other.m_data); \
-        other.invalidate(); \
-      }
 
   struct ctx \
   {
@@ -328,19 +322,5 @@ namespace isl
   wrap_##name.def("_is_valid", &isl::name::is_valid); \
   wrap_##name.attr("_base_name") = #name; \
   wrap_##name.attr("_isl_name") = "isl_"#name; \
-  wrap_##name.def("_steal_instance", &isl::name::steal_instance); \
-
-#define WRAP_ENABLE_PICKLING(name) \
-  wrap_##name.def(py::pickle( \
-        [](isl::name const &p) /* __getstate__ */ \
-        { \
-          throw isl::error("__getstate__ called for islpy object"); \
-          return py::none(); \
-        }, \
-        [](py::none obj) /* __setstate__ */ \
-        { \
-          return isl::name(nullptr); \
-        } \
-        ))
 
 // vim: foldmethod=marker

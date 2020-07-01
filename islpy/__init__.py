@@ -136,22 +136,30 @@ EXPR_CLASSES = tuple(cls for cls in ALL_CLASSES
 DEFAULT_CONTEXT = Context()
 
 
+def _get_default_context():
+    """A callable to get the default context for the benefit of Python's
+    ``__reduce__`` protocol.
+    """
+    return DEFAULT_CONTEXT
+
+
+def _read_from_str_wrapper(cls, context, s):
+    """A callable to reconstitute instances from strings for the benefit
+    of Python's ``__reduce__`` protocol.
+    """
+    return cls.read_from_str(context, s)
+
+
 def _add_functionality():
     import islpy._isl as _isl  # noqa
 
     # {{{ Context
 
-    def context_getstate(self):
+    def context_reduce(self):
         if self._wraps_same_instance_as(DEFAULT_CONTEXT):
-            return ("default",)
+            return (_get_default_context, ())
         else:
-            return (None,)
-
-    def context_setstate(self, data):
-        if data[0] == "default":
-            self._reset_instance(DEFAULT_CONTEXT)
-        else:
-            self._reset_instance(Context())
+            return (Context, ())
 
     def context_eq(self, other):
         return isinstance(other, Context) and self._wraps_same_instance_as(other)
@@ -159,8 +167,7 @@ def _add_functionality():
     def context_ne(self, other):
         return not self.__eq__(other)
 
-    Context.__getstate__ = context_getstate
-    Context.__setstate__ = context_setstate
+    Context.__reduce__ = context_reduce
     Context.__eq__ = context_eq
     Context.__ne__ = context_ne
 
@@ -187,16 +194,11 @@ def _add_functionality():
         if not isinstance(s, str) and self._prev_init is not None:
             self._prev_init(s)
 
-    def generic_getstate(self):
+    def generic_reduce(self):
         ctx = self.get_ctx()
         prn = Printer.to_str(ctx)
         prn = getattr(prn, "print_"+self._base_name)(self)
-        return (ctx, prn.get_str())
-
-    def generic_setstate(self, data):
-        ctx, new_str = data
-        self._prev_setstate(None)
-        self._steal_instance(self.read_from_str(ctx, new_str))
+        return (_read_from_str_wrapper, (type(self), ctx, prn.get_str()))
 
     for cls in ALL_CLASSES:
         if hasattr(cls, "read_from_str"):
@@ -204,10 +206,7 @@ def _add_functionality():
             cls.__new__ = obj_new
             cls._prev_init = getattr(cls, "__init__", None)
             cls.__init__ = obj_bogus_init
-        if hasattr(cls, "__setstate__") and cls is not Context:
-            cls.__getstate__ = generic_getstate
-            cls._prev_setstate = cls.__setstate__
-            cls.__setstate__ = generic_setstate
+            cls.__reduce__ = generic_reduce
 
     # }}}
 

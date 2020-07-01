@@ -85,31 +85,23 @@ void islpy_expose_part1(py::module &m)
   MAKE_WRAP(fixed_box, FixedBox);
 
   MAKE_WRAP(aff, Aff);
-  WRAP_ENABLE_PICKLING(aff);
 
   MAKE_WRAP(pw_aff, PwAff);
   wrap_pw_aff.def(py::init<isl::aff &>());
-  WRAP_ENABLE_PICKLING(pw_aff);
 
   MAKE_WRAP(union_pw_aff, UnionPwAff);
-  WRAP_ENABLE_PICKLING(union_pw_aff);
 
   MAKE_WRAP(multi_id, MultiId);
 
   MAKE_WRAP(multi_aff, MultiAff);
-  WRAP_ENABLE_PICKLING(multi_aff);
 
   MAKE_WRAP(multi_pw_aff, MultiPwAff);
-  WRAP_ENABLE_PICKLING(multi_pw_aff);
 
   MAKE_WRAP(pw_multi_aff, PwMultiAff);
-  WRAP_ENABLE_PICKLING(pw_multi_aff);
 
   MAKE_WRAP(union_pw_multi_aff, UnionPwMultiAff);
-  WRAP_ENABLE_PICKLING(union_pw_multi_aff);
 
   MAKE_WRAP(multi_union_pw_aff, MultiUnionPwAff);
-  WRAP_ENABLE_PICKLING(multi_union_pw_aff);
 
   MAKE_WRAP(id, Id);
   wrap_id.def("__eq__", islpy::id_eq, py::arg("other"),
@@ -124,7 +116,6 @@ void islpy_expose_part1(py::module &m)
       ":return: bool ");
 
   MAKE_WRAP(constraint, Constraint);
-  WRAP_ENABLE_PICKLING(constraint);
 
   MAKE_WRAP(space, Space);
   MAKE_WRAP(local_space, LocalSpace);
