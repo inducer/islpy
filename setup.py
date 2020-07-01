@@ -86,6 +86,11 @@ class Hooked_compile:  # noqa: N801
                     if not (
                         opt.startswith("-O")
                         or opt.startswith("-g"))]
+        if src.endswith(".c"):
+            # Some C compilers (Apple clang IIRC?) really don't like having C++
+            # flags passed to them.
+            args = args[:2] + (
+                    [opt for opt in args[2] if "gnu++" not in opt],) + args[3:]
 
         try:
             result = self.orig__compile(obj, src, *args, **kwargs)
