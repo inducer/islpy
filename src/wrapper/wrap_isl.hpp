@@ -75,7 +75,7 @@ namespace isl
 
 #define MAKE_CAST_CTOR(name, from_type, cast_func) \
       name(from_type &data) \
-      : m_valid(false) \
+      : m_data(nullptr) \
       { \
         m_ctx = isl_##from_type##_get_ctx(data.m_data); \
         \
@@ -86,19 +86,17 @@ namespace isl
         if (!m_data) \
           throw error(#cast_func " failed"); \
         \
-        m_valid = true; \
         ref_ctx(m_ctx); \
       }
 
 #define WRAP_CLASS_CONTENT(name) \
     private: \
-      bool              m_valid; \
       isl_ctx           *m_ctx; \
     public: \
       isl_##name        *m_data; \
       \
       name(isl_##name *data) \
-      : m_valid(false), m_data(nullptr) \
+      : m_data(nullptr) \
       /* passing nullptr is allowed to create a (temporarily invalid) */ \
       /* instance during unpickling */ \
       { \
@@ -107,16 +105,16 @@ namespace isl
       \
       void invalidate() \
       { \
-        if (m_valid) \
+        if (m_data) \
         { \
           unref_ctx(m_ctx); \
-          m_valid = false; \
+          m_data = nullptr; \
         } \
       } \
       \
       bool is_valid() const \
       { \
-        return m_valid; \
+        return (bool) m_data; \
       } \
       \
       ~name() \
@@ -126,11 +124,11 @@ namespace isl
       \
       void free_instance() \
       { \
-        if (m_valid) \
+        if (m_data) \
         { \
           isl_##name##_free(m_data); \
           unref_ctx(m_ctx); \
-          m_valid = false; \
+          m_data = nullptr; \
         } \
       } \
       \
@@ -140,7 +138,6 @@ namespace isl
         if (data) \
         { \
           m_data = data; \
-          m_valid = true; \
           m_ctx = isl_##name##_get_ctx(data); \
           ref_ctx(m_ctx); \
         } \
