@@ -60,7 +60,7 @@ namespace isl
     if (it == ctx_use_map.end())
       ctx_use_map[data] = 1;
     else
-      ctx_use_map[data] += 1;
+      (*it)++;
   }
 
   inline void deref_ctx(isl_ctx *ctx)
