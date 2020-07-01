@@ -24,6 +24,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+from aksetup_helper import (
+        check_pybind11, get_pybind_include,
+        get_config, setup, check_git_submodules, Extension,
+        PybindBuildExtCommand)
+
 
 def get_config_schema():
     from aksetup_helper import (ConfigSchema,
@@ -63,16 +68,51 @@ def get_config_schema():
         ])
 
 
-def main():
-    from aksetup_helper import (hack_distutils,
-            check_pybind11, get_pybind_include,
-            get_config, setup, check_git_submodules, Extension,
-            PybindBuildExtCommand)
+# {{{ awful monkeypatching to build only isl (and not the wrapper) with -O2
 
+class Hooked_compile:  # noqa: N801
+    def __init__(self, orig__compile, compiler):
+        self.orig__compile = orig__compile
+        self.compiler = compiler
+
+    def __call__(self, obj, src, *args, **kwargs):
+        compiler = self.compiler
+        prev_compiler_so = compiler.compiler_so
+
+        # The C++ wrapper takes an awfully long time to compile
+        # with any optimization, on gcc 10 (2020-06-30, AK).
+        if src.startswith("src/wrapper"):
+            compiler.compiler_so = [opt for opt in compiler.compiler_so
+                    if not (
+                        opt.startswith("-O")
+                        or opt.startswith("-g"))]
+
+        try:
+            result = self.orig__compile(obj, src, *args, **kwargs)
+        finally:
+            compiler.compiler_so = prev_compiler_so
+        return result
+
+
+class IslPyBuildExtCommand(PybindBuildExtCommand):
+    def __getattribute__(self, name):
+        if name == "compiler":
+            compiler = PybindBuildExtCommand.__getattribute__(self, name)
+            if compiler is not None:
+                orig__compile = compiler._compile
+                if not isinstance(orig__compile, Hooked_compile):
+                    compiler._compile = Hooked_compile(orig__compile, compiler)
+            return compiler
+        else:
+            return PybindBuildExtCommand.__getattribute__(self, name)
+
+# }}}
+
+
+def main():
     check_pybind11()
     check_git_submodules()
 
-    hack_distutils(what_opt=None)
     conf = get_config(get_config_schema(), warn_about_no_config=False)
 
     CXXFLAGS = conf["CXXFLAGS"]  # noqa: N806
@@ -281,7 +321,7 @@ def main():
                   extra_link_args=conf["LDFLAGS"],
                   ),
               ],
-          cmdclass={'build_ext': PybindBuildExtCommand},
+          cmdclass={'build_ext': IslPyBuildExtCommand},
           )
 
 
