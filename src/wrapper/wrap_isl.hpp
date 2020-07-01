@@ -63,7 +63,7 @@ namespace isl
       (it->second)++;
   }
 
-  inline void deref_ctx(isl_ctx *ctx)
+  inline void unref_ctx(isl_ctx *ctx)
   {
     ctx_use_map[ctx] -= 1;
     if (ctx_use_map[ctx] == 0)
@@ -109,7 +109,7 @@ namespace isl
       { \
         if (m_valid) \
         { \
-          deref_ctx(m_ctx); \
+          unref_ctx(m_ctx); \
           m_valid = false; \
         } \
       } \
@@ -129,7 +129,7 @@ namespace isl
         if (m_valid) \
         { \
           isl_##name##_free(m_data); \
-          deref_ctx(m_ctx); \
+          unref_ctx(m_ctx); \
           m_valid = false; \
         } \
       } \
@@ -164,13 +164,13 @@ namespace isl
 
       ~ctx()
       {
-        deref_ctx(m_data);
+        unref_ctx(m_data);
       }
 
       void reset_instance(ctx &other)
       {
         ref_ctx(other.m_data);
-        deref_ctx(m_data);
+        unref_ctx(m_data);
         m_data = other.m_data;
       }
 
