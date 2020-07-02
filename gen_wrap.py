@@ -1062,9 +1062,8 @@ def write_wrapper(outf, meth):
                 py::object py_ret_%(name)s;
                 if (ret_%(name)s)
                 {
-                  std::unique_ptr<%(ret_cls)s> auto_ret_%(name)s(
-                    new %(ret_cls)s(ret_%(name)s));
-                  py_ret_%(name)s = handle_from_new_ptr(auto_ret_%(name)s.release());
+                  py_ret_%(name)s = handle_from_new_ptr(
+                      new %(ret_cls)s(ret_%(name)s));
                 }
                 """ % dict(name=arg.name, ret_cls=ret_cls))
 
