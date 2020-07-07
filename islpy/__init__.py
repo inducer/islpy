@@ -332,7 +332,7 @@ def _add_functionality():
         :param set_: names of `set`-type variables.
         :param in_: names of `in`-type variables.
         :param out: names of `out`-type variables.
-        :param params`: names of parameter-type variables.
+        :param params: names of parameter-type variables.
         """
         dt = dim_type
 
