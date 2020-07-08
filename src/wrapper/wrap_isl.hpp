@@ -17,9 +17,7 @@
 #include <isl/ilp.h>
 #include <isl/vertices.h>
 #include <isl/schedule.h>
-#if !defined(ISLPY_ISL_VERSION) || (ISLPY_ISL_VERSION >= 15)
 #include <isl/schedule_node.h>
-#endif
 #include <isl/flow.h>
 #include <isl/ast.h>
 #include <isl/ast_build.h>
