@@ -32,5 +32,5 @@ bounds on piecewise step-polynomials.
 
 Islpy comes with comprehensive `documentation <http://documen.tician.de/islpy>`_.
 
-*Requirements:* islpy needs a C compiler to build. GMP, which used to be
+*Requirements:* islpy needs a C++ compiler to build. GMP, which used to be
 a dependency, is no longer required.

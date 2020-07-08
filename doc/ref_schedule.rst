@@ -3,12 +3,6 @@ Reference: Scheduling
 
 .. currentmodule:: islpy
 
-Band
-----
-
-.. autoclass:: Band
-    :members:
-
 Schedule
 --------
 

@@ -1,6 +1,4 @@
-from __future__ import print_function
-
-__copyright__ = "Copyright (C) 2011-15 Andreas Kloeckner"
+__copyright__ = "Copyright (C) 2011-20 Andreas Kloeckner"
 
 __license__ = """
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,10 +22,8 @@ THE SOFTWARE.
 
 import re
 import sys
-from py_codegen import PythonCodeGenerator, Indentation
-from distutils.sysconfig import get_config_var
-from os.path import join
 import os
+from os.path import join
 
 SEM_TAKE = "take"
 SEM_GIVE = "give"
@@ -55,23 +51,55 @@ def       for       lambda    try
 """.split()
 
 
+class Retry(RuntimeError):
+    pass
+
+
+class BadArg(ValueError):
+    pass
+
+
+class Undocumented(ValueError):
+    pass
+
+
+class SignatureNotSupported(ValueError):
+    pass
+
+
+def to_py_class(cls):
+    if cls.startswith("isl_"):
+        cls = cls[4:]
+
+    if cls == "ctx":
+        return "Context"
+
+    upper_next = True
+    result = ""
+
+    for c in cls:
+        if c == "_":
+            upper_next = True
+        else:
+            if upper_next:
+                result += c.upper()
+                upper_next = False
+            else:
+                result += c
+
+    result = result.replace("Qpoly", "QPoly")
+
+    return result
+
+
 # {{{ data model
 
 class Argument:
-    def __init__(self, name, semantics, decl_words, base_type, ptr):
+    def __init__(self, name, semantics, base_type, ptr):
         self.name = name
         self.semantics = semantics
-        assert isinstance(decl_words, list)
-        self.decl_words = decl_words
         self.base_type = base_type
         self.ptr = ptr
-
-    def c_declarator(self):
-        return "{decl_words} {type} {ptr}{name}".format(
-                decl_words=" ".join(self.decl_words),
-                type=self.base_type,
-                ptr=self.ptr,
-                name=self.name)
 
 
 class CallbackArgument:
@@ -85,24 +113,16 @@ class CallbackArgument:
         self.return_ptr = return_ptr
         self.args = args
 
-    def c_declarator(self):
-        return "{decl_words} {type} {ptr}(*{name})({args})".format(
-                decl_words=" ".join(self.return_decl_words),
-                type=self.return_base_type,
-                ptr=self.return_ptr,
-                name=self.name,
-                args=", ".join(arg.c_declarator() for arg in self.args))
-
 
 class Method:
     def __init__(self, cls, name, c_name,
-            return_semantics, return_decl_words, return_base_type, return_ptr,
+            return_semantics, return_base_type, return_ptr,
             args, is_exported, is_constructor):
         self.cls = cls
         self.name = name
+        assert name
         self.c_name = c_name
         self.return_semantics = return_semantics
-        self.return_decl_words = return_decl_words
         self.return_base_type = return_base_type
         self.return_ptr = return_ptr
         self.args = args
@@ -133,210 +153,103 @@ class Method:
 # }}}
 
 
-CLASSES = [
-        # /!\ Order matters, class names that are prefixes of others should go last.
+# {{{ PART_TO_CLASSES
 
-        "ctx",
+PART_TO_CLASSES = {
+        # If you change this, change:
+        # - src/wrapper/wrap_isl.hpp to add WRAP_CLASS(...)
+        # - src/wrapper/wrap_isl_partN.hpp to add MAKE_WRAP(...)
+        # - doc/reference.rst
 
-        # lists
-        "id_list", "val_list",
-        "basic_set_list", "basic_map_list", "set_list", "map_list",
-        "union_set_list",
-        "constraint_list",
-        "aff_list", "pw_aff_list", "pw_multi_aff_list",
-        "ast_expr_list", "ast_node_list",
-        "pw_qpolynomial_list",
-        "pw_qpolynomial_fold_list",
-        "union_pw_aff_list",
-        "union_pw_multi_aff_list",
-        "union_map_list",
+        "part1": [
+            # lists
+            "id_list", "val_list",
+            "basic_set_list", "basic_map_list", "set_list", "map_list",
+            "union_set_list",
+            "constraint_list",
+            "aff_list", "pw_aff_list", "pw_multi_aff_list",
+            "ast_expr_list", "ast_node_list",
+            "pw_qpolynomial_list",
+            "pw_qpolynomial_fold_list",
+            "union_pw_aff_list",
+            "union_pw_multi_aff_list",
+            "union_map_list",
 
-        # maps
-        "id_to_ast_expr",
+            # maps
+            "id_to_ast_expr",
 
-        # others
-        "printer",  "val", "multi_val", "vec", "mat", "fixed_box",
-        "aff", "pw_aff", "union_pw_aff",
-        "multi_aff", "multi_pw_aff", "pw_multi_aff", "union_pw_multi_aff",
-        "multi_union_pw_aff",
+            # others
+            "ctx",
+            "printer",  "val", "multi_val", "vec", "mat", "fixed_box",
+            "aff", "pw_aff", "union_pw_aff",
+            "multi_aff", "multi_pw_aff", "pw_multi_aff", "union_pw_multi_aff",
+            "multi_union_pw_aff",
 
-        "id", "multi_id",
-        "constraint", "space", "local_space",
+            "id", "multi_id",
 
-        "basic_set", "basic_map",
-        "set", "map",
-        "union_map", "union_set",
-        "point", "vertex", "cell", "vertices",
-        "stride_info",
+            "constraint", "space", "local_space",
+        ],
 
-        "qpolynomial_fold", "pw_qpolynomial_fold",
-        "union_pw_qpolynomial_fold",
-        "union_pw_qpolynomial",
-        "qpolynomial", "pw_qpolynomial",
-        "term",
+        "part2": [
+            "basic_set", "basic_map",
+            "set", "map",
+            "union_map", "union_set",
+            "point", "vertex", "cell", "vertices",
+            "stride_info",
+        ],
 
-        "band", "schedule_constraints", "schedule_node", "schedule",
+        "part3": [
+            "qpolynomial", "pw_qpolynomial",
+            "qpolynomial_fold", "pw_qpolynomial_fold",
+            "union_pw_qpolynomial_fold",
+            "union_pw_qpolynomial",
+            "term",
 
-        "access_info", "flow", "restriction",
-        "union_access_info", "union_flow",
+            "schedule", "schedule_constraints",
+            "schedule_node",
 
-        "ast_expr", "ast_node", "ast_print_options",
-        "ast_build",
+            "access_info", "flow", "restriction",
+            "union_access_info", "union_flow",
+
+            "ast_expr", "ast_node", "ast_print_options",
+            "ast_build",
         ]
+        }
+CLASSES = []
+for cls_list in PART_TO_CLASSES.values():
+    CLASSES.extend(cls_list)
 
-UNTYPEDEFD_CLASSES = ["options"]
+CLASS_MAP = {
+        "equality": "constraint",
+        "inequality": "constraint",
+        "options": "ctx",
+        }
+
+# }}}
 
 
-IMPLICIT_CONVERSIONS = {
-    "isl_set": [("isl_basic_set", "from_basic_set")],
-    "isl_map": [("isl_basic_map", "from_basic_map")],
-    "isl_union_set": [("isl_set", "from_set")],
-    "isl_union_map": [("isl_map", "from_map")],
-    "isl_local_space": [("isl_space", "from_space")],
-    "isl_pw_aff": [("isl_aff", "from_aff")],
-    }
-
+# {{{ enums
 
 ENUMS = {
     # ctx.h
-    "isl_error": """
-        isl_error_none,
-        isl_error_abort,
-        isl_error_alloc,
-        isl_error_unknown,
-        isl_error_internal,
-        isl_error_invalid,
-        isl_error_quota,
-        isl_error_unsupported,
-    """,
-    "isl_stat": """
-        isl_stat_error,
-        isl_stat_ok,
-    """,
-    "isl_bool": """
-        isl_bool_error,
-        isl_bool_false,
-        isl_bool_true,
-    """,
+    "isl_error",
+    "isl_stat",
+    "isl_bool",
+
     # space.h
-    "isl_dim_type": """
-        isl_dim_cst,
-        isl_dim_param,
-        isl_dim_in,
-        isl_dim_out,
-        isl_dim_set,
-        isl_dim_div,
-        isl_dim_all,
-    """,
+    "isl_dim_type",
 
     # schedule_type.h
-    "isl_schedule_node_type": """
-        isl_schedule_node_error,
-        isl_schedule_node_band,
-        isl_schedule_node_context,
-        isl_schedule_node_domain,
-        isl_schedule_node_expansion,
-        isl_schedule_node_extension,
-        isl_schedule_node_filter,
-        isl_schedule_node_leaf,
-        isl_schedule_node_guard,
-        isl_schedule_node_mark,
-        isl_schedule_node_sequence,
-        isl_schedule_node_set,
-    """,
+    "isl_schedule_node_type",
 
     # ast_type.h
-    "isl_ast_expr_op_type": """
-        isl_ast_op_error,
-        isl_ast_op_and,
-        isl_ast_op_and_then,
-        isl_ast_op_or,
-        isl_ast_op_or_else,
-        isl_ast_op_max,
-        isl_ast_op_min,
-        isl_ast_op_minus,
-        isl_ast_op_add,
-        isl_ast_op_sub,
-        isl_ast_op_mul,
-        isl_ast_op_div,
-        isl_ast_op_fdiv_q,
-        isl_ast_op_pdiv_q,
-        isl_ast_op_pdiv_r,
-        isl_ast_op_zdiv_r,
-        isl_ast_op_cond,
-        isl_ast_op_select,
-        isl_ast_op_eq,
-        isl_ast_op_le,
-        isl_ast_op_lt,
-        isl_ast_op_ge,
-        isl_ast_op_gt,
-        isl_ast_op_call,
-        isl_ast_op_access,
-        isl_ast_op_member,
-        isl_ast_op_address_of,
-    """,
-    "isl_ast_expr_type": """
-        isl_ast_expr_error,
-        isl_ast_expr_op,
-        isl_ast_expr_id,
-        isl_ast_expr_int,
-    """,
-    "isl_ast_node_type": """
-        isl_ast_node_error,
-        isl_ast_node_for,
-        isl_ast_node_if,
-        isl_ast_node_block,
-        isl_ast_node_mark,
-        isl_ast_node_user,
-    """,
-    "isl_ast_loop_type": """
-        isl_ast_loop_error,
-        isl_ast_loop_default,
-        isl_ast_loop_atomic,
-        isl_ast_loop_unroll,
-        isl_ast_loop_separate,
-    """,
+    "isl_ast_expr_op_type",
+    "isl_ast_expr_type",
+    "isl_ast_node_type",
+    "isl_ast_loop_type",
 
     # polynomial_type.h
-    "isl_fold": """
-        isl_fold_min,
-        isl_fold_max,
-        isl_fold_list,
-    """,
-
-    # printer.h
-    "isl_format": """
-        ISL_FORMAT_ISL,
-        ISL_FORMAT_POLYLIB,
-        ISL_FORMAT_POLYLIB_CONSTRAINTS,
-        ISL_FORMAT_OMEGA,
-        ISL_FORMAT_C,
-        ISL_FORMAT_LATEX,
-        ISL_FORMAT_EXT_POLYLIB,
-    """,
-
-    "isl_yaml_style": """
-        ISL_YAML_STYLE_BLOCK,
-        ISL_YAML_STYLE_FLOW,
-    """,
-
-    # options.h
-
-    "isl_bound": """
-        ISL_BOUND_BERNSTEIN,
-        ISL_BOUND_RANGE,
-    """,
-
-    "isl_on_error": """
-        ISL_ON_ERROR_WARN,
-        ISL_ON_ERROR_CONTINUE,
-        ISL_ON_ERROR_ABORT,
-    """,
-
-    "isl_schedule_algorithm": """
-        ISL_SCHEDULE_ALGORITHM_ISL,
-        ISL_SCHEDULE_ALGORITHM_FEAUTRIER,
-    """,
+    "isl_fold",
     }
 
 TYPEDEFD_ENUMS = ["isl_stat", "isl_bool"]
@@ -345,211 +258,13 @@ MACRO_ENUMS = [
         "isl_bound", "isl_on_error", "isl_schedule_algorithm",
         ]
 
-HEADER_PREAMBLE = """
-// flow.h
-typedef int isl_size;
-typedef int (*isl_access_level_before)(void *first, void *second);
-typedef isl_restriction *(*isl_access_restrict)(
-        isl_map *source_map, isl_set *sink,
-        void *source_user, void *user);
-
-"""
-
-PY_PREAMBLE = """
-from __future__ import print_function
-
-import six
-import sys
-import logging
-import threading
-import operator as _operator
-
-# isl has parameters called type which end up shadowing the built-in function.
-_type = type
-
-
-_PY3 = sys.version_info >= (3,)
-
-is_win = sys.platform.startswith('win32')
-
-from islpy._isl_cffi import ffi
-
-if is_win:
-    lib = ffi.dlopen('{win_pyd}')
-else:
-    lib = ffi.dlopen(None)
-
-from cffi import FFI
-libc_ffi = FFI()
-
-cdef_string = '''
-    char *strdup(const char *s);
-    void free(void *ptr);
-    '''
-
-if is_win:
-    cdef_string = cdef_string.replace('strdup', '_strdup')
-
-libc_ffi.cdef(cdef_string)
-
-if is_win and sys.version_info >= (3,5):
-    libc = libc_ffi.dlopen('ucrtbase')
-else:
-    libc = libc_ffi.dlopen(None)
-
-
-class Error(Exception):
-    pass
-
-
-class IslTypeError(Error, TypeError):
-    pass
-
-_context_use_map = {{}}
-
-
-def _get_last_error_str(ctx_data):
-    code = lib.isl_ctx_last_error(ctx_data)
-    for name in dir(error):
-        if name.startswith("_"):
-            continue
-        if getattr(error, name) == code:
-            return "isl_error_"+name
-
-    return "(unknown error)"
-
-
-class _ISLObjectBase(object):
-    def __init__(self, _data, context):
-        self._setup(_data, context)
-
-    def _setup(self, data, context):
-        assert not hasattr(self, "data")
-        assert isinstance(data, ffi.CData)
-        self.data = data
-        self.context = context
-
-    def _reset(self, data):
-        assert self.data is not None
-        assert isinstance(data, ffi.CData)
-
-        self.data = data
-
-    def _release(self):
-        if self.data is None:
-            raise Error("cannot release already-released object")
-        data = self.data
-        self.data = None
-        return data
-
-    def get_ctx(self):
-        return self.context
-
-    def __eq__(self, other):
-        return (type(self) == type(other) and self.data == other.data)
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-
-class Context(object):
-    def __init__(self, _data=None):
-        if _data is None:
-            new_ctx = Context.alloc()
-            _data = new_ctx.data
-            new_ctx._release()
-        self.data = _data
-
-    def get_ctx(self):
-        return self
-
-    def _release(self):
-        self.data = None
-
-    def _reset(self, data):
-        self.data = data
-
-    def __del__(self):
-        if self.data is not None:
-            lib.isl_ctx_free(self.data)
-
-    def __eq__(self, other):
-        return self.data == other.data
-
-
-class _EnumBase(object):
-    @classmethod
-    def find_value(cls, v):
-        for name in dir(cls):
-            if getattr(cls, name) == v:
-                return name
-
-        raise ValueError("Value '%s' not found in enum" % v)
-
-
-class _ManagedCString(object):
-    def __init__(self, cdata):
-        if is_win:
-            self.data = libc._strdup(cdata)
-        else:
-            self.data = libc.strdup(cdata)
-        if self.data == libc_ffi.NULL:
-            raise Error("strdup() failed")
-
-    def release(self):
-        if self.data is None:
-            raise Error("cannot release already-released object")
-
-        data = self.data
-        self.data = None
-        return data
-
-    def __del__(self):
-        libc.free(self.data)
-
-
-if _PY3:
-    class DelayedKeyboardInterrupt(object):
-        def __enter__(self):
-            self.previous_switch_interval = sys.getswitchinterval()
-            sys.setswitchinterval(10000000)
-
-        def __exit__(self, type, value, traceback):
-            sys.setswitchinterval(self.previous_switch_interval)
-else:
-    class DelayedKeyboardInterrupt(object):
-        def __enter__(self):
-            self.previous_check_interval = sys.getcheckinterval()
-            sys.setcheckinterval(100000000)
-
-        def __exit__(self, type, value, traceback):
-            sys.setcheckinterval(self.previous_check_interval)
-
-"""
+# }}}
 
 SAFE_TYPES = list(ENUMS) + ["int", "unsigned", "uint32_t", "size_t", "double",
         "long", "unsigned long", "isl_size"]
 SAFE_IN_TYPES = SAFE_TYPES + ["const char *", "char *"]
 
-
-SPECIAL_CLASS_NAME_MAP = {
-        "ctx": "Context"
-        }
-
-
-def isl_class_to_py_class(cls_name):
-    if cls_name.startswith("isl_"):
-        cls_name = cls_name[4:]
-
-    try:
-        return SPECIAL_CLASS_NAME_MAP[cls_name]
-    except KeyError:
-        result = cls_name.title().replace("_", "")
-        result = result.replace("Qpoly", "QPoly")
-        return result
-
-
-# {{{ parser
+# {{{ parser helpers
 
 DECL_RE = re.compile(r"""
     (?:__isl_overload\s*)?
@@ -568,12 +283,7 @@ FUNC_PTR_RE = re.compile(r"""
     \)
     """,
     re.VERBOSE)
-STRUCT_DECL_RE = re.compile(
-    r"(__isl_export\s+)?"
-    r"struct\s+"
-    r"(__isl_export\s+)?"
-    r"(__isl_subclass\([a-z_ ]+\)\s+)?"
-    r"([a-z_A-Z0-9]+)\s*;")
+STRUCT_DECL_RE = re.compile(r"(__isl_export\s+)?struct\s+([a-z_A-Z0-9]+)\s*;")
 ARG_RE = re.compile(r"^((?:\w+)\s+)+(\**)\s*(\w+)$")
 INLINE_SEMICOLON_RE = re.compile(r"\;[ \t]*(?=\w)")
 SUBCLASS_RE = re.compile(
@@ -619,22 +329,6 @@ def split_at_unparenthesized_commas(s):
     yield s[last_start:i]
 
 
-class BadArg(ValueError):
-    pass
-
-
-class Retry(ValueError):
-    pass
-
-
-class Undocumented(ValueError):
-    pass
-
-
-class SignatureNotSupported(ValueError):
-    pass
-
-
 def parse_arg(arg):
     if "(*" in arg:
         arg_match = FUNC_PTR_RE.match(arg)
@@ -660,24 +354,16 @@ def parse_arg(arg):
     words = arg.split()
     semantics, words = filter_semantics(words)
 
-    decl_words = []
-    if words[0] in ["struct", "enum"]:
-        decl_words.append(words.pop(0))
+    words = [w for w in words if w not in ["struct", "enum"]]
 
     rebuilt_arg = " ".join(words)
     arg_match = ARG_RE.match(rebuilt_arg)
-
-    base_type = arg_match.group(1).strip()
-
-    if base_type == "isl_args":
-        raise BadArg("isl_args not supported")
 
     assert arg_match is not None, rebuilt_arg
     return Argument(
             name=arg_match.group(3),
             semantics=semantics,
-            decl_words=decl_words,
-            base_type=base_type,
+            base_type=arg_match.group(1).strip(),
             ptr=arg_match.group(2).strip())
 
 
@@ -719,15 +405,16 @@ def preprocess_with_macros(macro_header_contents, code):
 
     return sio_output.getvalue()
 
+# }}}
+
+
+# {{{ FunctionData (includes parser)
 
 class FunctionData:
     def __init__(self, include_dirs):
         self.classes_to_methods = {}
         self.include_dirs = include_dirs
         self.seen_c_names = set()
-
-        # used in setup.py
-        self.headers = []
 
     def get_header_contents(self, fname):
         from os.path import join
@@ -779,9 +466,6 @@ class FunctionData:
         try:
             with open(prepro_fname, "rt") as inf:
                 return inf.read()
-        except IOError:
-            # Python 2
-            pass
         except OSError:
             pass
 
@@ -798,9 +482,9 @@ class FunctionData:
 
         return prepro_header
 
-    def read_header(self, fname):
-        self.headers.append(fname)
+    # {{{ read_header
 
+    def read_header(self, fname):
         lines = self.get_preprocessed_header(fname).split("\n")
 
         # heed continuations, split at semicolons
@@ -874,6 +558,10 @@ class FunctionData:
                 if not STRUCT_DECL_RE.search(decl):
                     self.parse_decl(decl)
 
+    # }}}
+
+    # {{{ parse_decl
+
     def parse_decl(self, decl):
         decl_match = DECL_RE.match(decl)
         if decl_match is None:
@@ -921,12 +609,13 @@ class FunctionData:
         assert c_name.startswith("isl_"), c_name
         name = c_name[4:]
 
-        found_class = False
-        for cls in CLASSES:
-            if name.startswith(cls):
-                found_class = True
-                name = name[len(cls)+1:]
-                break
+        # find longest class name match
+        class_name = None
+        for it_cls_name in CLASSES:
+            if (name.startswith(it_cls_name)
+                    and (class_name is None
+                        or len(class_name) < len(it_cls_name))):
+                class_name = it_cls_name
 
         # Don't be tempted to chop off "_val"--the "_val" versions of
         # some methods are incompatible with the isl_int ones.
@@ -938,36 +627,35 @@ class FunctionData:
         # To avoid breaking user code in non-obvious ways, the new
         # names are carried over to the Python level.
 
-        if not found_class:
+        if class_name is not None:
+            name = name[len(class_name)+1:]
+        else:
             if name.startswith("bool_"):
                 return
             if name.startswith("options_"):
-                found_class = True
-                cls = "ctx"
+                class_name = "ctx"
                 name = name[len("options_"):]
             elif name.startswith("equality_") or name.startswith("inequality_"):
-                found_class = True
-                cls = "constraint"
+                class_name = "constraint"
             elif name == "ast_op_type_set_print_name":
-                found_class = True
-                cls = "printer"
+                class_name = "printer"
                 name = "ast_op_type_set_print_name"
 
-        if name.startswith("2"):
-            name = "two_"+name[1:]
+        assert class_name is not None
 
-        assert found_class, name
+        if name in ["free", "cow"]:
+            return
 
         try:
             args = [parse_arg(arg) for arg in args]
         except BadArg:
-            print("SKIP: %s %s" % (cls, name))
+            print("SKIP: %s %s" % (class_name, name))
             return
 
         if name in PYTHON_RESERVED_WORDS:
             name = name + "_"
 
-        if cls == "options":
+        if class_name == "options":
             assert name.startswith("set_") or name.startswith("get_"), (name, c_name)
             name = name[:4]+"option_"+name[4:]
 
@@ -982,363 +670,227 @@ class FunctionData:
             words.remove("__isl_constructor")
 
         return_semantics, words = filter_semantics(words)
-        return_decl_words = []
-        if words[0] in ["struct", "enum"]:
-            return_decl_words.append(words.pop(0))
+        words = [w for w in words if w not in ["struct", "enum"]]
         return_base_type = " ".join(words)
 
-        cls_meth_list = self.classes_to_methods.setdefault(cls, [])
+        cls_meth_list = self.classes_to_methods.setdefault(class_name, [])
 
         if c_name in self.seen_c_names:
             return
 
         cls_meth_list.append(Method(
-                cls, name, c_name,
-                return_semantics, return_decl_words, return_base_type, return_ptr,
+                class_name, name, c_name,
+                return_semantics, return_base_type, return_ptr,
                 args, is_exported=is_exported, is_constructor=is_constructor))
 
         self.seen_c_names.add(c_name)
 
-# }}}
-
-
-# {{{ header writer
-
-def write_enums_to_header(header_f):
-    for enum_name, value_str in ENUMS.items():
-        values = [v.strip() for v in value_str.split(",") if v.strip()]
-
-        if enum_name not in MACRO_ENUMS:
-            if enum_name in TYPEDEFD_ENUMS:
-                pattern = "typedef enum {{ {values}, ... }} {name};\n"
-            else:
-                pattern = "enum {name} {{ {values}, ... }};\n"
-
-            header_f.write(
-                    pattern.format(
-                        name=enum_name,
-                        values=", ".join(values)))
-        else:
-            for v in values:
-                header_f.write("static const int {name};".format(name=v))
-
-
-def write_classes_to_header(header_f):
-    for cls_name in CLASSES:
-        header_f.write("struct isl_{name};\n".format(name=cls_name))
-        if cls_name not in UNTYPEDEFD_CLASSES:
-            header_f.write(
-                    "typedef struct isl_{name} isl_{name};\n"
-                    .format(name=cls_name))
-
-
-def write_method_header(header_f, method):
-    header_f.write(
-            "{return_decl_words} {ret_type} {ret_ptr}{name}({args});\n"
-            .format(
-                return_decl_words=" ".join(method.return_decl_words),
-                ret_type=method.return_base_type,
-                ret_ptr=method.return_ptr,
-                name=method.c_name,
-                args=", ".join(arg.c_declarator() for arg in method.args)))
+    # }}}
 
 # }}}
 
 
-# {{{ python wrapper writer
+# {{{ get_callback
 
-def write_enums_to_wrapper(wrapper_f):
-    gen = PythonCodeGenerator()
-
-    gen("")
-    gen("# {{{ enums")
-    gen("")
-    for enum_name, value_str in ENUMS.items():
-        values = [v.strip() for v in value_str.split(",") if v.strip()]
-
-        assert enum_name.startswith("isl_")
-        name = enum_name[4:]
-
-        if name == "bool":
-            continue
-
-        from os.path import commonprefix
-        common_len = len(commonprefix(values))
-
-        gen("class {name}(_EnumBase):".format(name=name))
-        with Indentation(gen):
-            for val in values:
-                py_name = val[common_len:]
-                if py_name in PYTHON_RESERVED_WORDS:
-                    py_name += "_"
-                gen(
-                        "{py_name} = lib.{val}"
-                        .format(
-                            val=val,
-                            py_name=py_name,
-                            ))
-
-        gen("")
-
-    gen("# }}}")
-    gen("")
-    wrapper_f.write(gen.get())
-
-
-def write_classes_to_wrapper(wrapper_f):
-    gen = PythonCodeGenerator()
-
-    gen("# {{{ declare classes")
-    gen("")
-    for cls_name in CLASSES:
-        if cls_name == "ctx":
-            continue
-        py_cls = isl_class_to_py_class(cls_name)
-        gen("class {cls}(_ISLObjectBase):".format(cls=py_cls))
-        with Indentation(gen):
-            gen("_base_name = "+repr(cls_name))
-            gen("")
-
-            if cls_name == "ctx":
-                gen("""
-                    def __del__(self):
-                        if self.data is not None:
-                            self._release()
-                    """)
-                gen("")
-
-            else:
-                gen("""
-                    def __del__(self):
-                        if self.data is not None:
-                            lib.isl_{cls}_free(self.data)
-                    """
-                    .format(cls=cls_name))
-                gen("")
-
-            if cls_name not in NON_COPYABLE:
-                gen("""
-                    def _copy(self):
-                        assert self.data is not None
-
-                        data = lib.isl_{cls}_copy(self.data)
-                        if data == ffi.NULL:
-                            raise Error("failed to copy instance of {py_cls}")
-
-                        return {py_cls}(_data=data, context=self.get_ctx())
-                    """
-                    .format(cls=cls_name, py_cls=py_cls))
-
-                gen("")
-
-    gen("")
-    gen("# }}}")
-    gen("")
-    gen("")
-
-    wrapper_f.write(gen.get())
-
-
-def gen_conversions(gen, tgt_cls, name):
-    conversions = IMPLICIT_CONVERSIONS.get(tgt_cls, [])
-    for src_cls, conversion_method in conversions:
-        gen_conversions(gen, src_cls, name)
-
-        gen("""
-            if isinstance({name}, {py_src_cls}):
-                {name} = {py_cls}.{conversion_method}({name})
-            """
-            .format(
-                name=name,
-                py_src_cls=isl_class_to_py_class(src_cls),
-                py_cls=isl_class_to_py_class(tgt_cls),
-                conversion_method=conversion_method))
-
-
-def gen_callback_wrapper(gen, cb, func_name, has_userptr):
+def get_callback(cb_name, cb):
+    pre_call = []
     passed_args = []
-    input_args = []
+    post_call = []
 
-    if has_userptr:
-        assert cb.args[-1].name == "user"
-
-    pre_call = PythonCodeGenerator()
-    post_call = PythonCodeGenerator()
+    assert cb.args[-1].name == "user"
 
     for arg in cb.args[:-1]:
-        if arg.base_type.startswith("isl_") and arg.ptr == "*":
-            input_args.append(arg.name)
-            passed_args.append("_py_%s" % arg.name)
+        if arg.base_type.startswith("isl_"):
+            if arg.ptr != "*":
+                raise SignatureNotSupported("unsupported callback arg: %s %s" % (
+                    arg.base_type, arg.ptr))
+            arg_cls = arg.base_type[4:]
 
-            pre_call(
-                    "_py_{name} = {py_cls}(_data={name}, context=_ctx)"
-                    .format(
-                        name=arg.name,
-                        py_cls=isl_class_to_py_class(arg.base_type)))
+            passed_args.append("arg_%s" % arg.name)
+
+            pre_call.append("""
+                %(arg_cls)s *wrapped_arg_%(name)s(new %(arg_cls)s(c_arg_%(name)s));
+                py::object arg_%(name)s(
+                    handle_from_new_ptr(wrapped_arg_%(name)s));
+                """ % dict(
+                    arg_cls=arg_cls,
+                    name=arg.name,
+                    ))
 
             if arg.semantics is SEM_TAKE:
                 # We (the callback) are supposed to free the object, so
-                # just keep it attached to its wrapper until GC gets
-                # rid of it.
+                # just let the unique_ptr get rid of it.
                 pass
             elif arg.semantics is SEM_KEEP:
-                # The caller wants to keep this object, so we'll stop managing
-                # it.
-                post_call("_py_{name}._release()".format(name=arg.name))
+                # The caller wants to keep this object, so we simply tell our
+                # wrapper to stop managing it after the call completes.
+                post_call.append("""
+                    wrapped_arg_%(name)s->invalidate();
+                    """ % {"name": arg.name})
             else:
-                raise SignatureNotSupported(
-                        "callback arg semantics not understood: %s" % arg.semantics)
+                raise SignatureNotSupported("unsupported callback arg semantics")
 
         else:
             raise SignatureNotSupported("unsupported callback arg: %s %s" % (
                 arg.base_type, arg.ptr))
 
-    if has_userptr:
-        input_args.append("user")
-
-    if cb.return_base_type in SAFE_IN_TYPES and cb.return_ptr == "":
-        failure_return = "lib.isl_stat_error"
-
-        post_call("""
-            if _result is None:
-                _result = lib.isl_stat_ok
-            """)
+    if cb.return_base_type in SAFE_IN_TYPES and not cb.return_ptr:
+        ret_type = "%s %s" % (cb.return_base_type, cb.return_ptr)
+        if cb.return_base_type == "isl_stat":
+            post_call.append("""
+                if (retval.ptr() == Py_None)
+                {
+                    return isl_stat_ok;
+                }
+                """)
+        else:
+            post_call.append("""
+                if (retval.ptr() == Py_None)
+                {
+                    throw isl::error("callback returned None");
+                }
+                """)
+        post_call.append("""
+                else
+                    return py::cast<%(ret_type)s>(retval);
+            """ % {
+                "ret_type": ret_type,
+                }
+            )
+        if cb.return_base_type == "isl_bool":
+            error_return = "isl_bool_error"
+        else:
+            error_return = "isl_stat_error"
 
     elif cb.return_base_type.startswith("isl_") and cb.return_ptr == "*":
-        failure_return = "ffi.NULL"
-
-        ret_py_cls = isl_class_to_py_class(cb.return_base_type)
-
         if cb.return_semantics is None:
             raise SignatureNotSupported("callback return with unspecified semantics")
         elif cb.return_semantics is not SEM_GIVE:
             raise SignatureNotSupported("callback return with non-GIVE semantics")
 
-        post_call("""
-            if _result is None:
-                _result = ffi.NULL
-            elif not isinstance(_result, {py_cls}):
-                raise IslTypeError("return value is not a {py_cls}")
-            else:
-                _result = _result._release()
-            """
-            .format(py_cls=ret_py_cls))
+        ret_type = "%s %s" % (cb.return_base_type, cb.return_ptr)
+        post_call.append("""
+            if (retval.ptr() == Py_None)
+            {
+                return nullptr;
+            }
+            else
+            {
+                isl::%(ret_type_name)s *wrapper_retval =
+                    py::cast<isl::%(ret_type_name)s *>(retval);
+                isl_%(ret_type_name)s *unwrapped_retval =
+                    wrapper_retval->m_data;
+                wrapper_retval->invalidate();
+                return unwrapped_retval;
+            }
+            """ % {
+                "ret_type_name": cb.return_base_type[4:],
+                }
+            )
+        error_return = "nullptr"
 
     else:
-        raise SignatureNotSupported("unsupported callback signature")
+        raise SignatureNotSupported("non-int callback")
 
-    gen(
-            "def {func_name}({input_args}):"
-            .format(
-                func_name=func_name,
-                input_args=", ".join(input_args)))
+    return """
+        static %(ret_type)s %(cb_name)s(%(input_args)s)
+        {
+            py::object py_cb = py::reinterpret_borrow<py::object>(
+                (PyObject *) c_arg_user);
+            try
+            {
+              %(pre_call)s
+              py::object retval = py_cb(%(passed_args)s);
+              %(post_call)s
+            }
+            catch (py::error_already_set &err)
+            {
+              std::cout << "[islpy warning] A Python exception occurred in "
+                "a call back function, ignoring:" << std::endl;
+              PyErr_Print();
+              return %(error_return)s;
+            }
+            catch (std::exception &e)
+            {
+              std::cerr << "[islpy] An exception occurred in "
+                "a Python callback query:" << std::endl
+                << e.what() << std::endl;
+              std::cout << "[islpy] Aborting now." << std::endl;
+              return %(error_return)s;
+            }
+        }
+        """ % dict(
+                ret_type=ret_type,
+                cb_name=cb_name,
+                input_args=(
+                    ", ".join("%s %sc_arg_%s" % (arg.base_type, arg.ptr, arg.name)
+                        for arg in cb.args)),
+                pre_call="\n".join(pre_call),
+                passed_args=", ".join(passed_args),
+                post_call="\n".join(post_call),
+                error_return=error_return,
+                )
 
-    with Indentation(gen):
-        gen("try:")
-        with Indentation(gen):
-            gen.extend(pre_call)
-            gen(
-                    "_result = {name}({passed_args})"
-                    .format(name=cb.name, passed_args=", ".join(passed_args)))
-
-            gen.extend(post_call)
-
-            gen("return _result")
-
-        gen("""
-            except Exception as e:
-                import sys
-                sys.stderr.write("[WARNING] An exception occurred "
-                    "in a callback function."
-                    "This exception was ignored.\\n")
-                sys.stderr.flush()
-                import traceback
-                traceback.print_exc()
-
-                return {failure_return}
-            """.format(failure_return=failure_return))
-
-    gen("")
+# }}}
 
 
-def write_method_wrapper(gen, cls_name, meth):
-    pre_call = PythonCodeGenerator()
+# {{{ wrapper generator
 
-    # There are two post-call phases, "safety", and "check". The "safety"
-    # phase's job is to package up all the data returned by the function
-    # called. No exceptions may be raised before safety ends.
-    #
-    # Next, the "check" phase will perform error checking and may raise exceptions.
-    safety = PythonCodeGenerator()
-    check = PythonCodeGenerator()
+def write_wrapper(outf, meth):
+    body = []
+    checks = []
     docs = []
 
     passed_args = []
     input_args = []
-    doc_args = []
-    ret_vals = []
-    ret_descrs = []
+    post_call = []
+    extra_ret_vals = []
+    extra_ret_descrs = []
+    preamble = []
 
-    def emit_context_check(arg_idx, arg_name):
-        if arg_idx == 0:
-            pre_call("_ctx = {arg_name}.get_ctx()".format(arg_name=arg_name))
-        else:
-            pre_call("""
-                if _ctx != {arg_name}.get_ctx():
-                    raise Error("mismatched context in {arg_name}")
-                """.format(arg_name=arg_name))
+    arg_names = []
 
     arg_idx = 0
     while arg_idx < len(meth.args):
         arg = meth.args[arg_idx]
+        arg_names.append(arg.name)
 
         if isinstance(arg, CallbackArgument):
             has_userptr = (
                     arg_idx + 1 < len(meth.args)
-                    and meth.args[arg_idx+1].name == "user")
-            if has_userptr:
+                    and meth.args[arg_idx+1].name.endswith("user"))
+            if not has_userptr:
+                raise SignatureNotSupported(
+                        "callback signature without user pointer")
+            else:
                 arg_idx += 1
 
-            cb_wrapper_name = "_cb_wrapper_"+arg.name
+            if meth.args[arg_idx].name != "user":
+                raise SignatureNotSupported("unexpected callback signature")
 
-            gen_callback_wrapper(pre_call, arg, cb_wrapper_name, has_userptr)
-
-            pre_call(
-                '_cb_{name} = ffi.callback("{cb_decl}")({cb_wrapper_name})'
-                .format(
-                    name=arg.name, cb_decl=arg.c_declarator(),
-                    cb_wrapper_name=cb_wrapper_name
-                    ))
+            cb_name = "cb_%s_%s_%s" % (meth.cls, meth.name, arg.name)
 
             if (meth.cls in ["ast_build", "ast_print_options"]
                     and meth.name.startswith("set_")):
-                # These callbacks need to outlive the set call.
-                # Store them on the instance.
-                ret_vals.append("_cb_"+arg.name)
-                ret_descrs.append(":class:`ffi_callback_handle`")
+                extra_ret_vals.append("py_%s" % arg.name)
+                extra_ret_descrs.append("(opaque handle to "
+                        "manage callback lifetime)")
 
-            input_args.append(arg.name)
+            input_args.append("py::object py_%s" % arg.name)
+            passed_args.append(cb_name)
+            passed_args.append("py_%s.ptr()" % arg.name)
 
-            passed_args.append("_cb_"+arg.name)
-            if has_userptr:
-                passed_args.append("ffi.NULL")
+            preamble.append(get_callback(cb_name, arg))
 
-            docs.append(":param %s: callback(%s) -> %s"
-                    % (
-                        arg.name,
-                        ", ".join(
-                            sub_arg.name
-                            for sub_arg in arg.args
-                            if sub_arg.name != "user"),
-                        arg.return_base_type
-                        ))
+            docs.append(":param %s: callback(%s)"
+                    % (arg.name, ", ".join(
+                        sub_arg.name
+                        for sub_arg in arg.args
+                        if sub_arg.name != "user")))
 
         elif arg.base_type in SAFE_IN_TYPES and not arg.ptr:
-            passed_args.append(arg.name)
-            input_args.append(arg.name)
-            doc_args.append(arg.name)
-
-            pre_call("# no argument processing for {0}".format(arg.name))
+            passed_args.append("arg_"+arg.name)
+            input_args.append("%s arg_%s" % (arg.base_type, arg.name))
 
             doc_cls = arg.base_type
             if doc_cls.startswith("isl_"):
@@ -1347,131 +899,148 @@ def write_method_wrapper(gen, cls_name, meth):
             docs.append(":param %s: :class:`%s`" % (arg.name, doc_cls))
 
         elif arg.base_type in ["char", "const char"] and arg.ptr == "*":
-            c_name = "_cstr_"+arg.name
-
-            pre_call('{c_name} = ffi.new("char[]", {arg_name}.encode())'
-                    .format(c_name=c_name, arg_name=arg.name))
-
-            if arg.semantics is SEM_TAKE:
-                pre_call(
-                        "{c_name} = _ManagedCString({c_name})"
-                        .format(c_name=c_name))
-                passed_args.append(c_name + "._release()")
+            if arg.semantics is SEM_KEEP:
+                passed_args.append("strdup(%s)" % arg.name)
             else:
-                passed_args.append(c_name)
-            input_args.append(arg.name)
+                passed_args.append(arg.name)
+            input_args.append("%s *%s" % (arg.base_type, arg.name))
 
             docs.append(":param %s: string" % arg.name)
 
-        elif (arg.base_type == "isl_bool" or arg.base_type == "int") and arg.ptr == "*":
+        elif arg.base_type in ["int", "isl_bool"] and arg.ptr == "*":
             if arg.name in ["exact", "tight"]:
-                c_name = "c{base_type}_".format(base_type=arg.base_type) + arg.name
-                pre_call('{c_name} = ffi.new("{base_type}[1]")'
-                    .format(c_name=c_name, base_type=arg.base_type))
-
-                passed_args.append(c_name)
+                body.append("%s arg_%s;" % (arg.base_type, arg.name))
+                passed_args.append("&arg_%s" % arg.name)
                 if arg.base_type == "isl_bool":
-                    ret_vals.append("({c_name}[0] == lib.isl_bool_true)"
-                        .format(c_name=c_name))
-                    ret_descrs.append("%s (bool)" % arg.name)
-                    check('if {c_name}[0] == lib.isl_bool_error:'.format(c_name=c_name))
-                    with Indentation(check):
-                        check('raise Error("call to \\"{0}\\" failed: %s" '
-                                '% _get_last_error_str(_ctx.data))'.format(meth.c_name))
+                    extra_ret_vals.append("(bool) arg_%s" % arg.name)
                 else:
-                    ret_vals.append("{c_name}[0]".format(c_name=c_name))
-                    ret_descrs.append("%s (integer)" % arg.name)
+                    extra_ret_vals.append("arg_%s" % arg.name)
+                extra_ret_descrs.append("%s (%s)" % (
+                    arg.name, to_py_class(arg.base_type)))
+                arg_names.pop()
             else:
-                raise SignatureNotSupported("{base_type} *".format(base_type=arg.base_type))
+                raise SignatureNotSupported("int *")
 
         elif arg.base_type == "isl_val" and arg.ptr == "*" and arg_idx > 0:
             # {{{ val input argument
 
-            val_name = "_val_" + arg.name
-            fmt_args = dict(
-                    arg0_name=meth.args[0].name,
+            arg_descr = ":param %s: :class:`Val`" % arg.name
+            input_args.append("py::object py_%s" % arg.name)
+            checks.append("""
+                std::unique_ptr<val> unique_arg_%(name)s;
+                isl_ctx *ctx_for_%(name)s =
+                    %(first_arg_base_type)s_get_ctx(arg_%(first_arg)s.m_data);
+
+                try
+                {
+                    val *arg_%(name)s = py::cast<val *>(py_%(name)s);
+                    isl_val *tmp_ptr = isl_val_copy(arg_%(name)s->m_data);
+                    if (!tmp_ptr)
+                        throw isl::error("failed to copy arg %(name)s");
+                    unique_arg_%(name)s = std::unique_ptr<val>(new val(tmp_ptr));
+                }
+                catch (py::cast_error &err)
+                {
+                    // fall through to next case
+                }
+
+                try
+                {
+                    if (!unique_arg_%(name)s.get())
+                    {
+                        isl_val *tmp_ptr = isl_val_int_from_si(ctx_for_%(name)s,
+                          py::cast<long>(py_%(name)s));
+                        if (!tmp_ptr)
+                            throw isl::error("failed to create arg "
+                                "%(name)s from integer");
+                        unique_arg_%(name)s = std::unique_ptr<val>(new val(tmp_ptr));
+                    }
+                }
+                catch (py::cast_error &err)
+                {
+                    throw isl::error("unrecognized argument for %(name)s");
+                }
+                """ % dict(
                     name=arg.name,
-                    val_name=val_name)
+                    first_arg_base_type=meth.args[0].base_type,
+                    first_arg=meth.args[0].name,
+                    ))
 
-            pre_call("if isinstance({name}, Val):".format(**fmt_args))
-
-            with Indentation(pre_call):
-                emit_context_check(arg_idx, arg.name)
-                pre_call("{val_name} = {name}._copy()".format(**fmt_args))
-
-            pre_call("""
-                else:
-                    try:
-                        {name} = _operator.index({name})
-                    except TypeError:
-                        raise IslTypeError("{name} is a %s and cannot "
-                            "be cast to a Val" % _type({name}))
-
-                    _cdata_{name} = lib.isl_val_int_from_si(
-                        {arg0_name}.get_ctx().data, {name})
-
-                    if _cdata_{name} == ffi.NULL:
-                        raise Error("isl_val_int_from_si failed")
-
-                    {val_name} = Val(_data=_cdata_{name}, context=_ctx)
-                """
-                .format(**fmt_args))
+            if arg.semantics is None and arg.base_type != "isl_ctx":
+                raise Undocumented(meth)
 
             if arg.semantics is SEM_TAKE:
-                passed_args.append(val_name + "._release()")
-            else:
-                passed_args.append(val_name + ".data")
-            input_args.append(arg.name)
+                post_call.append("unique_arg_%s.release();" % arg.name)
 
-            docs.append(":param %s: :class:`Val`" % arg.name)
+            passed_args.append("unique_arg_%s->m_data" % arg.name)
+            docs.append(arg_descr)
 
             # }}}
 
         elif arg.base_type.startswith("isl_") and arg.ptr == "*":
             # {{{ isl types input arguments
 
-            gen_conversions(pre_call, arg.base_type, arg.name)
-
-            arg_py_cls = isl_class_to_py_class(arg.base_type)
-            pre_call("""
-                if not isinstance({name}, {py_cls}):
-                    raise IslTypeError("{name} is not a {py_cls}")
-                """
-                .format(name=arg.name, py_cls=arg_py_cls))
-
-            emit_context_check(arg_idx, arg.name)
-
             arg_cls = arg.base_type[4:]
-            arg_descr = ":param %s: :class:`%s`" % (
-                    arg.name, isl_class_to_py_class(arg_cls))
+            arg_descr = ":param %s: :class:`%s`" % (arg.name, to_py_class(arg_cls))
 
-            if arg.semantics is None and arg.base_type != "isl_ctx":
-                raise Undocumented(meth)
-
-            copyable = arg_cls not in NON_COPYABLE
-            if arg.semantics is SEM_TAKE:
-                if copyable:
-                    copy_name = "_copy_"+arg.name
-                    pre_call('{copy_name} = {name}._copy()'
-                            .format(copy_name=copy_name, name=arg.name))
-
-                    passed_args.append(copy_name+"._release()")
-
-                else:
-                    if not (arg_idx == 0 and meth.is_mutator):
-                        passed_args.append(arg.name+"._release()")
-                        arg_descr += " (mutated in-place)"
-                    else:
-                        passed_args.append(arg.name+".data")
-                        arg_descr += " (:ref:`becomes invalid <auto-invalidation>`)"
-
-            elif arg.semantics is SEM_KEEP or arg.semantics is None:
-                passed_args.append("%s.data" % arg.name)
+            if arg_idx == 0 and meth.is_mutator:
+                arg_descr += " (mutated in-place)"
+                input_args.append("py::object py_%s" % arg.name)
+                checks.append("""
+                    isl::%(cls)s &arg_%(name)s(
+                        py::cast<isl::%(cls)s &>(py_%(name)s));
+                    if (!arg_%(name)s.is_valid())
+                      throw isl::error(
+                        "passed invalid arg to isl_%(meth)s for %(name)s");
+                    """ % dict(
+                        name=arg.name,
+                        meth="%s_%s" % (meth.cls, meth.name),
+                        cls=arg_cls))
+                passed_args.append("arg_%s.m_data" % arg.name)
+                post_call.append("arg_%s.invalidate();" % arg.name)
+                arg_descr += " (mutated in-place)"
 
             else:
-                raise RuntimeError("unexpected semantics: %s" % arg.semantics)
+                if arg.semantics is None and arg.base_type != "isl_ctx":
+                    raise Undocumented(meth)
 
-            input_args.append(arg.name)
+                checks.append("""
+                    if (!arg_%(name)s.is_valid())
+                      throw isl::error(
+                        "passed invalid arg to isl_%(meth)s for %(name)s");
+                    """ % dict(name=arg.name, meth="%s_%s" % (meth.cls, meth.name)))
+
+                if arg.semantics is SEM_TAKE:
+                    if arg_cls not in NON_COPYABLE:
+                        input_args.append(
+                                "%s const &%s" % (arg_cls, "arg_"+arg.name))
+                        checks.append("""
+                            std::unique_ptr<%(cls)s> auto_arg_%(name)s;
+                            {
+                                isl_%(cls)s *tmp_ptr =
+                                    isl_%(cls)s_copy(arg_%(name)s.m_data);
+                                if (!tmp_ptr)
+                                    throw isl::error("failed to copy arg "
+                                        "%(name)s on entry to %(meth)s");
+                                auto_arg_%(name)s = std::unique_ptr<%(cls)s>(
+                                    new %(cls)s(tmp_ptr));
+                            }
+                            """ % dict(
+                                name=arg.name,
+                                meth="%s_%s" % (meth.cls, meth.name),
+                                cls=arg_cls))
+
+                        post_call.append("auto_arg_%s.release();" % arg.name)
+                        passed_args.append("auto_arg_%s->m_data" % arg.name)
+
+                    else:
+                        input_args.append("%s &%s" % (arg_cls, "arg_"+arg.name))
+                        post_call.append("arg_%s.invalidate();" % arg.name)
+                        passed_args.append("arg_%s.m_data" % arg.name)
+                        arg_descr += " (:ref:`becomes invalid <auto-invalidation>`)"
+                else:
+                    passed_args.append("arg_%s.m_data" % arg.name)
+                    input_args.append("%s const &%s" % (arg_cls, "arg_"+arg.name))
 
             docs.append(arg_descr)
 
@@ -1483,149 +1052,247 @@ def write_method_wrapper(gen, cls_name, meth):
             if arg.semantics is not SEM_GIVE:
                 raise SignatureNotSupported("non-give secondary ptr return value")
 
-            pre_call(
-                    '_retptr_{name} = ffi.new("{cls} **")'
-                    .format(name=arg.name, cls=arg.base_type))
+            ret_cls = arg.base_type[4:]
 
-            passed_args.append("_retptr_{name}".format(name=arg.name))
+            arg_names.pop()
+            body.append("%s *ret_%s;" % (arg.base_type, arg.name))
+            passed_args.append("&ret_%s" % arg.name)
 
-            py_cls = isl_class_to_py_class(arg.base_type)
-            safety("""
-                if _retptr_{name} == ffi.NULL:
-                    _ret_{name} = None
-                else:
-                    _ret_{name} = {py_cls}(_data=_retptr_{name}[0], context=_ctx)
-                """
-                .format(name=arg.name, cls=arg.base_type, py_cls=py_cls))
+            post_call.append("""
+                py::object py_ret_%(name)s;
+                if (ret_%(name)s)
+                {
+                  py_ret_%(name)s = handle_from_new_ptr(
+                      new %(ret_cls)s(ret_%(name)s));
+                }
+                """ % dict(name=arg.name, ret_cls=ret_cls))
 
-            ret_vals.append("_ret_" + arg.name)
-            ret_descrs.append("%s (:class:`%s`)" % (arg.name, py_cls))
+            extra_ret_vals.append("py_ret_%s" % arg.name)
+            extra_ret_descrs.append(
+                    "%s (:class:`%s`)" % (arg.name, to_py_class(ret_cls)))
 
             # }}}
+
+        elif arg.base_type == "FILE" and arg.ptr == "*":
+            if sys.version_info >= (3,):
+                raise SignatureNotSupported(
+                        "arg type %s %s" % (arg.base_type, arg.ptr))
+
+            passed_args.append("PyFile_AsFile(arg_%s.ptr())" % arg.name)
+            input_args.append("py::object %s" % ("arg_"+arg.name))
+            docs.append(":param %s: :class:`file`-like "
+                    "(NOTE: This will cease to be supported in Python 3.)"
+                    % arg.name)
 
         elif (arg.base_type == "void"
                 and arg.ptr == "*"
                 and arg.name == "user"):
-
-            passed_args.append("ffi.NULL")
-            input_args.append(arg.name)
-
-            pre_call("""
-                if {name} is not None:
-                    raise Error("passing non-None arguments for '{name}' "
-                        "is not yet supported")
-                """
-                .format(name=arg.name))
-
-            docs.append(":param %s: None" % arg.name)
+            body.append("Py_INCREF(arg_%s.ptr());" % arg.name)
+            passed_args.append("arg_%s.ptr()" % arg.name)
+            input_args.append("py::object %s" % ("arg_"+arg.name))
+            post_call.append("""
+                isl_%s_set_free_user(result, my_decref);
+                """ % meth.cls)
+            docs.append(":param %s: a user-specified Python object" % arg.name)
 
         else:
             raise SignatureNotSupported("arg type %s %s" % (arg.base_type, arg.ptr))
 
         arg_idx += 1
-        pre_call("")
+
+    processed_return_type = "%s %s" % (meth.return_base_type, meth.return_ptr)
+
+    if meth.return_base_type == "void" and not meth.return_ptr:
+        result_capture = ""
+    else:
+        result_capture = "%s %sresult = " % (meth.return_base_type, meth.return_ptr)
+
+    body = checks + body
+
+    body.append("%s%s(%s);" % (
+        result_capture, meth.c_name, ", ".join(passed_args)))
+
+    body += post_call
 
     # {{{ return value processing
 
-    if meth.return_base_type == "isl_stat" and not meth.return_ptr:
-        check("if _result == lib.isl_stat_error:")
-        with Indentation(check):
-            check('raise Error("call to \\"{0}\\" failed: %s" '
-                    '% _get_last_error_str(_ctx.data))'.format(meth.c_name))
+    if meth.return_base_type == "int" and not meth.return_ptr:
+        # {{{ integer return
+
+        if meth.name.startswith("is_") or meth.name.startswith("has_"):
+            processed_return_type = "bool"
+
+        ret_descr = processed_return_type
+
+        if extra_ret_vals:
+            if len(extra_ret_vals) == 1:
+                processed_return_type = "py::object"
+                body.append("return py::object(result, %s);" % extra_ret_vals[0])
+                ret_descr = extra_ret_descrs[0]
+            else:
+                processed_return_type = "py::object"
+                body.append("return py::make_tuple(result, %s);"
+                        % ", ".join(extra_ret_vals))
+                ret_descr = "tuple: (%s)" % (", ".join(extra_ret_descrs))
+        else:
+            body.append("return result;")
+
+        # }}}
+
+    elif meth.return_base_type == "isl_stat" and not meth.return_ptr:
+        # {{{ error code
+
+        body.append("""
+            if (result == isl_stat_error)
+            {
+              throw isl::error("call to isl_%(cls)s_%(name)s failed");
+            }""" % {"cls": meth.cls, "name": meth.name})
+
+        assert not (meth.name.startswith("is_") or meth.name.startswith("has_"))
+
+        ret_descr = processed_return_type
+
+        if extra_ret_vals:
+            if len(extra_ret_vals) == 1:
+                processed_return_type = "py::object"
+                body.append("return py::object(%s);" % extra_ret_vals[0])
+                ret_descr = extra_ret_descrs[0]
+            else:
+                processed_return_type = "py::object"
+                body.append("return py::make_tuple(%s);" % ", ".join(extra_ret_vals))
+                ret_descr = "tuple: (%s)" % (", ".join(extra_ret_descrs))
+        else:
+            body.append("return result;")
+
+        # }}}
 
     elif meth.return_base_type == "isl_bool" and not meth.return_ptr:
-        check("if _result == lib.isl_bool_error:")
-        with Indentation(check):
-            check('raise Error("call to \\"{0}\\" failed: %s" '
-                    '% _get_last_error_str(_ctx.data))'.format(meth.c_name))
+        # {{{ bool
 
-        ret_vals.insert(0, "_result == lib.isl_bool_true")
-        ret_descrs.insert(0, "bool")
+        body.append("""
+            if (result == isl_bool_error)
+            {
+              throw isl::error("call to isl_%(cls)s_%(name)s failed");
+            }""" % {"cls": meth.cls, "name": meth.name})
+
+        processed_return_type = "bool"
+        ret_descr = "bool"
+
+        if extra_ret_vals:
+            if len(extra_ret_vals) == 1:
+                processed_return_type = "py::object"
+                body.append("return py::object(%s);" % extra_ret_vals[0])
+                ret_descr = extra_ret_descrs[0]
+            else:
+                processed_return_type = "py::object"
+                body.append("return py::make_tuple(%s);" % ", ".join(extra_ret_vals))
+                ret_descr = "tuple: (%s)" % (", ".join(extra_ret_descrs))
+        else:
+            body.append("return result;")
+
+        # }}}
 
     elif meth.return_base_type in SAFE_TYPES and not meth.return_ptr:
-        ret_vals.insert(0, "_result")
-        ret_descrs.insert(0, meth.return_base_type)
+        # {{{ enums etc
 
-    elif (meth.return_base_type.startswith("isl_")
-            and meth.return_semantics is SEM_NULL):
-        assert not meth.is_mutator
+        if extra_ret_vals:
+            raise NotImplementedError("extra ret val with safe type")
 
-    elif meth.return_base_type.startswith("isl_") and meth.return_ptr == "*":
+        body.append("return result;")
+        ret_descr = processed_return_type
+
+        # }}}
+
+    elif meth.return_base_type.startswith("isl_"):
+        assert meth.return_ptr == "*", meth
+
         ret_cls = meth.return_base_type[4:]
 
         if meth.is_mutator:
-            if ret_vals:
+            if extra_ret_vals:
                 meth.mutator_veto = True
                 raise Retry()
 
-            safety("%s._reset(_result)" % meth.args[0].name)
+            processed_return_type = "py::object"
+            body.append("arg_%s.take_possession_of(result);" % meth.args[0].name)
+            body.append("return py_%s;" % meth.args[0].name)
 
-            ret_vals.insert(0, meth.args[0].name)
-            ret_descrs.insert(0,
-                    ":class:`%s` (self)" % isl_class_to_py_class(ret_cls))
+            ret_descr = ":class:`%s` (self)" % to_py_class(ret_cls)
         else:
+            processed_return_type = "py::object"
+            isl_obj_ret_val = \
+                    "handle_from_new_ptr(uptr_result.release())"
+
+            if extra_ret_vals:
+                isl_obj_ret_val = "py::make_tuple(%s, %s)" % (
+                        isl_obj_ret_val, ", ".join(extra_ret_vals))
+                ret_descr = "tuple: (:class:`%s`, %s)" % (
+                        to_py_class(ret_cls), ", ".join(extra_ret_descrs))
+            else:
+                ret_descr = ":class:`%s`" % to_py_class(ret_cls)
+
             if meth.return_semantics is None and ret_cls != "ctx":
                 raise Undocumented(meth)
 
             if meth.return_semantics is not SEM_GIVE and ret_cls != "ctx":
                 raise SignatureNotSupported("non-give return")
 
-            py_ret_cls = isl_class_to_py_class(ret_cls)
-            if ret_cls == "ctx":
-                safety(
-                    "_result = None if "
-                    "(_result == ffi.NULL or _result is None) "
-                    "else {0}(_data=_result)"
-                    .format(py_ret_cls))
-            else:
-                safety(
-                    "_result = None if "
-                    "(_result == ffi.NULL or _result is None) "
-                    "else {0}(_data=_result, context=_ctx)"
-                    .format(py_ret_cls))
-
-            check("""
-                if _result is None:
-                    raise Error("call to {c_method} failed: %s"
-                        % _get_last_error_str(_ctx.data))
-                """
-                .format(c_method=meth.c_name))
-
-            ret_vals.insert(0, "_result")
-            ret_descrs.insert(0,  ":class:`%s`" % py_ret_cls)
+            body.append("""
+                if (result)
+                {
+                    std::unique_ptr <isl::%(ret_cls)s>
+                        uptr_result(new %(ret_cls)s(result));
+                    return %(ret_val)s;
+                }
+                else
+                {
+                    throw isl::error("call to isl_%(cls)s_%(name)s failed");
+                }
+                """ % {
+                    "ret_cls": ret_cls,
+                    "ret_val": isl_obj_ret_val,
+                    "cls": meth.cls,
+                    "name": meth.name,
+                    })
 
     elif meth.return_base_type in ["const char", "char"] and meth.return_ptr == "*":
-        safety("""
-            if _result != ffi.NULL:
-                _str_ret = ffi.string(_result)
-            else:
-                _str_ret = None
-            """)
+        if extra_ret_vals:
+            raise NotImplementedError("extra ret val with string")
 
+        processed_return_type = "py::object"
+        body.append("""
+            if (result)
+              return py::cast(std::string(result));
+            else
+              return py::none();
+            """)
         if meth.return_semantics is SEM_GIVE:
-            safety("libc.free(_result)")
+            body.append("free(result);")
 
-        check("""
-            if _PY3 and _str_ret is not None:
-                _str_ret = _str_ret.decode()
-            """)
-
-        ret_vals.insert(0, "_str_ret")
-
-        ret_descrs.insert(0, "string")
+        ret_descr = "string"
 
     elif (meth.return_base_type == "void"
             and meth.return_ptr == "*"
             and meth.name == "get_user"):
 
-        raise SignatureNotSupported("get_user")
-        # body.append("""
-        #     return py::object(py::handle<>(py::borrowed((PyObject *) _result)));
-        #     """)
-        # ret_descr = "a user-specified python object"
+        body.append("""
+            return py::reinterpret_borrow<py::object>((PyObject *) result);
+            """)
+        ret_descr = "a user-specified python object"
+        processed_return_type = "py::object"
 
     elif meth.return_base_type == "void" and not meth.return_ptr:
-        pass
+        if extra_ret_vals:
+            processed_return_type = "py::object"
+            if len(extra_ret_vals) == 1:
+                body.append("return %s;" % extra_ret_vals[0])
+                ret_descr = extra_ret_descrs[0]
+            else:
+                body.append("return py::make_tuple(%s);"
+                        % ", ".join(extra_ret_vals))
+                ret_descr = "tuple: " + ", ".join(extra_ret_descrs)
+        else:
+            ret_descr = "None"
 
     else:
         raise SignatureNotSupported("ret type: %s %s in %s" % (
@@ -1633,88 +1300,102 @@ def write_method_wrapper(gen, cls_name, meth):
 
     # }}}
 
-    assert len(ret_vals) == len(ret_descrs)
+    outf.write("""
+        %s
+        %s %s_%s(%s)
+        {
+          %s
+        }
+        """ % (
+            "\n".join(preamble),
+            processed_return_type, meth.cls, meth.name,
+            ", ".join(input_args),
+            "\n".join(body)))
 
-    check("")
-    if len(ret_vals) == 0:
-        ret_descr = "(nothing)"
-
-    elif len(ret_vals) == 1:
-        check("return " + ret_vals[0])
-        ret_descr = ret_descrs[0]
-
-    else:
-        check("return " + ", ".join(ret_vals))
-        ret_descr = "(%s)" % ", ".join(ret_descrs)
-
-    docs = (["%s(%s)" % (meth.name, ", ".join(input_args)), ""]
+    docs = (["%s(%s)" % (meth.name, ", ".join(arg_names)), ""]
             + docs
             + [":return: %s" % ret_descr])
 
-    gen("def {name}({input_args}):"
-            .format(name=meth.name, input_args=", ".join(input_args)))
-    gen.indent()
-    gen(repr("\n".join(docs)))
-    gen("")
-    gen.extend(pre_call)
-    gen("")
-
-    gen("try:")
-    with Indentation(gen):
-        gen("_result = None")
-        gen("with DelayedKeyboardInterrupt():")
-        with Indentation(gen):
-            gen(
-                "_result = lib.{c_name}({args})"
-                .format(c_name=meth.c_name, args=", ".join(passed_args)))
-
-    gen("finally:")
-    with Indentation(gen):
-        if not (meth.return_base_type == "void" and not meth.return_ptr):
-            gen(r"""
-                if _result is None:
-                    # This should never happen.
-                    sys.stderr.write("*** islpy was interrupted while collecting "
-                        "a result. "
-                        "System state is inconsistent as a result, will print "
-                        "traceback and abort.\n")
-                    sys.stderr.flush()
-                    import traceback
-                    traceback.print_stack()
-                    import os
-                    os._exit(-1)
-                """)
-
-        gen.extend(safety)
-        gen("pass")
-
-    gen.extend(check)
-    gen.dedent()
-    gen("")
-
-    method_val = meth.name
-    py_name = meth.name
-
-    if meth.is_static:
-        method_val = "staticmethod(%s)" % method_val
-    if py_name == "size" and len(meth.args) == 1:
-        py_name = "__len__"
-
-    gen("{py_cls}.{py_name} = {method_val}"
-            .format(
-                py_cls=isl_class_to_py_class(meth.cls),
-                py_name=py_name,
-                method_val=method_val))
-    gen("")
-
-    if meth.is_static:
-        gen("{py_cls}._{name}_is_static = True"
-                .format(
-                    py_cls=isl_class_to_py_class(meth.cls),
-                    name=py_name))
-        gen("")
+    return arg_names, "\n".join(docs)
 
 # }}}
+
+
+# {{{ exposer generator
+
+def write_exposer(outf, meth, arg_names, doc_str):
+    func_name = "isl::%s_%s" % (meth.cls, meth.name)
+    py_name = meth.name
+
+    nonself_arg_names = arg_names
+    if not meth.is_static:
+        nonself_arg_names = nonself_arg_names[1:]
+    args_str = ", ".join('py::arg("%s")' % arg_name
+            for arg_name in nonself_arg_names)
+    if args_str:
+        args_str = ", %s" % args_str
+
+    if meth.name == "size" and len(meth.args) == 1:
+        py_name = "__len__"
+
+    if meth.name == "get_hash" and len(meth.args) == 1:
+        py_name = "__hash__"
+
+    extra_py_names = []
+
+    #if meth.is_static:
+    #    doc_str = "(static method)\n" + doc_str
+
+    doc_str_arg = ", \"%s\"" % doc_str.replace("\n", "\\n")
+
+    wrap_class = CLASS_MAP.get(meth.cls, meth.cls)
+
+    for exp_py_name in [py_name]+extra_py_names:
+        outf.write("wrap_%s.def%s(\"%s\", %s%s);\n" % (
+            wrap_class, "_static" if meth.is_static else "",
+            exp_py_name, func_name, args_str+doc_str_arg))
+
+# }}}
+
+
+def write_wrappers(expf, wrapf, methods):
+    undoc = []
+
+    for meth in methods:
+        #print "TRY_WRAP:", meth
+        if meth.name.endswith("_si") or meth.name.endswith("_ui"):
+            val_versions = [
+                    meth2
+                    for meth2 in methods
+                    if meth2.cls == meth.cls
+                    and (
+                        meth2.name == meth.name[:-3]
+                        or meth2.name == meth.name[:-3] + "_val"
+                        )
+                    ]
+
+            if val_versions:
+                # no need to expose C integer versions of things
+                print("SKIP (val version available): %s -> %s"
+                        % (meth, ", ".join(str(s) for s in val_versions)))
+                continue
+
+        try:
+            arg_names, doc_str = write_wrapper(wrapf, meth)
+            write_exposer(expf, meth, arg_names, doc_str)
+        except Undocumented:
+            undoc.append(str(meth))
+        except Retry:
+            arg_names, doc_str = write_wrapper(wrapf, meth)
+            write_exposer(expf, meth, arg_names, doc_str)
+        except SignatureNotSupported:
+            _, e, _ = sys.exc_info()
+            print("SKIP (sig not supported: %s): %s" % (e, meth))
+        else:
+            #print "WRAPPED:", meth
+            pass
+
+    print("SKIP (%d undocumented methods): %s" % (len(undoc), ", ".join(undoc)))
 
 
 ADD_VERSIONS = {
@@ -1728,7 +1409,6 @@ ADD_VERSIONS = {
 
 def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
     fdata = FunctionData(["."] + include_dirs)
-    fdata.read_header("isl/ctx.h")
     fdata.read_header("isl/id.h")
     fdata.read_header("isl/space.h")
     fdata.read_header("isl/set.h")
@@ -1758,123 +1438,24 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
     if include_barvinok:
         fdata.read_header("barvinok/isl.h")
 
-    undoc = []
+    for part, classes in PART_TO_CLASSES.items():
+        expf = open("src/wrapper/gen-expose-%s.inc" % part, "wt")
+        wrapf = open("src/wrapper/gen-wrap-%s.inc" % part, "wt")
 
-    with open("wrapped-functions.h", "wt") as header_f:
-        with open("islpy/_isl.py", "wt") as wrapper_f:
-            header_f.write(
-                    "// AUTOMATICALLY GENERATED by gen_wrap.py -- do not edit\n\n")
-            write_enums_to_header(header_f)
-            write_classes_to_header(header_f)
-            header_f.write(HEADER_PREAMBLE)
+        classes = [
+                cls
+                for cls in classes
+                if isl_version is None
+                or ADD_VERSIONS.get(cls) is None
+                or ADD_VERSIONS.get(cls) <= isl_version]
 
-            wrapper_f.write(
-                    "# AUTOMATICALLY GENERATED by gen_wrap.py -- do not edit\n")
-            win_ext_suffix = get_config_var('EXT_SUFFIX')
-            if win_ext_suffix is None:
-                win_ext_suffix = ".pyd"
-            win_pyd = "_isl_cffi{}".format(win_ext_suffix)
-            wrapper_f.write(PY_PREAMBLE.format(win_pyd=win_pyd))
-            write_enums_to_wrapper(wrapper_f)
-            write_classes_to_wrapper(wrapper_f)
+        write_wrappers(expf, wrapf, [
+            meth
+            for cls in classes
+            for meth in fdata.classes_to_methods.get(cls, [])])
 
-            wrapper_gen = PythonCodeGenerator()
-            wrapper_gen("# {{{ wrappers")
-            wrapper_gen("")
-            wrapper_gen("def _add_methods():")
-
-            with Indentation(wrapper_gen):
-                for cls_name in CLASSES:
-                    if not (
-                            isl_version is None
-                            or ADD_VERSIONS.get(cls_name) is None
-                            or ADD_VERSIONS.get(cls_name) <= isl_version):
-                        continue
-
-                    methods = [
-                            meth
-                            for meth in fdata.classes_to_methods.get(cls_name, [])]
-
-                    wrapper_gen("# {{{ " + cls_name)
-                    wrapper_gen("")
-
-                    for meth in methods:
-                        if meth.name.endswith("get_ctx"):
-                            continue
-
-                        if meth.name.endswith("_si") or meth.name.endswith("_ui"):
-                            val_versions = [
-                                    meth2
-                                    for meth2 in methods
-                                    if meth2.cls == meth.cls
-                                    and (
-                                        meth2.name == meth.name[:-3]
-                                        or meth2.name == meth.name[:-3] + "_val"
-                                        )
-                                    ]
-
-                            if val_versions:
-                                # no need to expose C integer versions of things
-                                # print("SKIP (val version available): %s -> %s"
-                                #         % (meth, ", ".join(str(s)
-                                #             for s in val_versions)))
-                                continue
-
-                        write_method_header(header_f, meth)
-
-                        if meth.name in ["free", "set_free_user"]:
-                            continue
-
-                        try:
-                            write_method_wrapper(wrapper_gen, cls_name, meth)
-                        except Retry:
-                            write_method_wrapper(wrapper_gen, cls_name, meth)
-                        except Undocumented:
-                            undoc.append(str(meth))
-                        except SignatureNotSupported:
-                            _, e, _ = sys.exc_info()
-                            print("SKIP (sig not supported: %s): %s" % (e, meth))
-                        else:
-                            #print "WRAPPED:", meth
-                            pass
-
-                    wrapper_gen("# }}}")
-                    wrapper_gen("")
-
-            wrapper_gen("")
-            wrapper_gen("# }}}")
-            wrapper_gen("")
-            wrapper_gen("_add_methods()")
-
-            wrapper_f.write("\n" + wrapper_gen.get())
-            wrapper_f.write("\n\n# vim: fdm=marker\n")
-
-    with open("name_list.py", "wt") as clist_f:
-        py_classes = []
-
-        for cls_name in CLASSES:
-            py_cls = isl_class_to_py_class(cls_name)
-            py_classes.append(py_cls)
-            clist_f.write("{py_cls} = _isl.{py_cls}\n".format(py_cls=py_cls))
-        clist_f.write("\n")
-
-        for enum_name in ENUMS:
-            py_name = enum_name[4:]
-
-            if py_name == "bool":
-                continue
-
-            clist_f.write(
-                    "{py_name} = _isl.{py_name}\n"
-                    .format(py_name=py_name)
-                    )
-        clist_f.write("\n")
-
-        clist_f.write("ALL_CLASSES = [{0}]\n".format(", ".join(py_classes)))
-
-    print("SKIP (%d undocumented methods): %s" % (len(undoc), ", ".join(undoc)))
-
-    return fdata.headers
+        expf.close()
+        wrapf.close()
 
 
 if __name__ == "__main__":

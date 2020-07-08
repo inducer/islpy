@@ -19,7 +19,6 @@ include src/wrapper/*.hpp
 include src/wrapper/*.cpp
 
 include gen_wrap.py
-include py_codegen.py
 
 include test/*.py
 include examples/*.py

@@ -29,7 +29,7 @@ if true; then
 
   cd "$BUILD_DIR"
   rm -Rf  barvinok
-  git clone git://repo.or.cz/barvinok.git
+  git clone https://github.com/inducer/barvinok.git
   cd barvinok
   git checkout $BARVINOK_GIT_REV
 

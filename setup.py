@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-__copyright__ = "Copyright (C) 2011-15 Andreas Kloeckner"
+__copyright__ = """
+Copyright (C) 2011-20 Andreas Kloeckner
+"""
 
 __license__ = """
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,13 +24,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from codecs import open  # pylint: disable=redefined-builtin
+from aksetup_helper import (
+        check_pybind11, get_pybind_include,
+        get_config, setup, check_git_submodules, Extension,
+        PybindBuildExtCommand)
 
 
 def get_config_schema():
     from aksetup_helper import (ConfigSchema,
             IncludeDir, LibraryDir, Libraries,
             Switch, StringListOption)
+
+    default_cxxflags = [
+            # Required for pybind11:
+            # https://pybind11.readthedocs.io/en/stable/faq.html#someclass-declared-with-greater-visibility-than-the-type-of-its-field-someclass-member-wattributes
+            "-fvisibility=hidden"
+            ]
 
     return ConfigSchema([
         Switch("USE_SHIPPED_ISL", True, "Use included copy of isl"),
@@ -50,73 +61,73 @@ def get_config_schema():
         LibraryDir("BARVINOK", []),
         Libraries("BARVINOK", ["barvinok", "polylibgmp"]),
 
-        StringListOption("CXXFLAGS", [],
+        StringListOption("CXXFLAGS", default_cxxflags,
             help="Any extra C++ compiler options to include"),
         StringListOption("LDFLAGS", [],
             help="Any extra linker options to include"),
         ])
 
 
-CFFI_TEMPLATE = """
-from cffi import FFI
+# {{{ awful monkeypatching to build only isl (and not the wrapper) with -O2
 
-EXTRA_DEFINES = {EXTRA_DEFINES}
+class Hooked_compile:  # noqa: N801
+    def __init__(self, orig__compile, compiler):
+        self.orig__compile = orig__compile
+        self.compiler = compiler
 
-INCLUDES = '''
-{INCLUDES}
-'''
+    def __call__(self, obj, src, *args, **kwargs):
+        compiler = self.compiler
+        prev_compiler_so = compiler.compiler_so
 
-ffi = FFI()
-ffi.set_source(
-    "islpy._isl_cffi",
-    INCLUDES,
-    define_macros=list(EXTRA_DEFINES.items()),
-    sources={EXTRA_SOURCES},
-    include_dirs={INCLUDE_DIRS},
-    library_dirs={LIBRARY_DIRS},
-    libraries={LIBRARIES},
-    extra_compile_args={CFLAGS},
-    extra_link_args={LDFLAGS})
+        # The C++ wrapper takes an awfully long time to compile
+        # with any optimization, on gcc 10 (2020-06-30, AK).
+        if src.startswith("src/wrapper"):
+            compiler.compiler_so = [opt for opt in compiler.compiler_so
+                    if not (
+                        opt.startswith("-O")
+                        or opt.startswith("-g"))]
+        if src.endswith(".c"):
+            # Some C compilers (Apple clang IIRC?) really don't like having C++
+            # flags passed to them.
+            args = args[:2] + (
+                    [opt for opt in args[2] if "gnu++" not in opt],) + args[3:]
 
-
-with open("wrapped-functions.h", "rt") as header_f:
-    header = header_f.read()
-
-ffi.cdef(header)
-
-if __name__ == "__main__":
-    ffi.compile()
-"""
+        try:
+            result = self.orig__compile(obj, src, *args, **kwargs)
+        finally:
+            compiler.compiler_so = prev_compiler_so
+        return result
 
 
-def write_cffi_build_script(headers, **kwargs):
-    format_args = dict((k, repr(v)) for k, v in kwargs.items())
+class IslPyBuildExtCommand(PybindBuildExtCommand):
+    def __getattribute__(self, name):
+        if name == "compiler":
+            compiler = PybindBuildExtCommand.__getattribute__(self, name)
+            if compiler is not None:
+                orig__compile = compiler._compile
+                if not isinstance(orig__compile, Hooked_compile):
+                    compiler._compile = Hooked_compile(orig__compile, compiler)
+            return compiler
+        else:
+            return PybindBuildExtCommand.__getattribute__(self, name)
 
-    format_args["INCLUDES"] = "\n".join(
-            "#include <%s>" % header
-            for header in headers)
-
-    with open("islpy_cffi_build.py", "wt") as outf:
-        outf.write(CFFI_TEMPLATE.format(**format_args))
+# }}}
 
 
 def main():
-    # pylint: disable=too-many-statements, too-many-branches, too-many-locals
-
-    from aksetup_helper import (hack_distutils,
-            get_config, setup, check_git_submodules)
-
+    check_pybind11()
     check_git_submodules()
 
-    hack_distutils(what_opt=None)
     conf = get_config(get_config_schema(), warn_about_no_config=False)
 
-    EXTRA_SOURCES = []  # noqa
-    EXTRA_DEFINES = {}  # noqa
-    INCLUDE_DIRS = []  # noqa
-    LIBRARY_DIRS = []  # noqa
-    LIBRARIES = []  # noqa
     CXXFLAGS = conf["CXXFLAGS"]  # noqa: N806
+
+    EXTRA_OBJECTS = []  # noqa: N806
+    EXTRA_DEFINES = {}  # noqa: N806
+
+    INCLUDE_DIRS = ["src/wrapper"]  # noqa: N806
+    LIBRARY_DIRS = []  # noqa: N806
+    LIBRARIES = []  # noqa: N806
 
     if conf["USE_SHIPPED_ISL"]:
         from glob import glob
@@ -186,12 +197,12 @@ def main():
                 inf.close()
 
             if "int main(" not in contents and not blacklisted:
-                EXTRA_SOURCES.append(fn)
+                EXTRA_OBJECTS.append(fn)
 
-        conf["ISL_INC_DIR"] = ["isl-supplementary", "isl/include", "isl"]
+        conf["ISL_INC_DIR"] = ["isl-supplementary", "isl/include",  "isl"]
 
         if conf["USE_SHIPPED_IMATH"]:
-            EXTRA_SOURCES.extend([
+            EXTRA_OBJECTS.extend([
                 "isl/imath/imath.c",
                 "isl/imath/imrat.c",
                 "isl/imath/gmp_compat.c",
@@ -233,7 +244,8 @@ def main():
 
         wrapper_dirs.extend(conf["BARVINOK_INC_DIR"])
 
-        #EXTRA_DEFINES["ISLPY_ISL_VERSION"] = 15
+        EXTRA_DEFINES["ISLPY_ISL_VERSION"] = 14
+        EXTRA_DEFINES["ISLPY_INCLUDE_BARVINOK"] = 1
 
     # }}}
 
@@ -251,19 +263,8 @@ def main():
     exec(compile(version_py, init_filename, "exec"), conf)
 
     from gen_wrap import gen_wrapper
-    headers = gen_wrapper(wrapper_dirs, include_barvinok=conf["USE_BARVINOK"],
+    gen_wrapper(wrapper_dirs, include_barvinok=conf["USE_BARVINOK"],
             isl_version=EXTRA_DEFINES.get("ISLPY_ISL_VERSION"))
-
-    write_cffi_build_script(
-            headers,
-            EXTRA_DEFINES=EXTRA_DEFINES,
-            EXTRA_SOURCES=EXTRA_SOURCES,
-            INCLUDE_DIRS=INCLUDE_DIRS,
-            LIBRARY_DIRS=LIBRARY_DIRS,
-            LIBRARIES=LIBRARIES,
-            CFLAGS=CXXFLAGS,
-            LDFLAGS=conf["LDFLAGS"]
-            )
 
     with open("README.rst", "rt") as readme_f:
         readme = readme_f.read()
@@ -286,12 +287,6 @@ def main():
               'Programming Language :: C++',
               'Programming Language :: Python',
               'Programming Language :: Python :: 3',
-              'Programming Language :: Python :: 3.5',
-              'Programming Language :: Python :: 3.6',
-              'Programming Language :: Python :: 3.7',
-              'Programming Language :: Python :: 3.8',
-              'Programming Language :: Python :: Implementation :: CPython',
-              'Programming Language :: Python :: Implementation :: PyPy',
               'Topic :: Multimedia :: Graphics :: 3D Modeling',
               'Topic :: Scientific/Engineering',
               'Topic :: Scientific/Engineering :: Mathematics',
@@ -302,15 +297,36 @@ def main():
 
           packages=["islpy"],
 
-          setup_requires=["cffi>=1.1.0"],
-          cffi_modules=["islpy_cffi_build.py:ffi"],
           python_requires="~=3.6",
+            setup_requires=[
+                "pybind11",
+                ],
           install_requires=[
               "pytest>=2",
-              "cffi>=1.1.0",
               # "Mako>=0.3.6",
               "six",
               ],
+          ext_modules=[
+              Extension(
+                  "islpy._isl",
+                  [
+                      "src/wrapper/wrap_isl.cpp",
+                      "src/wrapper/wrap_isl_part1.cpp",
+                      "src/wrapper/wrap_isl_part2.cpp",
+                      "src/wrapper/wrap_isl_part3.cpp",
+                      ] + EXTRA_OBJECTS,
+                  include_dirs=INCLUDE_DIRS + [
+                      get_pybind_include(),
+                      get_pybind_include(user=True)
+                      ],
+                  library_dirs=LIBRARY_DIRS,
+                  libraries=LIBRARIES,
+                  define_macros=list(EXTRA_DEFINES.items()),
+                  extra_compile_args=CXXFLAGS,
+                  extra_link_args=conf["LDFLAGS"],
+                  ),
+              ],
+          cmdclass={'build_ext': IslPyBuildExtCommand},
           )
 
 

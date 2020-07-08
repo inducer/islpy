@@ -58,12 +58,8 @@ def test_error_on_invalid_index():
     my_set = isl.Set("{ [k, l] : 3l >= -k and 3l <= 10 - k "
                    "and k >=0 and k <= 2 }", context=ctx)
     p = my_set.sample_point()
-    try:
+    with pytest.raises(isl.Error):
         p.get_coordinate_val(isl.dim_type.set, 99999999)
-    except isl.Error:
-        pass
-    else:
-        assert False
 
 
 def test_pwqpoly():
@@ -92,6 +88,14 @@ def test_val():
         print(v)
         assert v == 17
         assert v.to_python() == 17
+
+
+def test_upcast():
+    a = isl.PwAff("[n] -> { [(-1 - floor((-n)/4))] }")
+    b = isl.Aff("[n] -> { [(-1 - floor((-n)/4))] }")
+
+    assert b.is_equal(a)
+    assert a.is_equal(b)
 
 
 def test_pickling():
@@ -358,8 +362,8 @@ def test_bound():
 def test_copy_context():
     ctx = isl.Context()
     import copy
-    assert copy.copy(ctx).data != ctx.data
-    assert copy.copy(ctx).data != isl.DEFAULT_CONTEXT.data
+    assert not ctx._wraps_same_instance_as(copy.copy(ctx))
+    assert not isl.DEFAULT_CONTEXT._wraps_same_instance_as(copy.copy(ctx))
 
 
 def test_ast_node_list_free():

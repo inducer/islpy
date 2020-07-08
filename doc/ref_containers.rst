@@ -33,9 +33,6 @@ Lists
 .. autoclass:: UnionPwAffList
     :members:
 
-.. autoclass:: BandList
-    :members:
-
 .. autoclass:: AstExprList
     :members:
 
