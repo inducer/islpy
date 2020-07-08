@@ -244,7 +244,6 @@ def main():
 
         wrapper_dirs.extend(conf["BARVINOK_INC_DIR"])
 
-        EXTRA_DEFINES["ISLPY_ISL_VERSION"] = 14
         EXTRA_DEFINES["ISLPY_INCLUDE_BARVINOK"] = 1
 
     # }}}
@@ -263,8 +262,7 @@ def main():
     exec(compile(version_py, init_filename, "exec"), conf)
 
     from gen_wrap import gen_wrapper
-    gen_wrapper(wrapper_dirs, include_barvinok=conf["USE_BARVINOK"],
-            isl_version=EXTRA_DEFINES.get("ISLPY_ISL_VERSION"))
+    gen_wrapper(wrapper_dirs, include_barvinok=conf["USE_BARVINOK"])
 
     with open("README.rst", "rt") as readme_f:
         readme = readme_f.read()
