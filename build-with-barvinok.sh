@@ -8,7 +8,7 @@ echo "BUILDING IN $BUILD_DIR"
 
 PREFIX="$HOME/pack/barvinok"
 NTL_VER="10.5.0"
-BARVINOK_GIT_REV="barvinok-0.41.2"
+BARVINOK_GIT_REV="barvinok-0.41.3"
 NPROCS=6
 
 if true; then
@@ -42,8 +42,6 @@ if true; then
       exit 1
     fi
   done
-
-  (cd isl; patch -p1 < ../../islpy/add-missing-isl_term_cow-in-isl_poly_foreach_term.patch)
 
   sh autogen.sh
   ./configure \
