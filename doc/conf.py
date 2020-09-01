@@ -230,7 +230,10 @@ man_pages = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}
+intersphinx_mapping = {
+        "https://docs.python.org/3/": None,
+        #"https://gmpy2.readthedocs.io/en/latest/": None,
+        }
 
 
 def autodoc_process_signature(app, what, name, obj, options, signature,
@@ -250,6 +253,10 @@ def autodoc_process_signature(app, what, name, obj, options, signature,
 
 
 def autodoc_process_docstring(app, what, name, obj, options, lines):
+    # clear out redundant pybind-generated member list
+    if any("Members" in ln for ln in lines):
+        del lines[:]
+
     from inspect import isclass, isroutine
     UNDERSCORE_WHITELIST = ["__len__", "__hash__", "__eq__", "__ne__"]
     if isclass(obj) and obj.__name__[0].isupper():
@@ -268,6 +275,15 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
             lines[:] = [".. hlist::", "  :columns: 3", ""] + [
                     "  * "+gen_method_string(meth)
                     for meth in methods] + lines
+
+            for nm in methods:
+                underscore_autodoc = []
+                if nm in UNDERSCORE_WHITELIST:
+                    underscore_autodoc.append(".. automethod:: %s" % nm)
+
+                if underscore_autodoc:
+                    lines.append("")
+                    lines.extend(underscore_autodoc)
 
 
 def setup(app):

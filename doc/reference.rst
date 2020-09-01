@@ -116,18 +116,6 @@ Symbolic Constants
     :undoc-members:
     :exclude-members: names, values
 
-.. autoclass:: ast_op_type
-    :members:
-    :undoc-members:
-
-.. autoclass:: ast_expr_type
-    :members:
-    :undoc-members:
-
-.. autoclass:: ast_node_type
-    :members:
-    :undoc-members:
-
 .. autoclass:: format
     :members:
     :undoc-members:
@@ -135,8 +123,6 @@ Symbolic Constants
 .. autoclass:: yaml_style
     :members:
     :undoc-members:
-
-
 
 Output
 ^^^^^^
@@ -149,5 +135,42 @@ Helper functions
 
 .. autofunction:: align_spaces
 .. autofunction:: align_two
+
+Canonical Names for Internal Module
+-----------------------------------
+
+.. ::
+
+   This should switch to using ``:canonical:`` once Sphinx 4.0 is released.
+
+.. currentmodule:: islpy._isl
+
+.. class:: stat
+
+    A status result.
+
+.. class:: error
+
+    See :class:`islpy.error`.
+
+.. class:: dim_type
+
+    See :class:`islpy.dim_type`.
+
+.. class:: fold
+
+    See :class:`islpy.fold`.
+
+.. class:: format
+
+    See :class:`islpy.format`.
+
+.. class:: yaml_style
+
+    See :class:`islpy.yaml_style`.
+
+.. class:: Printer
+
+    See :class:`islpy.Printer`.
 
 .. vim: sw=4

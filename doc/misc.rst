@@ -94,12 +94,12 @@ Version 2016.2
     islpy's version control.
 
 * Update for isl 0.17
-* Add :func:`make_zero_and_vars`
+* Add :func:`islpy.make_zero_and_vars`
 
 Version 2016.1.1
 ----------------
 
-* Add :func:`make_zero_and_vars`
+* Add :func:`islpy.make_zero_and_vars`
 * Do not turn on small-integer optimization by default
   (to avoid build trouble on old compilers)
 
@@ -118,7 +118,7 @@ Version 2014.2
 
 * A large number of previously unavailable functions are now exposed.
 
-* Sebastian Pop's `imath <https://github.com/creachadair/imath>`_ support has
+* Sebastian Pop's `imath <https://github.com/creachadair/imath>`__ support has
   been merged into the version of isl that ships with :mod:`islpy`. This means
   that unless a user specifically requests a build against GMP, :mod:`islpy`
   is (a) entirely self-contained and depends only on a C++ compiler and
@@ -133,7 +133,7 @@ Version 2014.1
   incompatible changes as well.
 
   Now :class:`islpy.Val` is used to represent all numbers going
-  into and out of :mod:`islpy`. :mod:`gmpy` is no longer a dependency
+  into and out of :mod:`islpy`. ``gmpy`` is no longer a dependency
   of :mod:`islpy`. The following rules apply for this interface change:
 
   * You can pass (up to ``long int``-sized) integers to methods of
@@ -156,13 +156,13 @@ Version 2011.3
 --------------
 
 * Add :meth:`islpy.Set.project_out_except` and friends.
-* Add :meth:`islpy.Set.remove_divs_of_dim_type` and friends.
-* :class:`islpy.Dim` was renamed to :class:`islpy.Space` in isl.
-* :class:`islpy.Div` was removed and replaced by :class:`islpy.Aff`
+* Add ``islpy.Set.remove_divs_of_dim_type`` and friends.
+* ``islpy.Dim`` was renamed to :class:`islpy.Space` in isl.
+* ``islpy.Div`` was removed and replaced by :class:`islpy.Aff`
   wherever it was used previously.
-* :meth:`islpy.BasicSet.as_set`
+* ``islpy.BasicSet.as_set`
   and
-  :meth:`islpy.BasicMap.as_map`
+  ``islpy.BasicMap.as_map``
   were removed.
 * :ref:`automatic-casts` were added.
 * Support for more Python :class:`set`-like behavior was added. In particular,
@@ -186,3 +186,22 @@ Version 2011.1
 --------------
 
 * Initial release.
+
+Documentation Cross-References
+------------------------------
+
+.. class:: unsigned
+
+    See :class:`int`.
+
+.. class:: long
+
+    See :class:`int`.
+
+.. class:: size_t
+
+    See :class:`int`.
+
+.. class:: double
+
+    See :class:`float`.

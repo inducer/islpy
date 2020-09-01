@@ -70,6 +70,3 @@ Flake8:
   - ". ./prepare-and-run-flake8.sh islpy test"
   tags:
   - python3
-  except:
-  - tags
-
