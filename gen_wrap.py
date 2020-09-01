@@ -165,7 +165,6 @@ PART_TO_CLASSES = {
             # lists
             "id_list", "val_list",
             "basic_set_list", "basic_map_list", "set_list", "map_list",
-            "union_set_list",
             "constraint_list",
             "aff_list", "pw_aff_list", "pw_multi_aff_list",
             "ast_expr_list", "ast_node_list",
@@ -173,6 +172,7 @@ PART_TO_CLASSES = {
             "pw_qpolynomial_fold_list",
             "union_pw_aff_list",
             "union_pw_multi_aff_list",
+            "union_set_list",
             "union_map_list",
 
             # maps

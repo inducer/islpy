@@ -41,14 +41,25 @@ UnionSetList = _isl.UnionSetList
 ConstraintList = _isl.ConstraintList
 AffList = _isl.AffList
 PwAffList = _isl.PwAffList
+PwMultiAffList = _isl.PwMultiAffList
 AstExprList = _isl.AstExprList
 AstNodeList = _isl.AstNodeList
+
+PwQPolynomialList = _isl.PwQPolynomialList
+PwQPolynomialFoldList = _isl.PwQPolynomialFoldList
+
+UnionPwAffList = _isl.UnionPwAffList
+UnionPwMultiAffList = _isl.UnionPwMultiAffList
+UnionMapList = _isl.UnionMapList
+UnionSetList = _isl.UnionSetList
+
 IdToAstExpr = _isl.IdToAstExpr
 Printer = _isl.Printer
 Val = _isl.Val
 MultiVal = _isl.MultiVal
 Vec = _isl.Vec
 Mat = _isl.Mat
+FixedBox = _isl.FixedBox
 Aff = _isl.Aff
 PwAff = _isl.PwAff
 UnionPwAff = _isl.UnionPwAff
@@ -59,6 +70,7 @@ UnionPwMultiAff = _isl.UnionPwMultiAff
 UnionPwAffList = _isl.UnionPwAffList
 MultiUnionPwAff = _isl.MultiUnionPwAff
 Id = _isl.Id
+MultiId = _isl.MultiId
 Constraint = _isl.Constraint
 Space = _isl.Space
 LocalSpace = _isl.LocalSpace
@@ -1323,6 +1335,20 @@ class SuppressedWarnings:
 
     def __exit__(self, type, value, traceback):
         self.ctx.set_on_error(self.prev_on_error)
+
+
+# {{{ give sphinx something to import so we can produce docs
+
+def _define_doc_link_names():
+    class Div:
+        pass
+
+    _isl.Div = Div
+
+
+_define_doc_link_names()
+
+# }}}
 
 
 # vim: foldmethod=marker

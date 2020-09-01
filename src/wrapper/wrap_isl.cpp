@@ -12,6 +12,9 @@ namespace isl
 
 PYBIND11_MODULE(_isl, m)
 {
+  py::options options;
+  options.disable_function_signatures();
+
   static py::exception<isl::error> ISLError(m, "Error", NULL);
   py::register_exception_translator(
         [](std::exception_ptr p)
