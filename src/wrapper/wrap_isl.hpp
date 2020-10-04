@@ -254,11 +254,14 @@ namespace isl
   {
     WRAP_CLASS_CONTENT(union_set);
     MAKE_CAST_CTOR(union_set, set, isl_union_set_from_set);
+    MAKE_CAST_CTOR(union_set, basic_set, isl_union_set_from_basic_set);
   };
+
   struct union_map
   {
     WRAP_CLASS_CONTENT(union_map);
     MAKE_CAST_CTOR(union_map, map, isl_union_map_from_map);
+    MAKE_CAST_CTOR(union_map, basic_map, isl_union_map_from_basic_map);
   };
 
   WRAP_CLASS(point);
