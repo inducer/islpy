@@ -69,7 +69,7 @@ def test_pwqpoly():
     def piece_handler(set, qpoly):
         qpoly.foreach_term(term_handler)
 
-    pwqp = isl.PwQPolynomial('[n] -> { n }')
+    pwqp = isl.PwQPolynomial("[n] -> { n }")
     pwqp.foreach_piece(piece_handler)
 
 
@@ -287,7 +287,7 @@ def test_affs_from_space():
 
 def test_id_constructor():
     ctx = isl.Context()
-    isl.Id(context=ctx, name='x0')
+    isl.Id(context=ctx, name="x0")
 
 
 def test_creation_error():
