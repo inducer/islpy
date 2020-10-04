@@ -31,7 +31,7 @@ jobs:
         CONFIG_PATH=wheels/config.sh
         source wheels/multibuild/common_utils.sh
         source wheels/multibuild/travis_steps.sh
-        pip install virtualenv
+        python3 -m pip install virtualenv
         before_install
         build_wheel . $PLAT
         install_run $PLAT
