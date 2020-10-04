@@ -410,7 +410,7 @@ def test_remove_map_if_callback():
 
     with pytest.raises(isl.Error):
         umap3 = umap.remove_map_if(callback_throws_exception)
-        # del umap
+        del umap3
 
 if __name__ == "__main__":
     import sys
