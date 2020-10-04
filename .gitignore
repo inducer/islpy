@@ -48,3 +48,12 @@ setuptools-*.tar.gz
 core
 src/wrapper/gen-*
 .dirty-git-ok
+
+# wheels
+arch_tmp
+archives
+downloads
+gmp-*
+isl-*
+wheelhouse
+venv

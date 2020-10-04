@@ -1,3 +1,6 @@
 [submodule "isl"]
 	path = isl
 	url = https://github.com/inducer/isl.git
+[submodule "wheels/multibuild"]
+	path = wheels/multibuild
+	url = https://github.com/matthew-brett/multibuild
