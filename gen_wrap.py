@@ -752,13 +752,13 @@ def get_callback(cb_name, cb):
                 """)
         if cb.return_base_type == "isl_bool":
             post_call.append("""
-                    else
-                        return static_cast<isl_bool>(py::cast<int>(retval));
+                else
+                    return static_cast<isl_bool>(py::cast<bool>(retval));
                 """)
         else:
             post_call.append("""
-                    else
-                        return py::cast<%(ret_type)s>(retval);
+                else
+                    return py::cast<%(ret_type)s>(retval);
                 """ % {
                     "ret_type": ret_type,
                     }
