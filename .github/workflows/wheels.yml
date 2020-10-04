@@ -30,7 +30,7 @@ jobs:
         cp wheelhouse/* dist/
       env:
         PLAT: ${{ matrix.arch }}
-        MB_PYTHON_VERSION: {{ matrix.python_version }}
+        MB_PYTHON_VERSION: ${{ matrix.python_version }}
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
       with:
