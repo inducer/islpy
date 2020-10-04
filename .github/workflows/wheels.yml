@@ -31,8 +31,10 @@ jobs:
         CONFIG_PATH=wheels/config.sh
         source wheels/multibuild/common_utils.sh
         source wheels/multibuild/travis_steps.sh
-        python3 -m pip install virtualenv
-        before_install
+        if [[ "$(uname)" == "Darwin" ]]; then
+          python3 -m pip install virtualenv
+          before_install
+        fi
         build_wheel . $PLAT
         install_run $PLAT
         mkdir dist
