@@ -8,6 +8,7 @@ jobs:
     name: Publish for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         python_version: [3.6, 3.7, 3.8]
         arch: [x86_64, i686]
@@ -20,6 +21,11 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build, install and test
       run: |
+        if [[ "$(uname)" == "Linux" ]]; then
+          TRAVIS_OS_NAME="linux"
+        else
+          TRAVIS_OS_NAME="osx"
+        fi
         git submodule update --init --recursive
         CONFIG_PATH=wheels/config.sh
         source wheels/multibuild/common_utils.sh
