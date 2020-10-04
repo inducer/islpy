@@ -107,6 +107,7 @@ AstBuild = _isl.AstBuild
 
 error = _isl.error
 stat = _isl.stat
+bool = _isl.bool
 dim_type = _isl.dim_type
 schedule_node_type = _isl.schedule_node_type
 ast_expr_op_type = _isl.ast_expr_op_type

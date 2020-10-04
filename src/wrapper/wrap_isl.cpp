@@ -68,6 +68,12 @@ PYBIND11_MODULE(_isl, m)
     .ENUM_VALUE(isl_stat_, ok)
     ;
 
+  py::enum_<isl_bool>(m, "bool")
+    .ENUM_VALUE(isl_bool_, error)
+    .ENUM_VALUE(isl_bool_, true)
+    .ENUM_VALUE(isl_bool_, false)
+    ;
+
   py::enum_<isl_dim_type>(m, "dim_type")
     .ENUM_VALUE(isl_dim_, cst)
     .ENUM_VALUE(isl_dim_, param)
@@ -95,9 +101,9 @@ PYBIND11_MODULE(_isl, m)
 
   py::enum_<isl_ast_expr_op_type>(m, "ast_expr_op_type")
     .ENUM_VALUE(isl_ast_expr_op_, error)
-    .ENUM_VALUE(isl_ast_expr_op_, and)
+    .value("and_", isl_ast_expr_op_and)
     .ENUM_VALUE(isl_ast_expr_op_, and_then)
-    .ENUM_VALUE(isl_ast_expr_op_, or)
+    .value("or_", isl_ast_expr_op_or)
     .ENUM_VALUE(isl_ast_expr_op_, or_else)
     .ENUM_VALUE(isl_ast_expr_op_, max)
     .ENUM_VALUE(isl_ast_expr_op_, min)
@@ -138,8 +144,8 @@ PYBIND11_MODULE(_isl, m)
 
   py::enum_<isl_ast_node_type>(m, "ast_node_type")
     .ENUM_VALUE(isl_ast_node_, error)
-    .ENUM_VALUE(isl_ast_node_, for)
-    .ENUM_VALUE(isl_ast_node_, if)
+    .value("for_", isl_ast_node_for)
+    .value("if_", isl_ast_node_if)
     .ENUM_VALUE(isl_ast_node_, block)
     .ENUM_VALUE(isl_ast_node_, user)
     ;
