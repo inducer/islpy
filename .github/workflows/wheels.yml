@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - master
+  create:
+    tags:
+      - v*
 jobs:
   build:
     name: Publish for ${{ matrix.os }}
