@@ -65,26 +65,3 @@ function pip_wheel_cmd {
     pip wheel $(pip_opts) -w $abs_wheelhouse --no-deps .
 }
 
-if [ -n "$IS_OSX" ]; then
-    function repair_wheelhouse {
-        echo "custom repair_wheelhouse for osx"
-        local wheelhouse=$1
-        check_pip
-        $PIP_CMD install delocate
-        delocate-listdeps $wheelhouse/*.whl # lists library dependencies
-        # repair_wheelhouse can take more than 10 minutes without generating output
-        # but jobs that do not generate output within 10 minutes are aborted by travis-ci.
-        # Echoing something here solves the problem.
-        echo in repair_wheelhouse, executing delocate-wheel
-        delocate-wheel $wheelhouse/*.whl # copies library dependencies into wheel
-
-        local wheels=$(python $MULTIBUILD_DIR/supported_wheels.py $wheelhouse/*.whl)
-        for wheel in $wheels
-        do
-            se_file_name=$(basename $wheel)
-            se_file_name="${se_file_name/macosx_10_9_intel./macosx_10_9_x86_64.}"
-            se_file_name="${se_file_name/macosx_10_6_intel./macosx_10_9_x86_64.}"
-            mv $wheel $wheelhouse/$se_file_name
-        done
-    }
-fi
