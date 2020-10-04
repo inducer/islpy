@@ -31,6 +31,11 @@ function pre_build {
         export CXXFLAGS="-arch x86_64"
         export LDFLAGS="-arch x86_64"
         export MACOSX_DEPLOYMENT_TARGET="10.9"
+        export ABI=64
+    elif [[ "$PLAT" == "x86_64" ]]; then
+        export ABI=64
+    elif [[ "$PLAT" == "i686" ]]; then
+        export ABI=32
     fi
     echo "Bundled dependencies in the wheel" >> doc/misc.rst
     build_simple2 gmp  6.1.2 https://gmplib.org/download/gmp tar.bz2 \

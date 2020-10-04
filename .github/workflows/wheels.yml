@@ -26,10 +26,12 @@ jobs:
         else
           TRAVIS_OS_NAME="osx"
         fi
+        export MB_PYTHON_OSX_VER=10.9
         git submodule update --init --recursive
         CONFIG_PATH=wheels/config.sh
         source wheels/multibuild/common_utils.sh
         source wheels/multibuild/travis_steps.sh
+        before_install
         build_wheel . $PLAT
         install_run $PLAT
         mkdir dist
