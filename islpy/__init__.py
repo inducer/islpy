@@ -232,7 +232,7 @@ def _add_functionality():
     def generic_repr(self):
         prn = Printer.to_str(self.get_ctx())
         getattr(prn, "print_"+self._base_name)(self)
-        return "%s(\"%s\")" % (
+        return '%s("%s")' % (
                 type(self).__name__, prn.get_str())
 
     def generic_hash(self):
@@ -800,7 +800,7 @@ def _add_functionality():
         return not self.is_zero()
 
     def val_repr(self):
-        return "%s(\"%s\")" % (type(self).__name__, self.to_str())
+        return '%s("%s")' % (type(self).__name__, self.to_str())
 
     def val_to_python(self):
         if not self.is_int():

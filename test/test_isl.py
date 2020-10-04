@@ -69,7 +69,7 @@ def test_pwqpoly():
     def piece_handler(set, qpoly):
         qpoly.foreach_term(term_handler)
 
-    pwqp = isl.PwQPolynomial('[n] -> { n }')
+    pwqp = isl.PwQPolynomial("[n] -> { n }")
     pwqp.foreach_piece(piece_handler)
 
 
@@ -287,7 +287,7 @@ def test_affs_from_space():
 
 def test_id_constructor():
     ctx = isl.Context()
-    isl.Id(context=ctx, name='x0')
+    isl.Id(context=ctx, name="x0")
 
 
 def test_creation_error():
@@ -390,6 +390,15 @@ def test_ast_node_list_free():
     assert body.get_type() == isl.ast_node_type.block
 
     body.block_get_children()
+
+
+def test_union_casts():
+    # https://github.com/inducer/islpy/issues/29
+    s1 = isl.UnionSet("{[0]}")
+    s2 = isl.BasicSet("{[1]}")
+
+    s2.union(s1)  # works fine
+    s1.union(s2)  # does not work
 
 
 def test_remove_map_if_callback():
