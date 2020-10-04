@@ -392,19 +392,25 @@ def test_ast_node_list_free():
     body.block_get_children()
 
 def test_remove_map_if_callback():
-    umap = isl.UnionMap("{A[0] -> [1]; B[1] -> [2]}")
+
+    ctx = isl.Context()
+
+    umap = isl.UnionMap.read_from_str(ctx, "{A[0] -> [1]; B[1] -> [2]}")
 
     umap1 = umap.remove_map_if(lambda m: False)
     assert umap1 == umap, "map should not change"
 
     umap2 = umap.remove_map_if(lambda m:
         m.get_tuple_name(isl.dim_type.in_) == "B")
-    assert umap2 == isl.UnionMap("{A[0] -> [1]}")
+    assert umap2 == isl.UnionMap.read_from_str(ctx, "{A[0] -> [1]}")
 
     def callback_throws_exception(m):
+        del m
         assert False
-    umap3 = umap.remove_map_if(callback_throws_exception)
 
+    with pytest.raises(isl.Error):
+        umap3 = umap.remove_map_if(callback_throws_exception)
+        # del umap
 
 if __name__ == "__main__":
     import sys
