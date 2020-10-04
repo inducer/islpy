@@ -750,13 +750,19 @@ def get_callback(cb_name, cb):
                     throw isl::error("callback returned None");
                 }
                 """)
-        post_call.append("""
-                else
-                    return py::cast<%(ret_type)s>(retval);
-            """ % {
-                "ret_type": ret_type,
-                }
-            )
+        if cb.return_base_type == "isl_bool":
+            post_call.append("""
+                    else
+                        return static_cast<isl_bool>(py::cast<int>(retval));
+                """)
+        else:
+            post_call.append("""
+                    else
+                        return py::cast<%(ret_type)s>(retval);
+                """ % {
+                    "ret_type": ret_type,
+                    }
+                )
         if cb.return_base_type == "isl_bool":
             error_return = "isl_bool_error"
         else:
