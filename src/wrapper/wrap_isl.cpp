@@ -186,6 +186,8 @@ PYBIND11_MODULE(_isl, m)
 
   py::implicitly_convertible<isl::basic_set, isl::set>();
   py::implicitly_convertible<isl::basic_map, isl::map>();
+  py::implicitly_convertible<isl::basic_set, isl::union_set>();
+  py::implicitly_convertible<isl::basic_map, isl::union_map>();
   py::implicitly_convertible<isl::set, isl::union_set>();
   py::implicitly_convertible<isl::map, isl::union_map>();
   py::implicitly_convertible<isl::space, isl::local_space>();

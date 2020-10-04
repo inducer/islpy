@@ -392,6 +392,15 @@ def test_ast_node_list_free():
     body.block_get_children()
 
 
+def test_union_casts():
+    # https://github.com/inducer/islpy/issues/29
+    s1 = isl.UnionSet("{[0]}")
+    s2 = isl.BasicSet("{[1]}")
+
+    s2.union(s1)  # works fine
+    s1.union(s2)  # does not work
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
