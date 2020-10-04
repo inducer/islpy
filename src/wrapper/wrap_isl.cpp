@@ -73,6 +73,7 @@ PYBIND11_MODULE(_isl, m)
     .ENUM_VALUE(isl_bool_, true)
     .ENUM_VALUE(isl_bool_, false)
     ;
+  py::implicitly_convertible<int, isl_bool>();
 
   py::enum_<isl_dim_type>(m, "dim_type")
     .ENUM_VALUE(isl_dim_, cst)
