@@ -391,6 +391,7 @@ def test_ast_node_list_free():
 
     body.block_get_children()
 
+
 def test_remove_map_if_callback():
 
     ctx = isl.Context()
