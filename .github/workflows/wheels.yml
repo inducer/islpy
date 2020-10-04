@@ -12,9 +12,10 @@ jobs:
         python_version: [3.6, 3.7, 3.8]
         arch: [x86_64, i686]
         os: [ubuntu-latest, macos-latest]
-        include:
+        exclude:
           - os: macos-latest
-            arch: x86_64
+            arch: i686
+
     steps:
     - uses: actions/checkout@v2
     - name: Build, install and test
