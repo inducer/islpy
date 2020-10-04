@@ -412,6 +412,7 @@ def test_remove_map_if_callback():
         umap3 = umap.remove_map_if(callback_throws_exception)
         del umap3
 
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
