@@ -813,7 +813,9 @@ def get_callback(cb_name, cb):
             {
               std::cout << "[islpy warning] A Python exception occurred in "
                 "a call back function, ignoring:" << std::endl;
+              err.restore();
               PyErr_Print();
+              PyErr_Clear();
               return %(error_return)s;
             }
             catch (std::exception &e)
