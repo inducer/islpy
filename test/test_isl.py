@@ -401,6 +401,34 @@ def test_union_casts():
     s1.union(s2)  # does not work
 
 
+def test_remove_map_if_callback():
+
+    ctx = isl.Context()
+
+    umap = isl.UnionMap.read_from_str(ctx, "{A[0] -> [1]; B[1] -> [2]}")
+
+    umap1 = umap.remove_map_if(lambda m: False)
+    assert umap1 == umap, "map should not change"
+
+    umap2 = umap.remove_map_if(lambda m:
+        m.get_tuple_name(isl.dim_type.in_) == "B")
+    assert umap2 == isl.UnionMap.read_from_str(ctx, "{A[0] -> [1]}")
+
+
+def test_remove_map_if_callback_exc():
+    pytest.skip("https://github.com/inducer/islpy/pull/33#issuecomment-705165253")
+    ctx = isl.Context()
+
+    umap = isl.UnionMap.read_from_str(ctx, "{A[0] -> [1]; B[1] -> [2]}")
+
+    def callback_throws_exception(m):
+        1/0
+
+    with pytest.raises(isl.Error):
+        umap3 = umap.remove_map_if(callback_throws_exception)
+        del umap3
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
