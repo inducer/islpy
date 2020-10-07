@@ -414,9 +414,15 @@ def test_remove_map_if_callback():
         m.get_tuple_name(isl.dim_type.in_) == "B")
     assert umap2 == isl.UnionMap.read_from_str(ctx, "{A[0] -> [1]}")
 
+
+def test_remove_map_if_callback_exc():
+    pytest.skip("https://github.com/inducer/islpy/pull/33#issuecomment-705165253")
+    ctx = isl.Context()
+
+    umap = isl.UnionMap.read_from_str(ctx, "{A[0] -> [1]; B[1] -> [2]}")
+
     def callback_throws_exception(m):
-        del m
-        assert False
+        1/0
 
     with pytest.raises(isl.Error):
         umap3 = umap.remove_map_if(callback_throws_exception)
