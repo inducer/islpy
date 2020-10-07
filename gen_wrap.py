@@ -1354,12 +1354,12 @@ def write_exposer(outf, meth, arg_names, doc_str):
     #if meth.is_static:
     #    doc_str = "(static method)\n" + doc_str
 
-    doc_str_arg = ", \"%s\"" % doc_str.replace("\n", "\\n")
+    doc_str_arg = ', "%s"' % doc_str.replace("\n", "\\n")
 
     wrap_class = CLASS_MAP.get(meth.cls, meth.cls)
 
     for exp_py_name in [py_name]+extra_py_names:
-        outf.write("wrap_%s.def%s(\"%s\", %s%s);\n" % (
+        outf.write('wrap_%s.def%s("%s", %s%s);\n' % (
             wrap_class, "_static" if meth.is_static else "",
             exp_py_name, func_name, args_str+doc_str_arg))
 
