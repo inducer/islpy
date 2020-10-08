@@ -32,9 +32,7 @@ jobs:
         export MB_PYTHON_OSX_VER=10.9
         git submodule update --init --recursive
         CONFIG_PATH=wheels/config.sh
-        pushd wheels
-          git clone https://github.com/matthew-brett/multibuild
-        popd
+        (cd wheels; git clone https://github.com/matthew-brett/multibuild)
         source wheels/multibuild/common_utils.sh
         source wheels/multibuild/travis_steps.sh
         if [[ "$(uname)" == "Darwin" ]]; then
