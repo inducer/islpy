@@ -368,7 +368,6 @@ def test_copy_context():
 
 
 def test_context_manager():
-    import copy
     import pickle
 
     def transfer_copy(obj):

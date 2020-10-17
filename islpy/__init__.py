@@ -157,10 +157,10 @@ def _module_property(func):
         raise AttributeError(
             f"module '{module.__name__}' has no attribute '{name}'")
 
-    old_getattr = getattr(module, '__getattr__', base_getattr)
+    old_getattr = getattr(module, "__getattr__", base_getattr)
 
     def new_getattr(name):
-        if f'_{name}' == func.__name__:
+        if f"_{name}" == func.__name__:
             return func()
         else:
             return old_getattr(name)
@@ -200,10 +200,12 @@ def push_context(ctx=None):
 
 
 @_module_property
-def _DEFAULT_CONTEXT():
+def _DEFAULT_CONTEXT():  # noqa: N802
     from warnings import warn
-    warn("Use of islpy.DEFAULT_CONTEXT is deprecated and will be removed in the future. "
-         "Please use `islpy.get_default_context()` instead. ", FutureWarning,
+    warn("Use of islpy.DEFAULT_CONTEXT is deprecated "
+         "and will be removed in the future."
+         " Please use `islpy.get_default_context()` instead. ",
+         FutureWarning,
          stacklevel=3)
     return get_default_context()
 
