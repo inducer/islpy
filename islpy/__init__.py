@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import sys
+
 import islpy._isl as _isl
 from islpy.version import VERSION, VERSION_TEXT  # noqa
 import six
@@ -145,14 +147,65 @@ ALL_CLASSES = tuple(getattr(_isl, cls) for cls in dir(_isl) if cls[0].isupper())
 EXPR_CLASSES = tuple(cls for cls in ALL_CLASSES
         if "Aff" in cls.__name__ or "Polynomial" in cls.__name__)
 
-DEFAULT_CONTEXT = Context()
+
+def _module_property(func):
+    """Decorator to turn module functions into properties.
+    Function names must be prefixed with an underscore."""
+    module = sys.modules[func.__module__]
+
+    def base_getattr(name):
+        raise AttributeError(
+            f"module '{module.__name__}' has no attribute '{name}'")
+
+    old_getattr = getattr(module, '__getattr__', base_getattr)
+
+    def new_getattr(name):
+        if f'_{name}' == func.__name__:
+            return func()
+        else:
+            return old_getattr(name)
+
+    module.__getattr__ = new_getattr
+    return func
 
 
-def _get_default_context():
-    """A callable to get the default context for the benefit of Python's
-    ``__reduce__`` protocol.
-    """
-    return DEFAULT_CONTEXT
+import threading
+
+
+_thread_local_storage = threading.local()
+
+
+def _check_init_default_context():
+    if not hasattr(_thread_local_storage, "islpy_default_contexts"):
+        _thread_local_storage.islpy_default_contexts = [Context()]
+
+
+def get_default_context():
+    """Get or create the default context under current thread."""
+    _check_init_default_context()
+    return _thread_local_storage.islpy_default_contexts[-1]
+
+
+import contextlib
+
+
+@contextlib.contextmanager
+def push_context(ctx=None):
+    if ctx is None:
+        ctx = Context()
+    _check_init_default_context()
+    _thread_local_storage.islpy_default_contexts.append(ctx)
+    yield ctx
+    _thread_local_storage.islpy_default_contexts.pop()
+
+
+@_module_property
+def _DEFAULT_CONTEXT():
+    from warnings import warn
+    warn("Use of islpy.DEFAULT_CONTEXT is deprecated and will be removed in the future. "
+         "Please use `islpy.get_default_context()` instead. ", FutureWarning,
+         stacklevel=3)
+    return get_default_context()
 
 
 def _read_from_str_wrapper(cls, context, s):
@@ -168,10 +221,14 @@ def _add_functionality():
     # {{{ Context
 
     def context_reduce(self):
-        if self._wraps_same_instance_as(DEFAULT_CONTEXT):
-            return (_get_default_context, ())
-        else:
-            return (Context, ())
+        return (get_default_context, ())
+
+    def context_copy(self):
+        return self
+
+    def context_deepcopy(self, memo):
+        del memo
+        return self
 
     def context_eq(self, other):
         return isinstance(other, Context) and self._wraps_same_instance_as(other)
@@ -180,9 +237,10 @@ def _add_functionality():
         return not self.__eq__(other)
 
     Context.__reduce__ = context_reduce
+    Context.__copy__ = context_copy
+    Context.__deepcopy__ = context_deepcopy
     Context.__eq__ = context_eq
     Context.__ne__ = context_ne
-
     # }}}
 
     # {{{ generic initialization, pickling
@@ -197,7 +255,7 @@ def _add_functionality():
             return cls._prev_new(cls)
 
         if context is None:
-            context = DEFAULT_CONTEXT
+            context = get_default_context()
 
         result = cls.read_from_str(context, s)
         return result
@@ -473,7 +531,7 @@ def _add_functionality():
 
     def id_new(cls, name, user=None, context=None):
         if context is None:
-            context = DEFAULT_CONTEXT
+            context = get_default_context()
 
         result = cls.alloc(context, name, user)
         result._made_from_python = True
@@ -777,7 +835,7 @@ def _add_functionality():
 
     def val_new(cls, src, context=None):
         if context is None:
-            context = DEFAULT_CONTEXT
+            context = get_default_context()
 
         if isinstance(src, six.string_types):
             result = cls.read_from_str(context, src)
@@ -1274,7 +1332,7 @@ def make_zero_and_vars(set_vars, params=[], ctx=None):
                 )
     """
     if ctx is None:
-        ctx = DEFAULT_CONTEXT
+        ctx = get_default_context()
 
     if isinstance(set_vars, str):
         set_vars = [s.strip() for s in set_vars.split(",")]

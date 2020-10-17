@@ -189,11 +189,11 @@ def test_schedule():
         printer = printer.print_str("Callback For")
         return printer
 
-    opts = isl.AstPrintOptions.alloc(isl.DEFAULT_CONTEXT)
+    opts = isl.AstPrintOptions.alloc(isl.get_default_context())
     opts, cb_print_user_handle = opts.set_print_user(cb_print_user)
     opts, cb_print_for_handle = opts.set_print_for(cb_print_for)
 
-    printer = isl.Printer.to_str(isl.DEFAULT_CONTEXT)
+    printer = isl.Printer.to_str(isl.get_default_context())
     printer = printer.set_output_format(isl.format.C)
     printer.print_str("// Start\n")
     printer = ast.print_(printer, opts)
@@ -248,7 +248,7 @@ def test_codegen():
         m = isl.Map.identity(m.get_space())
         m = isl.Map.from_domain(S)
         ast = b.ast_from_schedule(m)
-        p = isl.Printer.to_str(isl.DEFAULT_CONTEXT)
+        p = isl.Printer.to_str(isl.get_default_context())
         p = p.set_output_format(isl.format.C)
         p.flush()
         p = p.print_ast_node(ast)
@@ -362,8 +362,41 @@ def test_bound():
 def test_copy_context():
     ctx = isl.Context()
     import copy
-    assert not ctx._wraps_same_instance_as(copy.copy(ctx))
-    assert not isl.DEFAULT_CONTEXT._wraps_same_instance_as(copy.copy(ctx))
+    assert ctx._wraps_same_instance_as(copy.copy(ctx))
+    assert ctx == copy.copy(ctx)
+    assert not isl.get_default_context()._wraps_same_instance_as(copy.copy(ctx))
+
+
+def test_context_manager():
+    import copy
+    import pickle
+
+    def transfer_copy(obj):
+        return pickle.loads(pickle.dumps(obj))
+
+    b1 = isl.BasicSet("{ [0] : }")
+    old_dctx = isl.get_default_context()
+    assert b1.get_ctx() == old_dctx
+
+    with isl.push_context() as dctx:
+        assert dctx == isl.get_default_context()
+        assert not old_dctx._wraps_same_instance_as(dctx)
+        b2 = isl.BasicSet("{ [0] : }")
+        assert b2.get_ctx() == dctx
+        # Under context manager always use `dctx`
+        assert transfer_copy(b2).get_ctx() == transfer_copy(b1).get_ctx() == dctx
+
+    # Check for proper exit
+    assert old_dctx == isl.get_default_context()
+
+    # Check for nested context
+    with isl.push_context() as c1:
+        with isl.push_context() as c2:
+            assert c1 != c2
+        with isl.push_context() as c3:
+            assert c2 != c3
+    # Check for proper exit
+    assert old_dctx == isl.get_default_context()
 
 
 def test_ast_node_list_free():
