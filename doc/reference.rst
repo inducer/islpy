@@ -97,17 +97,6 @@ Context Management
 
 .. autofunction:: push_context
 
-.. data:: DEFAULT_CONTEXT
-    
-    ISL objects being unpickled or initialized from strings will be instantiated
-    within this :class:`Context`.
-
-    .. seealso:: :func:`get_default_context`
-
-    .. versionadded:: 2015.2
-    .. deprecated:: TODO_VERSION
-
-
 
 Symbolic Constants
 ^^^^^^^^^^^^^^^^^^
