@@ -7,7 +7,7 @@ Context
 -------
 
 .. note:: this class implements Python's ``__copy__`` and ``__deepcopy__``
-    protocals. Copying of objects of this class always returns the identity.
+    protocols. Each of these returns the context being 'copied' identically.
 
 .. seealso:: :ref:`sec-context-management`
 
