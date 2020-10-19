@@ -9,7 +9,7 @@ Context
 .. note:: this class implements Python's ``__copy__`` and ``__deepcopy__``
     protocols. Each of these returns the context being 'copied' identically.
 
-.. note:: during an unpickle operation, the current default :class:`Context`
+.. note:: during an pickle operation, the current default :class:`Context`
     is always used.
 
 .. seealso:: :ref:`sec-context-management`
