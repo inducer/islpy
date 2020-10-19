@@ -203,7 +203,7 @@ def push_context(ctx=None):
 def _DEFAULT_CONTEXT():  # noqa: N802
     from warnings import warn
     warn("Use of islpy.DEFAULT_CONTEXT is deprecated "
-         "and will be removed in the future."
+         "and will be removed in 2022."
          " Please use `islpy.get_default_context()` instead. ",
          FutureWarning,
          stacklevel=3)
