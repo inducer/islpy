@@ -6,6 +6,11 @@ Reference: Basic Building Blocks
 Context
 -------
 
+.. note:: this class implements Python's ``__copy__`` and ``__deepcopy__``
+    protocals. Copying of objects of this class always returns the identity.
+
+.. seealso:: :ref:`sec-context-management`
+
 .. autoclass:: Context()
     :members:
 

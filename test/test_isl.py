@@ -398,6 +398,13 @@ def test_context_manager():
     assert old_dctx == isl.get_default_context()
 
 
+def test_deprecated_default_context():
+    import warnings
+    with warnings.catch_warnings():
+        dctx = isl.DEFAULT_CONTEXT
+        assert dctx == isl.get_default_context()
+
+
 def test_ast_node_list_free():
     # from https://github.com/inducer/islpy/issues/21
     # by Cambridge Yang

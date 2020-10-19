@@ -181,9 +181,24 @@ def _check_init_default_context():
 
 
 def get_default_context():
-    """Get or create the default context under current thread."""
+    """Get or create the default context under current thread.
+
+    :return: the current default :class:`Context`
+
+    .. versionadded:: TODO_VERSION
+    """
     _check_init_default_context()
     return _thread_local_storage.islpy_default_contexts[-1]
+
+
+def _get_default_context():
+    from warnings import warn
+    warn("It appears that you might be deserializing an islpy.Context"
+         "that was serialized by a previous version of islpy."
+         "If so, this is discouraged and please consider to re-serialize"
+         "the Context with the newer version to avoid possible inconsistencies.",
+         UserWarning)
+    return get_default_context()
 
 
 import contextlib
@@ -191,6 +206,27 @@ import contextlib
 
 @contextlib.contextmanager
 def push_context(ctx=None):
+    """Context manager to push new default :class:`Context`
+
+    :param ctx: an optional explicit context that is pushed to
+        the stack of default :class:`Context` s
+
+    .. versionadded:: TODO_VERSION
+
+    :mod:`islpy` internally maintains a stack of default :class:`Context` s
+    for each Python thread.
+    By default, each stack is initialized with a base default :class:`Context`.
+    ISL objects being unpickled or initialized from strings will be
+    instantiated within the top :class:`Context` of the stack of
+    the executing thread.
+
+    Usage example::
+
+        with islpy.push_context() as dctx:
+            s = islpy.Set("{[0]: }")
+            assert s.get_ctx() == dctx
+
+    """
     if ctx is None:
         ctx = Context()
     _check_init_default_context()
@@ -208,6 +244,10 @@ def _DEFAULT_CONTEXT():  # noqa: N802
          FutureWarning,
          stacklevel=3)
     return get_default_context()
+
+
+if sys.version_info < (3, 7):
+    DEFAULT_CONTEXT = get_default_context()
 
 
 def _read_from_str_wrapper(cls, context, s):

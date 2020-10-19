@@ -88,15 +88,26 @@ Lifetime Helpers
     function call to which they're passed. These callback return a callback
     handle that must be kept alive until the callback is no longer needed.
 
-Global Data
-^^^^^^^^^^^
+.. _sec-context-management:
+
+Context Management
+^^^^^^^^^^^^^^^^^^
+
+.. autofunction:: get_default_context
+
+.. autofunction:: push_context
 
 .. data:: DEFAULT_CONTEXT
-
+    
     ISL objects being unpickled or initialized from strings will be instantiated
     within this :class:`Context`.
 
+    .. seealso:: :func:`get_default_context`
+
     .. versionadded:: 2015.2
+    .. deprecated:: TODO_VERSION
+
+
 
 Symbolic Constants
 ^^^^^^^^^^^^^^^^^^
