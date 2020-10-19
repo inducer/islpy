@@ -185,7 +185,7 @@ def get_default_context():
 
     :return: the current default :class:`Context`
 
-    .. versionadded:: TODO_VERSION
+    .. versionadded:: 2020.3
     """
     _check_init_default_context()
     return _thread_local_storage.islpy_default_contexts[-1]
