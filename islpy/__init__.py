@@ -211,7 +211,7 @@ def push_context(ctx=None):
     :param ctx: an optional explicit context that is pushed to
         the stack of default :class:`Context` s
 
-    .. versionadded:: TODO_VERSION
+    .. versionadded:: 2020.3
 
     :mod:`islpy` internally maintains a stack of default :class:`Context` s
     for each Python thread.
