@@ -21,6 +21,7 @@ THE SOFTWARE.
 """
 
 import sys
+import contextlib
 
 import islpy._isl as _isl
 from islpy.version import VERSION, VERSION_TEXT  # noqa
@@ -199,9 +200,6 @@ def _get_default_context():
          "the Context with the newer version to avoid possible inconsistencies.",
          UserWarning)
     return get_default_context()
-
-
-import contextlib
 
 
 @contextlib.contextmanager
