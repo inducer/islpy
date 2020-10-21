@@ -23,12 +23,11 @@ Examples:
   except:
   - tags
 
-Python 3 small integer opt:
+Python 3 without small-integer opt:
   script:
-  - export PY_EXE=python3
-  - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
-  - ./configure.py --use-imath-sio
-  - ". ./build-and-test-py-project.sh"
+    curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
+    ./configure.py --no-use-imath-sio
+    . ./build-and-test-py-project.sh
   tags:
   - python3
   except:
