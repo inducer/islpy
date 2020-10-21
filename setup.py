@@ -46,7 +46,7 @@ def get_config_schema():
         Switch("USE_SHIPPED_IMATH", True, "Use included copy of imath in isl"),
         Switch("USE_GMP", True, "Use gmp in external isl"),
         Switch("USE_BARVINOK", False, "Include wrapper for Barvinok"),
-        Switch("USE_IMATH_SIO", False, "When using imath, use small-integer "
+        Switch("USE_IMATH_SIO", True, "When using imath, use small-integer "
             "optimization"),
 
         IncludeDir("GMP", []),
@@ -214,10 +214,6 @@ def main():
             if conf["USE_IMATH_SIO"]:
                 EXTRA_DEFINES["USE_SMALL_INT_OPT"] = 1
 
-                import sys
-                if sys.platform in ['linux', 'linux2', 'darwin']:
-                    CXXFLAGS.insert(0, "-std=gnu99")
-
             conf["ISL_INC_DIR"].append("isl/imath")
         else:
             EXTRA_DEFINES["USE_GMP_FOR_MP"] = 1
@@ -276,21 +272,21 @@ def main():
           license="MIT",
           url="http://documen.tician.de/islpy",
           classifiers=[
-              'Development Status :: 4 - Beta',
-              'Intended Audience :: Developers',
-              'Intended Audience :: Other Audience',
-              'Intended Audience :: Science/Research',
-              'License :: OSI Approved :: MIT License',
-              'Natural Language :: English',
-              'Programming Language :: C++',
-              'Programming Language :: Python',
-              'Programming Language :: Python :: 3',
-              'Topic :: Multimedia :: Graphics :: 3D Modeling',
-              'Topic :: Scientific/Engineering',
-              'Topic :: Scientific/Engineering :: Mathematics',
-              'Topic :: Scientific/Engineering :: Physics',
-              'Topic :: Scientific/Engineering :: Visualization',
-              'Topic :: Software Development :: Libraries',
+              "Development Status :: 4 - Beta",
+              "Intended Audience :: Developers",
+              "Intended Audience :: Other Audience",
+              "Intended Audience :: Science/Research",
+              "License :: OSI Approved :: MIT License",
+              "Natural Language :: English",
+              "Programming Language :: C++",
+              "Programming Language :: Python",
+              "Programming Language :: Python :: 3",
+              "Topic :: Multimedia :: Graphics :: 3D Modeling",
+              "Topic :: Scientific/Engineering",
+              "Topic :: Scientific/Engineering :: Mathematics",
+              "Topic :: Scientific/Engineering :: Physics",
+              "Topic :: Scientific/Engineering :: Visualization",
+              "Topic :: Software Development :: Libraries",
               ],
 
           packages=["islpy"],
@@ -324,9 +320,9 @@ def main():
                   extra_link_args=conf["LDFLAGS"],
                   ),
               ],
-          cmdclass={'build_ext': IslPyBuildExtCommand},
+          cmdclass={"build_ext": IslPyBuildExtCommand},
           )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

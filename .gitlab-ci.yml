@@ -1,8 +1,8 @@
 Python 3:
-  script:
-  - export PY_EXE=python3
-  - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
-  - ". ./build-and-test-py-project.sh"
+  script: |
+    EXTRA_INSTALL="numpy"
+    curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
+    . ./build-and-test-py-project.sh
   tags:
   - python3
   except:
@@ -11,12 +11,23 @@ Python 3:
     reports:
       junit: test/pytest.xml
 
-Python 3 small integer opt:
-  script:
-  - export PY_EXE=python3
-  - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
-  - ./configure.py --use-imath-sio
-  - ". ./build-and-test-py-project.sh"
+Examples:
+  script: |
+    EXTRA_INSTALL="matplotlib numpy"
+    curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/ci-support.sh
+    . ./ci-support.sh
+    build_py_project_in_venv
+    run_examples
+  tags:
+  - python3
+  except:
+  - tags
+
+Python 3 without small-integer opt:
+  script: |
+    curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
+    ./configure.py --no-use-imath-sio
+    . ./build-and-test-py-project.sh
   tags:
   - python3
   except:
@@ -67,6 +78,6 @@ Documentation:
 Flake8:
   script:
   - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/prepare-and-run-flake8.sh
-  - . ./prepare-and-run-flake8.sh "$CI_PROJECT_NAME" test gen_wrap.py
+  - . ./prepare-and-run-flake8.sh "$CI_PROJECT_NAME" test gen_wrap.py examples
   tags:
   - python3
