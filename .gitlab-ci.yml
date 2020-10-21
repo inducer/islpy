@@ -24,7 +24,7 @@ Examples:
   - tags
 
 Python 3 without small-integer opt:
-  script:
+  script: |
     curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
     ./configure.py --no-use-imath-sio
     . ./build-and-test-py-project.sh
