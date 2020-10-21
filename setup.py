@@ -215,7 +215,7 @@ def main():
                 EXTRA_DEFINES["USE_SMALL_INT_OPT"] = 1
 
                 import sys
-                if sys.platform in ['linux', 'linux2', 'darwin']:
+                if sys.platform in ["linux", "linux2", "darwin"]:
                     CXXFLAGS.insert(0, "-std=gnu99")
 
             conf["ISL_INC_DIR"].append("isl/imath")
@@ -276,21 +276,21 @@ def main():
           license="MIT",
           url="http://documen.tician.de/islpy",
           classifiers=[
-              'Development Status :: 4 - Beta',
-              'Intended Audience :: Developers',
-              'Intended Audience :: Other Audience',
-              'Intended Audience :: Science/Research',
-              'License :: OSI Approved :: MIT License',
-              'Natural Language :: English',
-              'Programming Language :: C++',
-              'Programming Language :: Python',
-              'Programming Language :: Python :: 3',
-              'Topic :: Multimedia :: Graphics :: 3D Modeling',
-              'Topic :: Scientific/Engineering',
-              'Topic :: Scientific/Engineering :: Mathematics',
-              'Topic :: Scientific/Engineering :: Physics',
-              'Topic :: Scientific/Engineering :: Visualization',
-              'Topic :: Software Development :: Libraries',
+              "Development Status :: 4 - Beta",
+              "Intended Audience :: Developers",
+              "Intended Audience :: Other Audience",
+              "Intended Audience :: Science/Research",
+              "License :: OSI Approved :: MIT License",
+              "Natural Language :: English",
+              "Programming Language :: C++",
+              "Programming Language :: Python",
+              "Programming Language :: Python :: 3",
+              "Topic :: Multimedia :: Graphics :: 3D Modeling",
+              "Topic :: Scientific/Engineering",
+              "Topic :: Scientific/Engineering :: Mathematics",
+              "Topic :: Scientific/Engineering :: Physics",
+              "Topic :: Scientific/Engineering :: Visualization",
+              "Topic :: Software Development :: Libraries",
               ],
 
           packages=["islpy"],
@@ -324,9 +324,9 @@ def main():
                   extra_link_args=conf["LDFLAGS"],
                   ),
               ],
-          cmdclass={'build_ext': IslPyBuildExtCommand},
+          cmdclass={"build_ext": IslPyBuildExtCommand},
           )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
