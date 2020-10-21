@@ -42,7 +42,7 @@ jobs:
                 . ./build-and-test-py-project.sh
 
     pytest_mac:
-        name: Pytest macOS on Py${{ matrix.python-version }}
+        name: Pytest macOS
         runs-on: macos-latest
         steps:
         -   uses: actions/checkout@v2
