@@ -214,10 +214,6 @@ def main():
             if conf["USE_IMATH_SIO"]:
                 EXTRA_DEFINES["USE_SMALL_INT_OPT"] = 1
 
-                import sys
-                if sys.platform in ["linux", "linux2", "darwin"]:
-                    CXXFLAGS.insert(0, "-std=gnu99")
-
             conf["ISL_INC_DIR"].append("isl/imath")
         else:
             EXTRA_DEFINES["USE_GMP_FOR_MP"] = 1
