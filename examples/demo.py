@@ -34,8 +34,7 @@ def plot_basic_set(bset, *args, **kwargs):
 
     for v in vertices:
         points = []
-        myset = (isl.Map.from_basic_map(isl.BasicMap.from_multi_aff(v.get_expr()))
-                .range())
+        myset = isl.BasicSet.from_multi_aff(v.get_expr())
         myset.foreach_point(points.append)
         point, = points
         vertex_pts.append([
@@ -72,14 +71,14 @@ def plot_basic_set(bset, *args, **kwargs):
     pt.gca().add_patch(patch)
 
 
-plot_basic_set(bset, facecolor='red', edgecolor='black', alpha=0.3)
-plot_basic_set(bset2, facecolor='green', edgecolor='black', alpha=0.2)
+plot_basic_set(bset, facecolor="red", edgecolor="black", alpha=0.3)
+plot_basic_set(bset2, facecolor="green", edgecolor="black", alpha=0.2)
 pt.grid()
 pt.xlim([-1, 6])
 pt.ylim([-1, 8])
 #pt.show()
 pt.savefig("before-union.png", dpi=50)
 
-plot_basic_set(union, facecolor='blue', edgecolor='yellow',
+plot_basic_set(union, facecolor="blue", edgecolor="yellow",
         alpha=0.5, plot_vert=True)
 pt.savefig("after-union.png", dpi=50)

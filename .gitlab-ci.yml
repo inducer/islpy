@@ -11,6 +11,18 @@ Python 3:
     reports:
       junit: test/pytest.xml
 
+Examples:
+  script: |
+    EXTRA_INSTALL="matplotlib numpy"
+    curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/ci-support.sh
+    . ./ci-support.sh
+    build_py_project_in_venv
+    run_examples
+  tags:
+  - python3
+  except:
+  - tags
+
 Python 3 small integer opt:
   script:
   - export PY_EXE=python3
