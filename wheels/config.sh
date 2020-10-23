@@ -38,17 +38,13 @@ function pre_build {
         export ABI=32
     fi
     echo "Bundled dependencies in the wheel" >> doc/misc.rst
-    build_simple2 gmp  6.1.2 https://gmplib.org/download/gmp tar.bz2 \
-        --enable-shared --disable-static --with-pic --enable-fat
-    pushd gmp-6.1.2
-      cat README >> ../doc/misc.rst
-      cat COPYING.LESSERv3 >> ../doc/misc.rst
-      echo "" >> ../doc/misc.rst
-    popd
     build_simple2 isl 0.22.1 http://isl.gforge.inria.fr tar.gz  \
-        --enable-shared --disable-static --with-int=gmp --with-gmp-prefix=$BUILD_PREFIX
+        --enable-shared --disable-static --with-int=imath-32
     pushd isl-0.22.1
       cat LICENSE >> ../doc/misc.rst
+      echo "imath license" >> doc/misc.rst
+      echo "=============" >> doc/misc.rst
+      head -n 25 imath/imath.h  >> ../doc/mis.rst
     popd
 }
 
