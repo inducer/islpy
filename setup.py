@@ -89,8 +89,14 @@ class Hooked_compile:  # noqa: N801
         if src.endswith(".c"):
             # Some C compilers (Apple clang IIRC?) really don't like having C++
             # flags passed to them.
-            args = args[:2] + (
-                    [opt for opt in args[2] if "gnu++" not in opt],) + args[3:]
+            options = [opt for opt in args[2] if "gnu++" not in opt]
+
+            import sys
+            # https://github.com/inducer/islpy/issues/39
+            if sys.platform == "darwin":
+                options.append("-Wno-error=implicit-function-declaration")
+
+            args = args[:2] + (options,) + args[3:]
 
         try:
             result = self.orig__compile(obj, src, *args, **kwargs)
