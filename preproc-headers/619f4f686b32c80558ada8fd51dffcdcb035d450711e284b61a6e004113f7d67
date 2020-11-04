@@ -1,0 +1,172 @@
+
+
+
+#include <isl/stdint.h>
+#include <isl/ctx.h>
+#include <isl/list.h>
+#include <isl/multi.h>
+#include <isl/printer.h>
+#include <isl/val_type.h>
+
+
+
+
+
+isl_ctx *isl_multi_val_get_ctx(						__isl_keep isl_multi_val *multi);				__isl_export								__isl_give isl_space *isl_multi_val_get_space(				__isl_keep isl_multi_val *multi);				__isl_give isl_space *isl_multi_val_get_domain_space(			__isl_keep isl_multi_val *multi);				__isl_export								__isl_give isl_val_list *isl_multi_val_get_list(			__isl_keep isl_multi_val *multi);				__isl_constructor							__isl_give isl_multi_val *isl_multi_val_from_val_list(		__isl_take isl_space *space, __isl_take isl_val_list *list); __isl_give isl_multi_val *isl_multi_val_copy(				__isl_keep isl_multi_val *multi);				__isl_null isl_multi_val *isl_multi_val_free(				__isl_take isl_multi_val *multi);				__isl_export								isl_bool isl_multi_val_plain_is_equal(					__isl_keep isl_multi_val *multi1,					__isl_keep isl_multi_val *multi2);				__isl_give isl_multi_val *isl_multi_val_reset_user(			__isl_take isl_multi_val *multi);				__isl_export								isl_size isl_multi_val_size(__isl_keep isl_multi_val *multi);	__isl_export								__isl_give isl_val *isl_multi_val_get_at(				__isl_keep isl_multi_val *multi, int pos);			__isl_give isl_val *isl_multi_val_get_val(				__isl_keep isl_multi_val *multi, int pos);			__isl_export								__isl_give isl_multi_val *isl_multi_val_set_at(				__isl_take isl_multi_val *multi, int pos,				__isl_take isl_val *el);					__isl_give isl_multi_val *isl_multi_val_set_val(			__isl_take isl_multi_val *multi, int pos,				__isl_take isl_val *el);					__isl_give isl_multi_val *isl_multi_val_range_splice(			__isl_take isl_multi_val *multi1, unsigned pos,			__isl_take isl_multi_val *multi2);				__isl_give isl_multi_val *isl_multi_val_flatten_range(			__isl_take isl_multi_val *multi);				__isl_export								__isl_give isl_multi_val *isl_multi_val_flat_range_product(		__isl_take isl_multi_val *multi1,					__isl_take isl_multi_val *multi2);				__isl_export								__isl_give isl_multi_val *isl_multi_val_range_product(			__isl_take isl_multi_val *multi1,					__isl_take isl_multi_val *multi2);				__isl_give isl_multi_val *isl_multi_val_factor_range(			__isl_take isl_multi_val *multi);				isl_bool isl_multi_val_range_is_wrapping(					__isl_keep isl_multi_val *multi);				__isl_give isl_multi_val *isl_multi_val_range_factor_domain(		__isl_take isl_multi_val *multi);				__isl_give isl_multi_val *isl_multi_val_range_factor_range(		__isl_take isl_multi_val *multi);				__isl_give isl_multi_val *isl_multi_val_align_params(			__isl_take isl_multi_val *multi,					__isl_take isl_space *model);					__isl_give isl_multi_val *isl_multi_val_from_range(			__isl_take isl_multi_val *multi);
+__isl_overload								__isl_give isl_multi_val *isl_multi_val_scale_val(			__isl_take isl_multi_val *multi, __isl_take isl_val *v);	__isl_overload								__isl_give isl_multi_val *isl_multi_val_scale_down_val(			__isl_take isl_multi_val *multi, __isl_take isl_val *v);	__isl_overload								__isl_give isl_multi_val *isl_multi_val_scale_multi_val(		__isl_take isl_multi_val *multi,					__isl_take isl_multi_val *mv);					__isl_overload								__isl_give isl_multi_val *isl_multi_val_scale_down_multi_val(		__isl_take isl_multi_val *multi,					__isl_take isl_multi_val *mv);					__isl_give isl_multi_val *isl_multi_val_mod_multi_val(			__isl_take isl_multi_val *multi,					__isl_take isl_multi_val *mv);					__isl_export								__isl_give isl_multi_val *isl_multi_val_add(				__isl_take isl_multi_val *multi1,					__isl_take isl_multi_val *multi2);				__isl_export								__isl_give isl_multi_val *isl_multi_val_sub(				__isl_take isl_multi_val *multi1,					__isl_take isl_multi_val *multi2);				__isl_export								__isl_give isl_multi_val *isl_multi_val_neg(		 		__isl_take isl_multi_val *multi);
+__isl_export								__isl_give isl_multi_val *isl_multi_val_min(				__isl_take isl_multi_val *multi1,					__isl_take isl_multi_val *multi2);				__isl_export								__isl_give isl_multi_val *isl_multi_val_max(				__isl_take isl_multi_val *multi1,					__isl_take isl_multi_val *multi2);
+__isl_export								__isl_give isl_multi_val *isl_multi_val_zero(				__isl_take isl_space *space);
+isl_bool isl_multi_val_involves_nan(					__isl_keep isl_multi_val *multi);
+isl_size isl_multi_val_dim(__isl_keep isl_multi_val *multi,		enum isl_dim_type type);					__isl_give isl_multi_val *isl_multi_val_drop_dims(			__isl_take isl_multi_val *multi, enum isl_dim_type type,		unsigned first, unsigned n);					isl_bool isl_multi_val_involves_dims(					__isl_keep isl_multi_val *multi, enum isl_dim_type type,		unsigned first, unsigned n);					__isl_give isl_multi_val *isl_multi_val_insert_dims(			__isl_take isl_multi_val *multi, enum isl_dim_type type,		unsigned first, unsigned n);					__isl_give isl_multi_val *isl_multi_val_add_dims(			__isl_take isl_multi_val *multi, enum isl_dim_type type,		unsigned n);							__isl_give isl_multi_val *						isl_multi_val_project_domain_on_params(					__isl_take isl_multi_val *multi);
+int isl_multi_val_find_dim_by_name(					__isl_keep isl_multi_val *multi,					enum isl_dim_type type, const char *name);			int isl_multi_val_find_dim_by_id(						__isl_keep isl_multi_val *multi, enum isl_dim_type type,		__isl_keep isl_id *id);						__isl_give isl_id *isl_multi_val_get_dim_id(				__isl_keep isl_multi_val *multi,					enum isl_dim_type type, unsigned pos);				__isl_give isl_multi_val *isl_multi_val_set_dim_name(			__isl_take isl_multi_val *multi,					enum isl_dim_type type, unsigned pos, const char *s);		__isl_give isl_multi_val *isl_multi_val_set_dim_id(			__isl_take isl_multi_val *multi,					enum isl_dim_type type, unsigned pos, __isl_take isl_id *id);
+const char *isl_multi_val_get_tuple_name(					__isl_keep isl_multi_val *multi, enum isl_dim_type type);	isl_bool isl_multi_val_has_tuple_id(					__isl_keep isl_multi_val *multi, enum isl_dim_type type);	__isl_give isl_id *isl_multi_val_get_tuple_id(				__isl_keep isl_multi_val *multi, enum isl_dim_type type);	__isl_give isl_multi_val *isl_multi_val_set_tuple_name(			__isl_take isl_multi_val *multi,					enum isl_dim_type type, const char *s);				__isl_give isl_multi_val *isl_multi_val_set_tuple_id(			__isl_take isl_multi_val *multi,					enum isl_dim_type type, __isl_take isl_id *id);			__isl_give isl_multi_val *isl_multi_val_reset_tuple_id(			__isl_take isl_multi_val *multi, enum isl_dim_type type);
+__isl_export								__isl_give isl_multi_val *isl_multi_val_product(			__isl_take isl_multi_val *multi1,					__isl_take isl_multi_val *multi2);				__isl_give isl_multi_val *isl_multi_val_splice(				__isl_take isl_multi_val *multi1, unsigned in_pos,			unsigned out_pos, __isl_take isl_multi_val *multi2);
+
+__isl_export
+__isl_give isl_val *isl_val_zero(isl_ctx *ctx);
+__isl_export
+__isl_give isl_val *isl_val_one(isl_ctx *ctx);
+__isl_export
+__isl_give isl_val *isl_val_negone(isl_ctx *ctx);
+__isl_export
+__isl_give isl_val *isl_val_nan(isl_ctx *ctx);
+__isl_export
+__isl_give isl_val *isl_val_infty(isl_ctx *ctx);
+__isl_export
+__isl_give isl_val *isl_val_neginfty(isl_ctx *ctx);
+__isl_constructor
+__isl_give isl_val *isl_val_int_from_si(isl_ctx *ctx, long i);
+__isl_give isl_val *isl_val_int_from_ui(isl_ctx *ctx, unsigned long u);
+__isl_give isl_val *isl_val_int_from_chunks(isl_ctx *ctx, size_t n,
+	size_t size, const void *chunks);
+
+__isl_give isl_val *isl_val_copy(__isl_keep isl_val *v);
+__isl_null isl_val *isl_val_free(__isl_take isl_val *v);
+
+isl_ctx *isl_val_get_ctx(__isl_keep isl_val *val);
+uint32_t isl_val_get_hash(__isl_keep isl_val *val);
+__isl_export
+long isl_val_get_num_si(__isl_keep isl_val *v);
+__isl_export
+long isl_val_get_den_si(__isl_keep isl_val *v);
+__isl_give isl_val *isl_val_get_den_val(__isl_keep isl_val *v);
+double isl_val_get_d(__isl_keep isl_val *v);
+isl_size isl_val_n_abs_num_chunks(__isl_keep isl_val *v, size_t size);
+isl_stat isl_val_get_abs_num_chunks(__isl_keep isl_val *v, size_t size,
+	void *chunks);
+
+__isl_give isl_val *isl_val_set_si(__isl_take isl_val *v, long i);
+
+__isl_export
+__isl_give isl_val *isl_val_abs(__isl_take isl_val *v);
+__isl_export
+__isl_give isl_val *isl_val_neg(__isl_take isl_val *v);
+__isl_export
+__isl_give isl_val *isl_val_inv(__isl_take isl_val *v);
+__isl_export
+__isl_give isl_val *isl_val_floor(__isl_take isl_val *v);
+__isl_export
+__isl_give isl_val *isl_val_ceil(__isl_take isl_val *v);
+__isl_export
+__isl_give isl_val *isl_val_trunc(__isl_take isl_val *v);
+__isl_give isl_val *isl_val_2exp(__isl_take isl_val *v);
+__isl_export
+__isl_give isl_val *isl_val_pow2(__isl_take isl_val *v);
+__isl_export
+__isl_give isl_val *isl_val_min(__isl_take isl_val *v1, __isl_take isl_val *v2);
+__isl_export
+__isl_give isl_val *isl_val_max(__isl_take isl_val *v1, __isl_take isl_val *v2);
+__isl_export
+__isl_give isl_val *isl_val_add(__isl_take isl_val *v1, __isl_take isl_val *v2);
+__isl_give isl_val *isl_val_add_ui(__isl_take isl_val *v1, unsigned long v2);
+__isl_export
+__isl_give isl_val *isl_val_sub(__isl_take isl_val *v1, __isl_take isl_val *v2);
+__isl_give isl_val *isl_val_sub_ui(__isl_take isl_val *v1, unsigned long v2);
+__isl_export
+__isl_give isl_val *isl_val_mul(__isl_take isl_val *v1, __isl_take isl_val *v2);
+__isl_give isl_val *isl_val_mul_ui(__isl_take isl_val *v1, unsigned long v2);
+__isl_export
+__isl_give isl_val *isl_val_div(__isl_take isl_val *v1, __isl_take isl_val *v2);
+__isl_give isl_val *isl_val_div_ui(__isl_take isl_val *v1, unsigned long v2);
+__isl_export
+__isl_give isl_val *isl_val_mod(__isl_take isl_val *v1, __isl_take isl_val *v2);
+__isl_export
+__isl_give isl_val *isl_val_gcd(__isl_take isl_val *v1, __isl_take isl_val *v2);
+__isl_give isl_val *isl_val_gcdext(__isl_take isl_val *v1,
+	__isl_take isl_val *v2, __isl_give isl_val **x, __isl_give isl_val **y);
+
+__isl_export
+int isl_val_sgn(__isl_keep isl_val *v);
+__isl_export
+isl_bool isl_val_is_zero(__isl_keep isl_val *v);
+__isl_export
+isl_bool isl_val_is_one(__isl_keep isl_val *v);
+__isl_export
+isl_bool isl_val_is_negone(__isl_keep isl_val *v);
+__isl_export
+isl_bool isl_val_is_nonneg(__isl_keep isl_val *v);
+__isl_export
+isl_bool isl_val_is_nonpos(__isl_keep isl_val *v);
+__isl_export
+isl_bool isl_val_is_pos(__isl_keep isl_val *v);
+__isl_export
+isl_bool isl_val_is_neg(__isl_keep isl_val *v);
+__isl_export
+isl_bool isl_val_is_int(__isl_keep isl_val *v);
+__isl_export
+isl_bool isl_val_is_rat(__isl_keep isl_val *v);
+__isl_export
+isl_bool isl_val_is_nan(__isl_keep isl_val *v);
+__isl_export
+isl_bool isl_val_is_infty(__isl_keep isl_val *v);
+__isl_export
+isl_bool isl_val_is_neginfty(__isl_keep isl_val *v);
+
+__isl_export
+int isl_val_cmp_si(__isl_keep isl_val *v, long i);
+
+__isl_export
+isl_bool isl_val_lt(__isl_keep isl_val *v1, __isl_keep isl_val *v2);
+__isl_export
+isl_bool isl_val_le(__isl_keep isl_val *v1, __isl_keep isl_val *v2);
+__isl_export
+isl_bool isl_val_gt(__isl_keep isl_val *v1, __isl_keep isl_val *v2);
+isl_bool isl_val_gt_si(__isl_keep isl_val *v, long i);
+__isl_export
+isl_bool isl_val_ge(__isl_keep isl_val *v1, __isl_keep isl_val *v2);
+__isl_export
+isl_bool isl_val_eq(__isl_keep isl_val *v1, __isl_keep isl_val *v2);
+isl_bool isl_val_eq_si(__isl_keep isl_val *v, long i);
+__isl_export
+isl_bool isl_val_ne(__isl_keep isl_val *v1, __isl_keep isl_val *v2);
+__isl_export
+isl_bool isl_val_abs_eq(__isl_keep isl_val *v1, __isl_keep isl_val *v2);
+
+__isl_export
+isl_bool isl_val_is_divisible_by(__isl_keep isl_val *v1,
+	__isl_keep isl_val *v2);
+
+__isl_constructor
+__isl_give isl_val *isl_val_read_from_str(isl_ctx *ctx, const char *str);
+__isl_give isl_printer *isl_printer_print_val(__isl_take isl_printer *p,
+	__isl_keep isl_val *v);
+void isl_val_dump(__isl_keep isl_val *v);
+__isl_give char *isl_val_to_str(__isl_keep isl_val *v);
+
+isl_bool isl_multi_val_is_zero(__isl_keep isl_multi_val *mv);
+
+__isl_overload
+__isl_give isl_multi_val *isl_multi_val_add_val(__isl_take isl_multi_val *mv,
+	__isl_take isl_val *v);
+__isl_give isl_multi_val *isl_multi_val_mod_val(__isl_take isl_multi_val *mv,
+	__isl_take isl_val *v);
+
+__isl_constructor
+__isl_give isl_multi_val *isl_multi_val_read_from_str(isl_ctx *ctx,
+	const char *str);
+__isl_give isl_printer *isl_printer_print_multi_val(__isl_take isl_printer *p,
+	__isl_keep isl_multi_val *mv);
+void isl_multi_val_dump(__isl_keep isl_multi_val *mv);
+__isl_give char *isl_multi_val_to_str(__isl_keep isl_multi_val *mv);
+
+isl_ctx *isl_val_list_get_ctx(__isl_keep isl_val_list *list);	__isl_constructor								__isl_give isl_val_list *isl_val_list_from_val(				__isl_take isl_val *el);					__isl_constructor								__isl_give isl_val_list *isl_val_list_alloc(isl_ctx *ctx, int n);	__isl_give isl_val_list *isl_val_list_copy(				__isl_keep isl_val_list *list);				__isl_null isl_val_list *isl_val_list_free(				__isl_take isl_val_list *list);				__isl_export									__isl_give isl_val_list *isl_val_list_add(				__isl_take isl_val_list *list,					__isl_take isl_val *el);					__isl_export									__isl_give isl_val_list *isl_val_list_insert(				__isl_take isl_val_list *list, unsigned pos,				__isl_take isl_val *el);					__isl_export									__isl_give isl_val_list *isl_val_list_drop(				__isl_take isl_val_list *list, unsigned first, unsigned n);	__isl_export									__isl_give isl_val_list *isl_val_list_clear(				__isl_take isl_val_list *list);				__isl_give isl_val_list *isl_val_list_swap(				__isl_take isl_val_list *list, unsigned pos1,			unsigned pos2);							__isl_give isl_val_list *isl_val_list_reverse(				__isl_take isl_val_list *list);				__isl_export									__isl_give isl_val_list *isl_val_list_concat(				__isl_take isl_val_list *list1,					__isl_take isl_val_list *list2);				__isl_export									isl_size isl_val_list_size(__isl_keep isl_val_list *list);	isl_size isl_val_list_n_val(__isl_keep isl_val_list *list);	__isl_export									__isl_give isl_val *isl_val_list_get_at(					__isl_keep isl_val_list *list, int index);			__isl_give struct isl_val *isl_val_list_get_val(				__isl_keep isl_val_list *list, int index);			__isl_give struct isl_val_list *isl_val_list_set_val(			__isl_take struct isl_val_list *list, int index,			__isl_take struct isl_val *el);				__isl_export									isl_stat isl_val_list_foreach(__isl_keep isl_val_list *list,		isl_stat (*fn)(__isl_take isl_val *el, void *user),			void *user);							isl_bool isl_val_list_every(__isl_keep isl_val_list *list,		isl_bool (*test)(__isl_keep isl_val *el, void *user),			void *user);							__isl_give isl_val_list *isl_val_list_map(				__isl_take isl_val_list *list,					__isl_give isl_val * (*fn)(__isl_take isl_val *el,				void *user),							void *user);							__isl_give isl_val_list *isl_val_list_sort(				__isl_take isl_val_list *list,					int (*cmp)(__isl_keep struct isl_val *a,					__isl_keep struct isl_val *b,						void *user), void *user);				isl_stat isl_val_list_foreach_scc(__isl_keep isl_val_list *list,		isl_bool (*follows)(__isl_keep struct isl_val *a,					__isl_keep struct isl_val *b, void *user),		void *follows_user,							isl_stat (*fn)(__isl_take isl_val_list *scc, void *user),		void *fn_user);							__isl_give char *isl_val_list_to_str(					__isl_keep isl_val_list *list);				__isl_give isl_printer *isl_printer_print_val_list(				__isl_take isl_printer *p, __isl_keep isl_val_list *list);	void isl_val_list_dump(__isl_keep isl_val_list *list);
