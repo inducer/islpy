@@ -21,27 +21,32 @@
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-#needs_sphinx = '1.0'
+#needs_sphinx = "1.0"
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
-# coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.intersphinx', 'sphinx.ext.imgmath']
+# coming with Sphinx (named "sphinx.ext.*") or your custom ones.
+extensions = [
+        "sphinx.ext.autodoc",
+        "sphinx.ext.intersphinx",
+        "sphinx.ext.imgmath",
+        "sphinx_copybutton",
+        ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The encoding of source files.
-#source_encoding = 'utf-8-sig'
+#source_encoding = "utf-8-sig"
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = u'islpy'
-copyright = u'2011-16, Andreas Kloeckner'
+project = u"islpy"
+copyright = u"2011-16, Andreas Kloeckner"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -50,7 +55,7 @@ copyright = u'2011-16, Andreas Kloeckner'
 # The short X.Y version.
 ver_dic = {}
 with open("../islpy/version.py") as vfile:
-    exec(compile(vfile.read(), "../islpy/version.py", 'exec'), ver_dic)
+    exec(compile(vfile.read(), "../islpy/version.py", "exec"), ver_dic)
 
 version = ".".join(str(x) for x in ver_dic["VERSION"])
 # The full version, including alpha/beta/rc tags.
@@ -68,7 +73,7 @@ release = ver_dic["VERSION_TEXT"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ["_build"]
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -85,7 +90,7 @@ exclude_patterns = ['_build']
 #show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
@@ -93,23 +98,13 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ---------------------------------------------------
 
-html_theme = "alabaster"
+html_theme = "furo"
 
 html_theme_options = {
-        "extra_nav_links": {
-            "🚀 Github": "https://github.com/inducer/islpy",
-            "💾 Download Releases": "https://pypi.python.org/pypi/islpy",
-            }
         }
 
 html_sidebars = {
-    '**': [
-        'about.html',
-        'navigation.html',
-        'relations.html',
-        'searchbox.html',
-    ]
-}
+        }
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -135,7 +130,7 @@ html_sidebars = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = []
 
-# If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
+# If not '', a "Last updated on:" timestamp is inserted at every page bottom,
 # using the given strftime format.
 #html_last_updated_fmt = '%b %d, %Y'
 
@@ -177,22 +172,22 @@ html_static_path = []
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'islpydoc'
+htmlhelp_basename = "islpydoc"
 
 
 # -- Options for LaTeX output --------------------------------------------------
 
-# The paper size ('letter' or 'a4').
-#latex_paper_size = 'letter'
+# The paper size ("letter" or "a4").
+#latex_paper_size = "letter"
 
-# The font size ('10pt', '11pt' or '12pt').
-#latex_font_size = '10pt'
+# The font size ("10pt", "11pt" or "12pt").
+#latex_font_size = "10pt"
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ('index', 'islpy.tex', u'islpy Documentation',
-    u'Andreas Kloeckner', 'manual'),
+    ("index", "islpy.tex", u"islpy Documentation",
+    u"Andreas Kloeckner", "manual"),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -224,8 +219,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'islpy', u'islpy Documentation',
-     [u'Andreas Kloeckner'], 1)
+    ("index", "islpy", u"islpy Documentation",
+     [u"Andreas Kloeckner"], 1)
 ]
 
 
@@ -258,7 +253,7 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
         del lines[:]
 
     from inspect import isclass, isroutine
-    UNDERSCORE_WHITELIST = ["__len__", "__hash__", "__eq__", "__ne__"]
+    UNDERSCORE_WHITELIST = ["__len__", "__hash__", "__eq__", "__ne__"]  # noqa: N806
     if isclass(obj) and obj.__name__[0].isupper():
         methods = [nm for nm in dir(obj)
                 if isroutine(getattr(obj, nm))
