@@ -67,6 +67,8 @@ an idea.
     ref_flow.rst
     ref_schedule
     ref_containers
+    🚀 Github <https://github.com/inducer/islpy>
+    💾 Download Releases <https://pypi.python.org/pypi/islpy>
 
 Indices and tables
 ------------------
