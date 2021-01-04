@@ -115,6 +115,12 @@ intersphinx_mapping = {
         "https://docs.python.org/3/": None,
         }
 
+
+# mostly a no-op on the pybind parts for now:
+# https://github.com/pybind/pybind11/issues/945
+autodoc_typehints = "description"
+
+
 def autodoc_process_signature(app, what, name, obj, options, signature,
         return_annotation):
     from inspect import ismethod
