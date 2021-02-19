@@ -12,6 +12,7 @@
 # serve to show the default.
 
 #import sys, os
+import re
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -142,6 +143,8 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
     if any("Members" in ln for ln in lines):
         del lines[:]
 
+    arg_list_re = re.compile(r"^([a-zA-Z0-9_]+)\((.*?)\)")
+
     from inspect import isclass, isroutine
     UNDERSCORE_WHITELIST = ["__len__", "__hash__", "__eq__", "__ne__"]  # noqa: N806
     if isclass(obj) and obj.__name__[0].isupper():
@@ -149,17 +152,33 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
                 if isroutine(getattr(obj, nm))
                 and (not nm.startswith("_") or nm in UNDERSCORE_WHITELIST)]
 
-        def gen_method_string(meth):
-            result = ":meth:`%s`" % meth
-            if getattr(obj, "_" + meth + "_is_static", False):
-                result += " (static)"
+        def gen_method_string(meth_name):
+            try:
+                result = ":meth:`%s`" % meth_name
+                meth_obj = getattr(obj, meth_name)
+                if meth_obj.__doc__ is None:
+                    return result
 
-            return result
+                doc_match = arg_list_re.match(meth_obj.__doc__)
+                if doc_match is None:
+                    #print(f"'{meth_obj.__doc__}' did not match arg list RE")
+                    return result
+
+                arg_list = doc_match.group(2).split(", ")
+
+                if "self" not in arg_list:
+                    result += " (static)"
+
+                return result
+            except Exception:
+                from traceback import print_exc
+                print_exc()
+                raise
 
         if methods:
-            lines[:] = [".. hlist::", "  :columns: 3", ""] + [
-                    "  * "+gen_method_string(meth)
-                    for meth in methods] + lines
+            lines[:] = [".. hlist::", "  :columns: 2", ""] + [
+                    "  * "+gen_method_string(meth_name)
+                    for meth_name in methods] + lines
 
             for nm in methods:
                 underscore_autodoc = []
