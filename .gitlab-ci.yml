@@ -1,7 +1,7 @@
 Python 3:
   script: |
     EXTRA_INSTALL="numpy"
-    curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
+    curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/main/build-and-test-py-project.sh
     . ./build-and-test-py-project.sh
   tags:
   - python3
@@ -14,7 +14,7 @@ Python 3:
 Examples:
   script: |
     EXTRA_INSTALL="matplotlib numpy"
-    curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/ci-support.sh
+    curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/main/ci-support.sh
     . ./ci-support.sh
     build_py_project_in_venv
     run_examples
@@ -25,7 +25,7 @@ Examples:
 
 Python 3 without small-integer opt:
   script: |
-    curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
+    curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/main/build-and-test-py-project.sh
     ./configure.py --no-use-imath-sio
     . ./build-and-test-py-project.sh
   tags:
@@ -55,7 +55,7 @@ Python 3 + Barvinok:
 PyPy3:
   script:
   - export PY_EXE=pypy3
-  - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-and-test-py-project.sh
+  - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/main/build-and-test-py-project.sh
   - ". ./build-and-test-py-project.sh"
   allow_failure: true
   tags:
@@ -68,16 +68,16 @@ PyPy3:
 
 Documentation:
   script:
-  - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/build-docs.sh
+  - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/main/build-docs.sh
   - ". ./build-docs.sh"
   tags:
   - python3
   only:
-  - master
+  - main
 
 Flake8:
   script:
-  - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/master/prepare-and-run-flake8.sh
+  - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/main/prepare-and-run-flake8.sh
   - . ./prepare-and-run-flake8.sh "$CI_PROJECT_NAME" test gen_wrap.py examples
   tags:
   - python3

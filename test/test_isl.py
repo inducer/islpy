@@ -402,7 +402,6 @@ def test_union_casts():
 
 
 def test_remove_map_if_callback():
-
     ctx = isl.Context()
 
     umap = isl.UnionMap.read_from_str(ctx, "{A[0] -> [1]; B[1] -> [2]}")
@@ -427,6 +426,20 @@ def test_remove_map_if_callback_exc():
     with pytest.raises(isl.Error):
         umap3 = umap.remove_map_if(callback_throws_exception)
         del umap3
+
+
+def test_sched_constraints_set_validity():
+    domain = isl.UnionSet("[n] -> { A[i] : 0 <= i < n; B[i] : 0 <= i < n }")
+    validity = isl.UnionMap("[n] -> { A[i] -> B[i] : 0 <= i < n }")
+    sc = isl.ScheduleConstraints.on_domain(domain)
+
+    sc = sc.set_validity(validity)
+    validity2 = sc.get_validity()
+
+    print(validity)
+    print(validity2)
+
+    assert str(validity) == str(validity2)
 
 
 if __name__ == "__main__":

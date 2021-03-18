@@ -63,10 +63,15 @@ an idea.
     misc
     reference
     ref_fundamental
+    ref_expr
+    ref_set
+    ref_geo
     ref_ast
-    ref_flow.rst
+    ref_flow
     ref_schedule
     ref_containers
+    🚀 Github <https://github.com/inducer/islpy>
+    💾 Download Releases <https://pypi.python.org/pypi/islpy>
 
 Indices and tables
 ------------------
