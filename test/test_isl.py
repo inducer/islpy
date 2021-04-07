@@ -116,6 +116,24 @@ def test_pickling():
         assert inst.is_equal(inst2)
 
 
+def test_apostrophes_during_pickling():
+    # Create map and manually insert apostrophes, which are ignored by isl
+    initial_map = isl.Map(
+        "[n, m'] -> {[i', j] -> [i] : i = i' + 1 and 0 <= i, i' < n and j = m'}"
+        ).set_dim_name(
+            isl.dim_type.in_, 0, "i'",
+        ).set_dim_name(
+            isl.dim_type.param, 1, "m'",
+        )
+
+    from pickle import dumps, loads
+    unpickled_map = loads(dumps(initial_map))
+
+    # Make sure unpickled map still has apostrophes
+    assert initial_map.get_var_dict() == unpickled_map.get_var_dict()
+    assert initial_map == unpickled_map
+
+
 def test_get_id_dict():
     print(isl.Set("[a] -> {[b]}").get_id_dict(isl.dim_type.param))
 
