@@ -303,6 +303,7 @@ def main():
                 ],
           install_requires=[
               "pytest>=2",
+              "pytools",
               # "Mako>=0.3.6",
               "six",
               ],
