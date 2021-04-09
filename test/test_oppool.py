@@ -1,15 +1,15 @@
-import islpy as isl
-from islpy import oppool as oppool
+import islpy
+import islpy.oppool as isl
 
 
 def test_pooled_basic_set_intersect():
-    ctx = isl.DEFAULT_CONTEXT
-    pool = oppool.ISLOpMemoizer()
-    set1 = oppool.NormalizedISLBasicSet.read_from_str(ctx, "{[i]: 0<=i<10}")
-    set2 = oppool.NormalizedISLBasicSet.read_from_str(ctx, "{[i]: 0<=i<5}")
+    ctx = islpy.DEFAULT_CONTEXT
+    pool = isl.ISLOpMemoizer()
+    set1 = isl.BasicSet.read_from_str(ctx, "{[i]: 0<=i<10}")
+    set2 = isl.BasicSet.read_from_str(ctx, "{[i]: 0<=i<5}")
 
-    set3 = oppool.NormalizedISLBasicSet.read_from_str(ctx, "{[j]: 0<=j<10}")
-    set4 = oppool.NormalizedISLBasicSet.read_from_str(ctx, "{[j]: 0<=j<5}")
+    set3 = isl.BasicSet.read_from_str(ctx, "{[j]: 0<=j<10}")
+    set4 = isl.BasicSet.read_from_str(ctx, "{[j]: 0<=j<5}")
 
     set1_and_set2 = set1.intersect(pool, set2)
     set3_and_set4 = set3.intersect(pool, set4)
