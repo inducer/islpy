@@ -103,8 +103,6 @@ class ISLOpMemoizer:
     cache: Dict[Any, Any] = field(default_factory=dict)
 
     def __call__(self, f, args: Tuple[Any, ...]):
-        global total
-        global hits
         try:
             return self.cache[(str(f), args)]
         except KeyError:
