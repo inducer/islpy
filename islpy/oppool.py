@@ -20,7 +20,7 @@ THE SOFTWARE.
 """
 
 
-from functools import cached_property
+from pytools import memoize_method
 import islpy as isl
 from dataclasses import dataclass, field
 from typing import Union, Dict, Any, Optional, Tuple, FrozenSet, List
@@ -131,7 +131,8 @@ class NormalizedISLObj:
         ground_obj, lift_map = normalize(obj)
         return BasicSet(ground_obj, lift_map)
 
-    @cached_property
+    @property
+    @memoize_method
     def unlift_map(self) -> Dict[str, str]:
         return {v: k for k, v in self.lift_map.items()}
 
