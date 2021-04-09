@@ -34,12 +34,10 @@ BASE_CLASSES = (isl.Aff, isl.BasicSet, isl.Set, isl.BasicMap, isl.Map)
 def _gen_name(vng: UniqueNameGenerator, dt: isl.dim_type):
     if dt == isl.dim_type.param:
         return vng("param")
-    elif dt == isl.dim_type.set:
-        return vng("set")
-    elif dt == isl.dim_type.in_:
-        return vng("in")
     elif dt == isl.dim_type.out:
         return vng("out")
+    elif dt == isl.dim_type.in_:
+        return vng("in")
     else:
         raise NotImplementedError(dt)
 
@@ -50,10 +48,13 @@ def normalize(obj: BaseType) -> Tuple[BaseType, Dict[str, str]]:
     lift_map = {}
     new_obj = obj
 
-    for old_name, (dt, pos) in obj.get_var_dict().items():
-        new_name = _gen_name(vng, dt)
-        new_obj = new_obj.set_dim_name(dt, pos, new_name)
-        lift_map[new_name] = old_name
+    for dt in [isl.dim_type.in_, isl.dim_type.out, isl.dim_type.div,
+               isl.dim_type.param]:
+        for pos in range(obj.dim(dt)):
+            new_name = _gen_name(vng, dt)
+            old_name = obj.get_dim_name(dt, pos) or new_name
+            new_obj = new_obj.set_dim_name(dt, pos, new_name)
+            lift_map[new_name] = old_name
 
     return new_obj, lift_map
 
@@ -93,6 +94,22 @@ def normalize_binary_isl_obj(obj1: "NormalizedISLObj",
 
     return (obj1.copy(new_obj1, lift_map1),
             obj2.copy(new_obj2, lift_map2))
+
+
+def normalize_based_on_template(obj: "NormalizedISLObj",
+                                tmpl: "NormalizedISLObj") -> "NormalizedISLObj":
+    """
+    Like :func:`normalize_binary_isl_obj`, but obj1 does not support set_dim_name.
+    """
+    assert set(obj.lift_map.values()) == set(tmpl.lift_map.values())
+    obj_var_dict = obj.ground_obj.get_var_dict()
+    new_ground = obj.ground_obj
+    for name_in_tmplt_grnd, name in tmpl.lift_map.items():
+        name_in_obj_grnd = obj.unlift_map[name]
+        dt, pos = obj_var_dict[name_in_obj_grnd]
+        new_ground = new_ground.set_dim_name(dt, pos, name_in_tmplt_grnd)
+
+    return obj.copy(new_ground, tmpl.lift_map)
 
 
 @dataclass
@@ -152,6 +169,8 @@ class NormalizedISLObj:
             else:
                 return False
 
+        assert all(isinstance(k, str) and isinstance(v, str)
+                   for k, v in self.lift_map.items())
         assert all((self.ground_obj.has_dim_id(dt, pos)
                     and _no_user(self.ground_obj.get_dim_id(dt, pos)))
                    for (dt, pos) in self.ground_obj.get_var_dict().values())
@@ -167,8 +186,8 @@ class NormalizedISLObj:
     def set_dim_name(self, op_pool: ISLOpMemoizer,
                      type: isl.dim_type, pos: int,
                      s: str) -> "NormalizedISLObj":
-        base_name = op_pool(type(self.ground_obj).get_dim_name,
-                            (self.ground_obj, pos))
+        base_name = op_pool(self.ground_obj.__class__.get_dim_name,
+                            (self.ground_obj, type, pos))
         lift_map = self.lift_map.copy()
         lift_map[base_name] = s
         return self.copy(lift_map=lift_map)
@@ -224,8 +243,8 @@ class NormalizedISLObj:
         lift_map = self.lift_map.copy()
 
         for i in range(pos, pos+n):
-            old_name = updated_grnd_obj.get_dim_name(type, i)
             new_name = _gen_name(vng, type)
+            old_name = updated_grnd_obj.get_dim_name(type, i) or new_name
             updated_grnd_obj = updated_grnd_obj.set_dim_name(type, i, new_name)
             lift_map[new_name] = old_name
 
@@ -272,7 +291,24 @@ class LocalSpace(NormalizedISLObj):
 
 
 class Constraint(NormalizedISLObj):
-    pass
+    def __post_init__(self):
+        def _no_user(id: isl.Id):
+            try:
+                id.user
+            except TypeError:
+                return True
+            else:
+                return False
+
+        assert all(isinstance(k, str) and isinstance(v, str)
+                   for k, v in self.lift_map.items())
+        assert isinstance(self.ground_obj, getattr(isl, self.__class__.__name__))
+        assert isinstance(self.lift_map, dict)
+
+    @staticmethod
+    def equality_from_aff(aff: "Aff") -> "Constraint":
+        return Constraint(isl.Constraint.equality_from_aff(aff.ground_obj),
+                          aff.lift_map)
 
 
 class BasicSet(NormalizedISLObj):
@@ -316,10 +352,11 @@ class BasicSet(NormalizedISLObj):
 
     def project_out(self, op_pool: ISLOpMemoizer, type: isl.dim_type, first:
                     int, n: int) -> "BasicSet":
-        projected_out_grnd = op_pool(isl.BasicSet.project_out, (type, first,
-                                                                n))
-        lift_map = {self.lift_map[k]
-                    for k in op_pool(isl.BasicSet.get_var_dict, ())}
+        projected_out_grnd = op_pool(isl.BasicSet.project_out, (self.ground_obj,
+                                                                type, first, n))
+        lift_map = {k: self.lift_map[k]
+                    for k in op_pool(isl.BasicSet.get_var_dict,
+                                     (projected_out_grnd,))}
         return self.copy(projected_out_grnd, lift_map)
 
     def project_out_except(self, op_pool: ISLOpMemoizer,
@@ -373,6 +410,12 @@ class BasicSet(NormalizedISLObj):
 
     def plain_is_universe(self, op_pool: ISLOpMemoizer) -> bool:
         return op_pool(isl.BasicSet.plain_is_universe, (self.ground_obj,))
+
+    def add_constraint(self, op_pool: ISLOpMemoizer,
+                       constraint: Constraint) -> "BasicSet":
+        self = normalize_based_on_template(self, constraint)
+        return self.copy(op_pool(isl.BasicSet.add_constraint,
+                                 (self.ground_obj, constraint.ground_obj)))
 
 
 class Set(NormalizedISLObj):
@@ -430,10 +473,11 @@ class Set(NormalizedISLObj):
 
     def project_out(self, op_pool: ISLOpMemoizer, type: isl.dim_type,
                     first: int, n: int) -> "Set":
-        projected_out_grnd = op_pool(isl.Set.project_out, (type, first,
-                                                           n))
-        lift_map = {self.lift_map[k]
-                    for k in op_pool(isl.Set.get_var_dict, ())}
+        projected_out_grnd = op_pool(isl.Set.project_out, (self.ground_obj,
+                                                           type, first, n))
+        lift_map = {k: self.lift_map[k]
+                    for k in op_pool(isl.Set.get_var_dict,
+                                     (projected_out_grnd,))}
         return self.copy(projected_out_grnd, lift_map)
 
     def eliminate(self, op_pool: ISLOpMemoizer, type: isl.dim_type,
@@ -514,7 +558,8 @@ class Aff(NormalizedISLObj):
         from warnings import warn
         warn("__add__ does not go through op_pool. Use Aff.add.",
              stacklevel=2)
-        return self+other
+        assert isinstance(other, int)
+        return self.copy(self.ground_obj+other)
 
     def __sub__(self, other):
         from warnings import warn
@@ -549,6 +594,11 @@ class Aff(NormalizedISLObj):
 
     def dim(self, op_pool: ISLOpMemoizer, type: isl.dim_type) -> int:
         return op_pool(isl.Aff.dim, (self.ground_obj, type))
+
+    def add_coefficient_val(self, op_pool: ISLOpMemoizer, type: isl.dim_type,
+                            pos: int, v: Union[isl.Val, int]):
+        return self.copy(op_pool(isl.Aff.add_coefficient_val, (self.ground_obj, type,
+                                                               pos, v)))
 
 
 class PwAff(NormalizedISLObj):
