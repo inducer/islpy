@@ -24,6 +24,7 @@ import islpy._isl as _isl
 from islpy.version import VERSION, VERSION_TEXT  # noqa
 import six
 from six.moves import range
+from pytools import memoize_on_first_arg
 
 
 Error = _isl.Error
@@ -593,6 +594,7 @@ def _add_functionality():
         """
         return self.get_space().get_id_dict(dimtype)
 
+    @memoize_on_first_arg
     def obj_get_var_dict(self, dimtype=None):
         """Return a dictionary mapping variable names to tuples of
         (:class:`dim_type`, index).
@@ -607,6 +609,7 @@ def _add_functionality():
         """Return a list of :class:`Id` instances for :class:`dim_type` *dimtype*."""
         return [self.get_dim_name(dimtype, i) for i in range(self.dim(dimtype))]
 
+    @memoize_on_first_arg
     def obj_get_var_names(self, dimtype):
         """Return a list of dim names (in order) for :class:`dim_type` *dimtype*."""
         return [self.get_dim_name(dimtype, i) for i in range(self.dim(dimtype))]
