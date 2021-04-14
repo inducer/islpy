@@ -24,6 +24,7 @@ import islpy._isl as _isl
 from islpy.version import VERSION, VERSION_TEXT  # noqa
 import six
 from six.moves import range
+from pytools import memoize_on_first_arg
 
 
 Error = _isl.Error
@@ -155,11 +156,17 @@ def _get_default_context():
     return DEFAULT_CONTEXT
 
 
-def _read_from_str_wrapper(cls, context, s):
+def _read_from_str_wrapper(cls, context, s, dims_with_apostrophes):
     """A callable to reconstitute instances from strings for the benefit
     of Python's ``__reduce__`` protocol.
     """
-    return cls.read_from_str(context, s)
+    cls_from_str = cls.read_from_str(context, s)
+
+    # Apostrophes in dim names have been lost, put them back
+    for dim_name, (dim_type, dim_idx) in dims_with_apostrophes.items():
+        cls_from_str = cls_from_str.set_dim_name(dim_type, dim_idx, dim_name)
+
+    return cls_from_str
 
 
 def _add_functionality():
@@ -210,7 +217,16 @@ def _add_functionality():
         ctx = self.get_ctx()
         prn = Printer.to_str(ctx)
         prn = getattr(prn, "print_"+self._base_name)(self)
-        return (_read_from_str_wrapper, (type(self), ctx, prn.get_str()))
+
+        # Reconstructing from string will remove apostrophes in dim names,
+        # so keep track of dim names with apostrophes
+        dims_with_apostrophes = dict(
+            (dname, pos) for dname, pos in self.get_var_dict().items()
+            if "'" in dname)
+
+        return (
+            _read_from_str_wrapper,
+            (type(self), ctx, prn.get_str(), dims_with_apostrophes))
 
     for cls in ALL_CLASSES:
         if hasattr(cls, "read_from_str"):
@@ -578,6 +594,7 @@ def _add_functionality():
         """
         return self.get_space().get_id_dict(dimtype)
 
+    @memoize_on_first_arg
     def obj_get_var_dict(self, dimtype=None):
         """Return a dictionary mapping variable names to tuples of
         (:class:`dim_type`, index).
@@ -592,6 +609,7 @@ def _add_functionality():
         """Return a list of :class:`Id` instances for :class:`dim_type` *dimtype*."""
         return [self.get_dim_name(dimtype, i) for i in range(self.dim(dimtype))]
 
+    @memoize_on_first_arg
     def obj_get_var_names(self, dimtype):
         """Return a list of dim names (in order) for :class:`dim_type` *dimtype*."""
         return [self.get_dim_name(dimtype, i) for i in range(self.dim(dimtype))]
