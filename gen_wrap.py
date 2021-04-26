@@ -168,6 +168,7 @@ PART_TO_CLASSES = {
             "constraint_list",
             "aff_list", "pw_aff_list", "pw_multi_aff_list",
             "ast_expr_list", "ast_node_list",
+            "qpolynomial_list",
             "pw_qpolynomial_list",
             "pw_qpolynomial_fold_list",
             "union_pw_aff_list",
