@@ -157,6 +157,7 @@ class Method:
 
 PART_TO_CLASSES = {
         # If you change this, change:
+        # - islpy/__init__.py
         # - src/wrapper/wrap_isl.hpp to add WRAP_CLASS(...)
         # - src/wrapper/wrap_isl_partN.hpp to add MAKE_WRAP(...)
         # - doc/reference.rst
