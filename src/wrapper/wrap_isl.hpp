@@ -192,7 +192,6 @@ namespace isl
   WRAP_CLASS(pw_multi_aff_list);
   WRAP_CLASS(ast_expr_list);
   WRAP_CLASS(ast_node_list);
-  WRAP_CLASS(qpolynomial_list);
   WRAP_CLASS(pw_qpolynomial_list);
   WRAP_CLASS(pw_qpolynomial_fold_list);
   WRAP_CLASS(union_pw_aff_list);
