@@ -54,6 +54,9 @@ Lists
 .. autoclass:: AstNodeList
     :members:
 
+.. autoclass:: QPolynomialList
+    :members:
+
 .. autoclass:: PwQPolynomialList
     :members:
 
