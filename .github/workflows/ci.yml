@@ -122,4 +122,21 @@ jobs:
                 build_py_project_in_conda_env
                 test_py_project
 
+    barvinok:
+        name: "Test barvinok build script"
+        runs-on: ubuntu-latest
+        steps:
+        -   uses: actions/checkout@v2
+        -
+            uses: actions/setup-python@v1
+            with:
+                python-version: "3.x"
+        -   name: "Main Script"
+            run: |
+                python3 -m venv .env
+                source .env/bin/activate
+                python -m ensurepip
+                pip install pcpp
+                "./build-with-barvinok.sh"
+
 # vim: sw=4
