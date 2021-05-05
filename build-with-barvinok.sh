@@ -6,7 +6,10 @@ set -x
 BUILD_DIR=$(mktemp -d -t islpy-barvinok-build-XXXXXXX)
 echo "BUILDING IN $BUILD_DIR"
 
-PREFIX="$HOME/pack/barvinok"
+if test "$1" = ""; then
+  echo "usage: $0 PREFIX_DIR"
+fi
+PREFIX="$1"
 NTL_VER="10.5.0"
 BARVINOK_GIT_REV="barvinok-0.41.3"
 NPROCS=6
@@ -63,3 +66,5 @@ cd islpy
   --isl-lib-dir=$PREFIX/lib \
   --use-barvinok
 CC=g++ LDSHARED="g++ -shared" python setup.py install
+
+# vim: sw=2
