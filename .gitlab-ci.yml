@@ -44,6 +44,8 @@ Python 3 + Barvinok:
   - python -m ensurepip
   - pip install pcpp
   - "./build-with-barvinok.sh"
+  - "(cd test; python -m pytest)"
+
   tags:
   - python3
   except:
