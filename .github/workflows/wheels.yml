@@ -9,7 +9,7 @@ on:
       - v*
 jobs:
   build:
-    name: Publish for ${{ matrix.os }}
+    name: "Wheel Py${{ matrix.python_version }} for ${{ matrix.os }} ${{matrix.arch }}"
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
