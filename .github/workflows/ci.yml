@@ -136,7 +136,8 @@ jobs:
                 python3 -m venv .env
                 source .env/bin/activate
                 python -m ensurepip
-                pip install pcpp
-                "./build-with-barvinok.sh"
+                pip install pcpp pytest
+                ./build-with-barvinok.sh
+                (cd test; python -m pytest)
 
 # vim: sw=4
