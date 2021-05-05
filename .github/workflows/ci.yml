@@ -30,7 +30,7 @@ jobs:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                python-version: [3.6, 3.7, 3.8]
+                python-version: [3.6, 3.8, "3.x"]
         steps:
         -   uses: actions/checkout@v2
         -
@@ -48,7 +48,7 @@ jobs:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                python-version: [3.6, 3.7, 3.8]
+                python-version: [3.6, 3.8, "3.x"]
         steps:
         -   uses: actions/checkout@v2
         -
@@ -121,5 +121,23 @@ jobs:
                 . ./ci-support.sh
                 build_py_project_in_conda_env
                 test_py_project
+
+    barvinok:
+        name: "Test barvinok build script"
+        runs-on: ubuntu-latest
+        steps:
+        -   uses: actions/checkout@v2
+        -
+            uses: actions/setup-python@v1
+            with:
+                python-version: "3.x"
+        -   name: "Main Script"
+            run: |
+                python3 -m venv .env
+                source .env/bin/activate
+                python -m ensurepip
+                pip install pcpp pytest
+                ./build-with-barvinok.sh "$HOME/barvinok-build"
+                (cd test; LD_LIBRARY_PATH="$HOME/barvinok-build/lib" python -m pytest --tb=native -rxsw)
 
 # vim: sw=4

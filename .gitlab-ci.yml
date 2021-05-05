@@ -37,13 +37,15 @@ Python 3 without small-integer opt:
       junit: test/pytest.xml
 
 Python 3 + Barvinok:
-  script:
-  - git clean -fdx
-  - python3 -m venv .env
-  - source .env/bin/activate
-  - python -m ensurepip
-  - pip install cffi pcpp
-  - "./build-with-barvinok.sh"
+  script: |
+    git clean -fdx
+    python3 -m venv .env
+    source .env/bin/activate
+    python -m ensurepip
+    pip install pcpp
+    ./build-with-barvinok.sh "$HOME/barvinok-build"
+    (cd test; LD_LIBRARY_PATH="$HOME/barvinok-build/lib" python -m pytest --tb=native -rxsw)
+
   tags:
   - python3
   except:

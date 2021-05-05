@@ -359,7 +359,7 @@ def _add_functionality():
 
         return result
 
-    def space_create_from_names(ctx, set=None, in_=None, out=None, params=[]):
+    def space_create_from_names(ctx, set=None, in_=None, out=None, params=()):
         """Create a :class:`Space` from lists of variable names.
 
         :param set_: names of `set`-type variables.
@@ -509,7 +509,7 @@ def _add_functionality():
 
     # {{{ Constraint
 
-    def eq_from_names(space, coefficients={}):
+    def eq_from_names(space, coefficients=None):
         """Create a constraint `const + coeff_1*var_1 +... == 0`.
 
         :param space: :class:`Space`
@@ -520,10 +520,12 @@ def _add_functionality():
         .. versionchanged:: 2011.3
             Eliminated the separate *const* parameter.
         """
+        if coefficients is None:
+            coefficients = {}
         c = Constraint.equality_alloc(space)
         return c.set_coefficients_by_name(coefficients)
 
-    def ineq_from_names(space, coefficients={}):
+    def ineq_from_names(space, coefficients=None):
         """Create a constraint `const + coeff_1*var_1 +... >= 0`.
 
         :param space: :class:`Space`
@@ -534,6 +536,8 @@ def _add_functionality():
         .. versionchanged:: 2011.3
             Eliminated the separate *const* parameter.
         """
+        if coefficients is None:
+            coefficients = {}
         c = Constraint.inequality_alloc(space)
         return c.set_coefficients_by_name(coefficients)
 
@@ -784,7 +788,7 @@ def _add_functionality():
         expr_like_class.__neg__ = expr_like_class.neg
 
     for qpoly_class in [QPolynomial, PwQPolynomial]:
-        expr_like_class.__pow__ = expr_like_class.pow
+        qpoly_class.__pow__ = qpoly_class.pow
 
     for aff_class in [Aff, PwAff]:
         aff_class.__mod__ = aff_class.mod_val
@@ -1263,7 +1267,7 @@ def align_two(obj1, obj2, across_dim_types=None):
     return (obj1, obj2)
 
 
-def make_zero_and_vars(set_vars, params=[], ctx=None):
+def make_zero_and_vars(set_vars, params=(), ctx=None):
     """
     :arg set_vars: an iterable of variable names, or a comma-separated string
     :arg params: an iterable of variable names, or a comma-separated string
