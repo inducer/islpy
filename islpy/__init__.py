@@ -46,7 +46,6 @@ PwMultiAffList = _isl.PwMultiAffList
 AstExprList = _isl.AstExprList
 AstNodeList = _isl.AstNodeList
 
-QPolynomialList = _isl.QPolynomialList
 PwQPolynomialList = _isl.PwQPolynomialList
 PwQPolynomialFoldList = _isl.PwQPolynomialFoldList
 
