@@ -62,6 +62,7 @@ void islpy_expose_part1(py::module &m)
   MAKE_WRAP(pw_multi_aff_list, PwMultiAffList);
   MAKE_WRAP(ast_expr_list, AstExprList);
   MAKE_WRAP(ast_node_list, AstNodeList);
+  MAKE_WRAP(qpolynomial_list, QPolynomialList);
   MAKE_WRAP(pw_qpolynomial_list, PwQPolynomialList);
   MAKE_WRAP(pw_qpolynomial_fold_list, PwQPolynomialFoldList);
   MAKE_WRAP(union_pw_aff_list, UnionPwAffList);
