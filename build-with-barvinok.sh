@@ -14,6 +14,12 @@ NTL_VER="10.5.0"
 BARVINOK_GIT_REV="barvinok-0.41.4"
 NPROCS=6
 
+function with_echo()
+{
+  echo "$@"
+  "$@"
+}
+
 if true; then
   rm -Rf "$BUILD_DIR"
 
@@ -21,7 +27,13 @@ if true; then
   cd "$BUILD_DIR"
 
   rm -Rf  islpy
-  git clone --recursive https://github.com/inducer/islpy
+  if test "$GITHUB_HEAD_REF" != ""; then
+    with_echo git clone --recursive https://github.com/inducer/islpy.git -b "$GITHUB_HEAD_REF"
+  elif test "$CI_SERVER_NAME" = "GitLab" && test "$CI_COMMIT_REF_NAME" != ""; then
+    with_echo git clone --recursive https://gitlab.tiker.net/inducer/islpy.git -b "$CI_COMMIT_REF_NAME"
+  else
+    with_echo git clone --recursive https://github.com/inducer/islpy.git
+  fi
 
   curl -L -O http://shoup.net/ntl/ntl-"$NTL_VER".tar.gz
   tar xfz ntl-"$NTL_VER".tar.gz
