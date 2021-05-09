@@ -11,7 +11,7 @@ if test "$1" = ""; then
 fi
 PREFIX="$1"
 NTL_VER="10.5.0"
-BARVINOK_GIT_REV="barvinok-0.41.4"
+BARVINOK_GIT_REV="barvinok-0.41.5"
 NPROCS=6
 
 function with_echo()
