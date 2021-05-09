@@ -89,6 +89,8 @@ jobs:
                 curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/main/ci-support.sh
                 . ci-support.sh
                 build_py_project_in_venv
+                # https://github.com/sphinx-doc/sphinx/issues/9200
+                CI_SUPPORT_SPHINX_VERSION_SPECIFIER="<4"
                 build_docs
 
     downstream_tests:
