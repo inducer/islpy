@@ -69,9 +69,13 @@ PyPy3:
       junit: test/pytest.xml
 
 Documentation:
-  script:
-  - curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/main/build-docs.sh
-  - ". ./build-docs.sh"
+  script: |
+    curl -L -O -k https://tiker.net/ci-support-v0
+    . ci-support.sh
+    build_py_project_in_venv
+    # https://github.com/sphinx-doc/sphinx/issues/9200
+    CI_SUPPORT_SPHINX_VERSION_SPECIFIER="<4"
+    build_docs
   tags:
   - python3
   only:
