@@ -90,7 +90,7 @@ jobs:
                 . ci-support.sh
                 build_py_project_in_venv
                 # https://github.com/sphinx-doc/sphinx/issues/9200
-                CI_SUPPORT_SPHINX_VERSION_SPECIFIER="<4"
+                CI_SUPPORT_SPHINX_VERSION_SPECIFIER="!=4.0.0"
                 build_docs
 
     downstream_tests:
