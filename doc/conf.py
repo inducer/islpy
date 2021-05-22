@@ -101,26 +101,10 @@ pygments_style = "sphinx"
 
 html_theme = "furo"
 
-html_theme_options = {
-        }
-
-
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = []
-
-
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
         "https://docs.python.org/3/": None,
         }
-
-
-# mostly a no-op on the pybind parts for now:
-# https://github.com/pybind/pybind11/issues/945
-autodoc_typehints = "description"
-
 
 def autodoc_process_signature(app, what, name, obj, options, signature,
         return_annotation):
