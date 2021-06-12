@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # islpy documentation build configuration file, created by
 # sphinx-quickstart on Sun Jul 10 16:41:50 2011.
@@ -46,8 +45,8 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = u"islpy"
-copyright = u"2011-16, Andreas Kloeckner"
+project = "islpy"
+copyright = "2011-16, Andreas Kloeckner"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

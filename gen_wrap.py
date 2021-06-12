@@ -38,7 +38,7 @@ ISL_SEM_TO_SEM = {
     }
 
 NON_COPYABLE = ["ctx", "printer", "access_info"]
-NON_COPYABLE_WITH_ISL_PREFIX = ["isl_"+i for i in NON_COPYABLE]
+NON_COPYABLE_WITH_ISL_PREFIX = [f"isl_{i}" for i in NON_COPYABLE]
 
 PYTHON_RESERVED_WORDS = """
 and       del       from      not       while
@@ -135,7 +135,8 @@ class Method:
 
     @property
     def is_static(self):
-        return not (self.args and self.args[0].base_type.startswith("isl_"+self.cls))
+        return not (self.args
+                and self.args[0].base_type.startswith(f"isl_{self.cls}"))
 
     @property
     def is_mutator(self):
@@ -148,7 +149,7 @@ class Method:
                 and self.args[0].base_type in NON_COPYABLE_WITH_ISL_PREFIX)
 
     def __repr__(self):
-        return "<method %s>" % self.c_name
+        return f"<method {self.c_name}>"
 
 # }}}
 
@@ -335,7 +336,7 @@ def split_at_unparenthesized_commas(s):
 def parse_arg(arg):
     if "(*" in arg:
         arg_match = FUNC_PTR_RE.match(arg)
-        assert arg_match is not None, "fptr: %s" % arg
+        assert arg_match is not None, f"fptr: {arg}"
 
         return_semantics, ret_words = filter_semantics(
                 arg_match.group(1).split())
@@ -388,14 +389,11 @@ def preprocess_with_macros(macro_header_contents, code):
                 if macro_name in ISL_SEM_TO_SEM:
                     raise OutputDirective(action=Action.IgnoreAndRemove)
 
-            return super(MacroExpandingCPreprocessor, self).on_directive_handle(
+            return super().on_directive_handle(
                     directive, toks, ifpassthru, precedingtoks)
 
     cpp = MacroExpandingCPreprocessor()
-    if sys.version_info < (3,):
-        from StringIO import StringIO
-    else:
-        from io import StringIO
+    from io import StringIO
 
     # read macro definitions, but don't output resulting code
     for macro_header in macro_header_contents:
@@ -424,15 +422,15 @@ class FunctionData:
         success = False
         for inc_dir in self.include_dirs:
             try:
-                inf = open(join(inc_dir, fname), "rt")
-            except IOError:
+                inf = open(join(inc_dir, fname))
+            except OSError:
                 pass
             else:
                 success = True
                 break
 
         if not success:
-            raise RuntimeError("header '%s' not found" % fname)
+            raise RuntimeError(f"header '{fname}' not found")
 
         try:
             return inf.read()
@@ -467,12 +465,12 @@ class FunctionData:
 
         prepro_fname = join(self.preprocessed_dir, header_hash)
         try:
-            with open(prepro_fname, "rt") as inf:
+            with open(prepro_fname) as inf:
                 return inf.read()
         except OSError:
             pass
 
-        print("preprocessing %s..." % fname)
+        print(f"preprocessing {fname}...")
         macro_header_contents = [
                 self.get_header_contents(mh)
                 for mh in self.macro_headers]
@@ -568,7 +566,7 @@ class FunctionData:
     def parse_decl(self, decl):
         decl_match = DECL_RE.match(decl)
         if decl_match is None:
-            print("WARNING: func decl regexp not matched: %s" % decl)
+            print(f"WARNING: func decl regexp not matched: {decl}")
             return
 
         return_base_type = decl_match.group(1)
@@ -652,7 +650,7 @@ class FunctionData:
         try:
             args = [parse_arg(arg) for arg in args]
         except BadArg:
-            print("SKIP: %s %s" % (class_name, name))
+            print(f"SKIP: {class_name} {name}")
             return
 
         if name in PYTHON_RESERVED_WORDS:
@@ -660,7 +658,7 @@ class FunctionData:
 
         if class_name == "options":
             assert name.startswith("set_") or name.startswith("get_"), (name, c_name)
-            name = name[:4]+"option_"+name[4:]
+            name = f"{name[:4]}option_{name[4:]}"
 
         words = return_base_type.split()
 
@@ -705,20 +703,17 @@ def get_callback(cb_name, cb):
     for arg in cb.args[:-1]:
         if arg.base_type.startswith("isl_"):
             if arg.ptr != "*":
-                raise SignatureNotSupported("unsupported callback arg: %s %s" % (
-                    arg.base_type, arg.ptr))
+                raise SignatureNotSupported(
+                        "unsupported callback arg: {arg.base_type} {arg.ptr}")
             arg_cls = arg.base_type[4:]
 
-            passed_args.append("arg_%s" % arg.name)
+            passed_args.append(f"arg_{arg.name}")
 
-            pre_call.append("""
-                %(arg_cls)s *wrapped_arg_%(name)s(new %(arg_cls)s(c_arg_%(name)s));
-                py::object arg_%(name)s(
-                    handle_from_new_ptr(wrapped_arg_%(name)s));
-                """ % dict(
-                    arg_cls=arg_cls,
-                    name=arg.name,
-                    ))
+            pre_call.append(f"""
+                {arg_cls} *wrapped_arg_{arg.name}(new {arg_cls}(c_arg_{arg.name}));
+                py::object arg_{arg.name}(
+                    handle_from_new_ptr(wrapped_arg_{arg.name}));
+                """)
 
             if arg.semantics is SEM_TAKE:
                 # We (the callback) are supposed to free the object, so
@@ -727,18 +722,18 @@ def get_callback(cb_name, cb):
             elif arg.semantics is SEM_KEEP:
                 # The caller wants to keep this object, so we simply tell our
                 # wrapper to stop managing it after the call completes.
-                post_call.append("""
-                    wrapped_arg_%(name)s->invalidate();
-                    """ % {"name": arg.name})
+                post_call.append(f"""
+                    wrapped_arg_{arg.name}->invalidate();
+                    """)
             else:
                 raise SignatureNotSupported("unsupported callback arg semantics")
 
         else:
-            raise SignatureNotSupported("unsupported callback arg: %s %s" % (
-                arg.base_type, arg.ptr))
+            raise SignatureNotSupported(
+                    "unsupported callback arg: {arg.base_type} {arg.ptr}")
 
     if cb.return_base_type in SAFE_IN_TYPES and not cb.return_ptr:
-        ret_type = "%s %s" % (cb.return_base_type, cb.return_ptr)
+        ret_type = f"{cb.return_base_type} {cb.return_ptr}"
         if cb.return_base_type == "isl_stat":
             post_call.append("""
                 if (retval.ptr() == Py_None)
@@ -759,13 +754,10 @@ def get_callback(cb_name, cb):
                     return static_cast<isl_bool>(py::cast<bool>(retval));
                 """)
         else:
-            post_call.append("""
+            post_call.append(f"""
                 else
-                    return py::cast<%(ret_type)s>(retval);
-                """ % {
-                    "ret_type": ret_type,
-                    }
-                )
+                    return py::cast<{ret_type}>(retval);
+                """)
         if cb.return_base_type == "isl_bool":
             error_return = "isl_bool_error"
         else:
@@ -777,7 +769,7 @@ def get_callback(cb_name, cb):
         elif cb.return_semantics is not SEM_GIVE:
             raise SignatureNotSupported("callback return with non-GIVE semantics")
 
-        ret_type = "%s %s" % (cb.return_base_type, cb.return_ptr)
+        ret_type = f"{cb.return_base_type} {cb.return_ptr}"
         post_call.append("""
             if (retval.ptr() == Py_None)
             {
@@ -792,10 +784,7 @@ def get_callback(cb_name, cb):
                 wrapper_retval->invalidate();
                 return unwrapped_retval;
             }
-            """ % {
-                "ret_type_name": cb.return_base_type[4:],
-                }
-            )
+            """ % dict(ret_type_name=cb.return_base_type[4:]))
         error_return = "nullptr"
 
     else:
@@ -834,7 +823,7 @@ def get_callback(cb_name, cb):
                 ret_type=ret_type,
                 cb_name=cb_name,
                 input_args=(
-                    ", ".join("%s %sc_arg_%s" % (arg.base_type, arg.ptr, arg.name)
+                    ", ".join(f"{arg.base_type} {arg.ptr}c_arg_{arg.name}"
                         for arg in cb.args)),
                 pre_call="\n".join(pre_call),
                 passed_args=", ".join(passed_args),
@@ -879,55 +868,56 @@ def write_wrapper(outf, meth):
             if meth.args[arg_idx].name != "user":
                 raise SignatureNotSupported("unexpected callback signature")
 
-            cb_name = "cb_%s_%s_%s" % (meth.cls, meth.name, arg.name)
+            cb_name = f"cb_{meth.cls}_{meth.name}_{arg.name}"
 
             if (meth.cls in ["ast_build", "ast_print_options"]
                     and meth.name.startswith("set_")):
-                extra_ret_vals.append("py_%s" % arg.name)
+                extra_ret_vals.append(f"py_{arg.name}")
                 extra_ret_descrs.append("(opaque handle to "
                         "manage callback lifetime)")
 
-            input_args.append("py::object py_%s" % arg.name)
+            input_args.append(f"py::object py_{arg.name}")
             passed_args.append(cb_name)
-            passed_args.append("py_%s.ptr()" % arg.name)
+            passed_args.append(f"py_{arg.name}.ptr()")
 
             preamble.append(get_callback(cb_name, arg))
 
-            docs.append(":param %s: callback(%s)"
-                    % (arg.name, ", ".join(
-                        sub_arg.name
-                        for sub_arg in arg.args
-                        if sub_arg.name != "user")))
+            docs.append(":param {name}: callback({args})".format(
+                name=arg.name,
+                args=", ".join(
+                    sub_arg.name for sub_arg in arg.args
+                    if sub_arg.name != "user")
+                ))
 
         elif arg.base_type in SAFE_IN_TYPES and not arg.ptr:
-            passed_args.append("arg_"+arg.name)
-            input_args.append("%s arg_%s" % (arg.base_type, arg.name))
+            passed_args.append(f"arg_{arg.name}")
+            input_args.append(f"{arg.base_type} arg_{arg.name}")
 
             doc_cls = arg.base_type
             if doc_cls.startswith("isl_"):
                 doc_cls = doc_cls[4:]
 
-            docs.append(":param %s: :class:`%s`" % (arg.name, doc_cls))
+            docs.append(f":param {arg.name}: :class:`{doc_cls}`")
 
         elif arg.base_type in ["char", "const char"] and arg.ptr == "*":
             if arg.semantics is SEM_KEEP:
-                passed_args.append("strdup(%s)" % arg.name)
+                passed_args.append(f"strdup({arg.name})")
             else:
                 passed_args.append(arg.name)
-            input_args.append("%s *%s" % (arg.base_type, arg.name))
+            input_args.append(f"{arg.base_type} *{arg.name}")
 
-            docs.append(":param %s: string" % arg.name)
+            docs.append(f":param {arg.name}: string")
 
         elif arg.base_type in ["int", "isl_bool"] and arg.ptr == "*":
             if arg.name in ["exact", "tight"]:
-                body.append("%s arg_%s;" % (arg.base_type, arg.name))
-                passed_args.append("&arg_%s" % arg.name)
+                body.append(f"{arg.base_type} arg_{arg.name};")
+                passed_args.append(f"&arg_{arg.name}")
                 if arg.base_type == "isl_bool":
-                    extra_ret_vals.append("(bool) arg_%s" % arg.name)
+                    extra_ret_vals.append(f"(bool) arg_{arg.name}")
                 else:
-                    extra_ret_vals.append("arg_%s" % arg.name)
-                extra_ret_descrs.append("%s (%s)" % (
-                    arg.name, to_py_class(arg.base_type)))
+                    extra_ret_vals.append(f"arg_{arg.name}")
+                extra_ret_descrs.append(
+                        f"{arg.name} ({to_py_class(arg.base_type)})")
                 arg_names.pop()
             else:
                 raise SignatureNotSupported("int *")
@@ -935,8 +925,8 @@ def write_wrapper(outf, meth):
         elif arg.base_type == "isl_val" and arg.ptr == "*" and arg_idx > 0:
             # {{{ val input argument
 
-            arg_descr = ":param %s: :class:`Val`" % arg.name
-            input_args.append("py::object py_%s" % arg.name)
+            arg_descr = f":param {arg.name}: :class:`Val`"
+            input_args.append(f"py::object py_{arg.name}")
             checks.append("""
                 std::unique_ptr<val> unique_arg_%(name)s;
                 isl_ctx *ctx_for_%(name)s =
@@ -981,9 +971,9 @@ def write_wrapper(outf, meth):
                 raise Undocumented(meth)
 
             if arg.semantics is SEM_TAKE:
-                post_call.append("unique_arg_%s.release();" % arg.name)
+                post_call.append(f"unique_arg_{arg.name}.release();")
 
-            passed_args.append("unique_arg_%s->m_data" % arg.name)
+            passed_args.append(f"unique_arg_{arg.name}->m_data")
             docs.append(arg_descr)
 
             # }}}
@@ -992,11 +982,11 @@ def write_wrapper(outf, meth):
             # {{{ isl types input arguments
 
             arg_cls = arg.base_type[4:]
-            arg_descr = ":param %s: :class:`%s`" % (arg.name, to_py_class(arg_cls))
+            arg_descr = f":param {arg.name}: :class:`{to_py_class(arg_cls)}`"
 
             if arg_idx == 0 and meth.is_mutator:
                 arg_descr += " (mutated in-place)"
-                input_args.append("py::object py_%s" % arg.name)
+                input_args.append(f"py::object py_{arg.name}")
                 checks.append("""
                     isl::%(cls)s &arg_%(name)s(
                         py::cast<isl::%(cls)s &>(py_%(name)s));
@@ -1005,10 +995,10 @@ def write_wrapper(outf, meth):
                         "passed invalid arg to isl_%(meth)s for %(name)s");
                     """ % dict(
                         name=arg.name,
-                        meth="%s_%s" % (meth.cls, meth.name),
+                        meth=f"{meth.cls}_{meth.name}",
                         cls=arg_cls))
-                passed_args.append("arg_%s.m_data" % arg.name)
-                post_call.append("arg_%s.invalidate();" % arg.name)
+                passed_args.append(f"arg_{arg.name}.m_data")
+                post_call.append(f"arg_{arg.name}.invalidate();")
                 arg_descr += " (mutated in-place)"
 
             else:
@@ -1019,12 +1009,12 @@ def write_wrapper(outf, meth):
                     if (!arg_%(name)s.is_valid())
                       throw isl::error(
                         "passed invalid arg to isl_%(meth)s for %(name)s");
-                    """ % dict(name=arg.name, meth="%s_%s" % (meth.cls, meth.name)))
+                    """ % dict(name=arg.name, meth=f"{meth.cls}_{meth.name}"))
 
                 if arg.semantics is SEM_TAKE:
                     if arg_cls not in NON_COPYABLE:
                         input_args.append(
-                                "%s const &%s" % (arg_cls, "arg_"+arg.name))
+                                f"{arg_cls} const &arg_{arg.name}")
                         checks.append("""
                             std::unique_ptr<%(cls)s> auto_arg_%(name)s;
                             {
@@ -1038,20 +1028,20 @@ def write_wrapper(outf, meth):
                             }
                             """ % dict(
                                 name=arg.name,
-                                meth="%s_%s" % (meth.cls, meth.name),
+                                meth=f"{meth.cls}_{meth.name}",
                                 cls=arg_cls))
 
-                        post_call.append("auto_arg_%s.release();" % arg.name)
-                        passed_args.append("auto_arg_%s->m_data" % arg.name)
+                        post_call.append(f"auto_arg_{arg.name}.release();")
+                        passed_args.append(f"auto_arg_{arg.name}->m_data")
 
                     else:
-                        input_args.append("%s &%s" % (arg_cls, "arg_"+arg.name))
-                        post_call.append("arg_%s.invalidate();" % arg.name)
-                        passed_args.append("arg_%s.m_data" % arg.name)
+                        input_args.append(f"{arg_cls} &arg_{arg.name}")
+                        post_call.append(f"arg_{arg.name}.invalidate();")
+                        passed_args.append(f"arg_{arg.name}.m_data")
                         arg_descr += " (:ref:`becomes invalid <auto-invalidation>`)"
                 else:
-                    passed_args.append("arg_%s.m_data" % arg.name)
-                    input_args.append("%s const &%s" % (arg_cls, "arg_"+arg.name))
+                    passed_args.append(f"arg_{arg.name}.m_data")
+                    input_args.append(f"{arg_cls} const &arg_{arg.name}")
 
             docs.append(arg_descr)
 
@@ -1066,8 +1056,8 @@ def write_wrapper(outf, meth):
             ret_cls = arg.base_type[4:]
 
             arg_names.pop()
-            body.append("%s *ret_%s;" % (arg.base_type, arg.name))
-            passed_args.append("&ret_%s" % arg.name)
+            body.append(f"{arg.base_type} *ret_{arg.name};")
+            passed_args.append(f"&ret_{arg.name}")
 
             post_call.append("""
                 py::object py_ret_%(name)s;
@@ -1078,49 +1068,47 @@ def write_wrapper(outf, meth):
                 }
                 """ % dict(name=arg.name, ret_cls=ret_cls))
 
-            extra_ret_vals.append("py_ret_%s" % arg.name)
+            extra_ret_vals.append(f"py_ret_{arg.name}")
             extra_ret_descrs.append(
-                    "%s (:class:`%s`)" % (arg.name, to_py_class(ret_cls)))
+                    f"{arg.name} (:class:`{to_py_class(ret_cls)}`)")
 
             # }}}
 
         elif arg.base_type == "FILE" and arg.ptr == "*":
-            if sys.version_info >= (3,):
-                raise SignatureNotSupported(
-                        "arg type %s %s" % (arg.base_type, arg.ptr))
+            raise SignatureNotSupported(
+                    f"arg type {arg.base_type} {arg.ptr}")
 
-            passed_args.append("PyFile_AsFile(arg_%s.ptr())" % arg.name)
-            input_args.append("py::object %s" % ("arg_"+arg.name))
-            docs.append(":param %s: :class:`file`-like "
-                    "(NOTE: This will cease to be supported in Python 3.)"
-                    % arg.name)
+            passed_args.append(f"PyFile_AsFile(arg_{arg.name}.ptr())")
+            input_args.append(f"py::object arg_{arg.name}")
+            docs.append(f":param {arg.name}: :class:`file`-like "
+                    "(NOTE: This will cease to be supported in Python 3.)")
 
         elif (arg.base_type == "void"
                 and arg.ptr == "*"
                 and arg.name == "user"):
-            body.append("Py_INCREF(arg_%s.ptr());" % arg.name)
-            passed_args.append("arg_%s.ptr()" % arg.name)
-            input_args.append("py::object %s" % ("arg_"+arg.name))
-            post_call.append("""
-                isl_%s_set_free_user(result, my_decref);
-                """ % meth.cls)
-            docs.append(":param %s: a user-specified Python object" % arg.name)
+            body.append(f"Py_INCREF(arg_{arg.name}.ptr());")
+            passed_args.append(f"arg_{arg.name}.ptr()")
+            input_args.append(f"py::object arg_{arg.name}")
+            post_call.append(f"""
+                isl_{meth.cls}_set_free_user(result, my_decref);
+                """)
+            docs.append(f":param {arg.name}: a user-specified Python object")
 
         else:
-            raise SignatureNotSupported("arg type %s %s" % (arg.base_type, arg.ptr))
+            raise SignatureNotSupported(f"arg type {arg.base_type} {arg.ptr}")
 
         arg_idx += 1
 
-    processed_return_type = "%s %s" % (meth.return_base_type, meth.return_ptr)
+    processed_return_type = f"{meth.return_base_type} {meth.return_ptr}"
 
     if meth.return_base_type == "void" and not meth.return_ptr:
         result_capture = ""
     else:
-        result_capture = "%s %sresult = " % (meth.return_base_type, meth.return_ptr)
+        result_capture = f"{meth.return_base_type} {meth.return_ptr}result = "
 
     body = checks + body
 
-    body.append("%s%s(%s);" % (
+    body.append("{}{}({});".format(
         result_capture, meth.c_name, ", ".join(passed_args)))
 
     body += post_call
@@ -1138,13 +1126,13 @@ def write_wrapper(outf, meth):
         if extra_ret_vals:
             if len(extra_ret_vals) == 1:
                 processed_return_type = "py::object"
-                body.append("return py::object(result, %s);" % extra_ret_vals[0])
+                body.append(f"return py::object(result, {extra_ret_vals[0]});")
                 ret_descr = extra_ret_descrs[0]
             else:
                 processed_return_type = "py::object"
-                body.append("return py::make_tuple(result, %s);"
-                        % ", ".join(extra_ret_vals))
-                ret_descr = "tuple: (%s)" % (", ".join(extra_ret_descrs))
+                body.append("return py::make_tuple(result, {});".format(
+                    ", ".join(extra_ret_vals)))
+                ret_descr = "tuple: ({})".format(", ".join(extra_ret_descrs))
         else:
             body.append("return result;")
 
@@ -1153,11 +1141,11 @@ def write_wrapper(outf, meth):
     elif meth.return_base_type == "isl_stat" and not meth.return_ptr:
         # {{{ error code
 
-        body.append("""
+        body.append(f"""
             if (result == isl_stat_error)
-            {
-              throw isl::error("call to isl_%(cls)s_%(name)s failed");
-            }""" % {"cls": meth.cls, "name": meth.name})
+            {{
+              throw isl::error("call to isl_{meth.cls}_{meth.name} failed");
+            }}""")
 
         assert not (meth.name.startswith("is_") or meth.name.startswith("has_"))
 
@@ -1166,12 +1154,13 @@ def write_wrapper(outf, meth):
         if extra_ret_vals:
             if len(extra_ret_vals) == 1:
                 processed_return_type = "py::object"
-                body.append("return py::object(%s);" % extra_ret_vals[0])
+                body.append(f"return py::object({extra_ret_vals[0]});")
                 ret_descr = extra_ret_descrs[0]
             else:
                 processed_return_type = "py::object"
-                body.append("return py::make_tuple(%s);" % ", ".join(extra_ret_vals))
-                ret_descr = "tuple: (%s)" % (", ".join(extra_ret_descrs))
+                body.append("return py::make_tuple({});".format(
+                    ", ".join(extra_ret_vals)))
+                ret_descr = "tuple: ({})".format(", ".join(extra_ret_descrs))
         else:
             body.append("return result;")
 
@@ -1180,11 +1169,11 @@ def write_wrapper(outf, meth):
     elif meth.return_base_type == "isl_bool" and not meth.return_ptr:
         # {{{ bool
 
-        body.append("""
+        body.append(f"""
             if (result == isl_bool_error)
-            {
-              throw isl::error("call to isl_%(cls)s_%(name)s failed");
-            }""" % {"cls": meth.cls, "name": meth.name})
+            {{
+              throw isl::error("call to isl_{meth.cls}_{meth.name} failed");
+            }}""")
 
         processed_return_type = "bool"
         ret_descr = "bool"
@@ -1192,12 +1181,13 @@ def write_wrapper(outf, meth):
         if extra_ret_vals:
             if len(extra_ret_vals) == 1:
                 processed_return_type = "py::object"
-                body.append("return py::object(%s);" % extra_ret_vals[0])
+                body.append(f"return py::object({extra_ret_vals[0]});")
                 ret_descr = extra_ret_descrs[0]
             else:
                 processed_return_type = "py::object"
-                body.append("return py::make_tuple(%s);" % ", ".join(extra_ret_vals))
-                ret_descr = "tuple: (%s)" % (", ".join(extra_ret_descrs))
+                body.append("return py::make_tuple({});".format(
+                    ", ".join(extra_ret_vals)))
+                ret_descr = "tuple: ({})".format(", ".join(extra_ret_descrs))
         else:
             body.append("return result;")
 
@@ -1225,22 +1215,22 @@ def write_wrapper(outf, meth):
                 raise Retry()
 
             processed_return_type = "py::object"
-            body.append("arg_%s.take_possession_of(result);" % meth.args[0].name)
-            body.append("return py_%s;" % meth.args[0].name)
+            body.append(f"arg_{meth.args[0].name}.take_possession_of(result);")
+            body.append(f"return py_{meth.args[0].name};")
 
-            ret_descr = ":class:`%s` (self)" % to_py_class(ret_cls)
+            ret_descr = f":class:`{to_py_class(ret_cls)}` (self)"
         else:
             processed_return_type = "py::object"
             isl_obj_ret_val = \
                     "handle_from_new_ptr(uptr_result.release())"
 
             if extra_ret_vals:
-                isl_obj_ret_val = "py::make_tuple(%s, %s)" % (
+                isl_obj_ret_val = "py::make_tuple({}, {})".format(
                         isl_obj_ret_val, ", ".join(extra_ret_vals))
-                ret_descr = "tuple: (:class:`%s`, %s)" % (
+                ret_descr = "tuple: (:class:`{}`, {})".format(
                         to_py_class(ret_cls), ", ".join(extra_ret_descrs))
             else:
-                ret_descr = ":class:`%s`" % to_py_class(ret_cls)
+                ret_descr = f":class:`{to_py_class(ret_cls)}`"
 
             if meth.return_semantics is None and ret_cls != "ctx":
                 raise Undocumented(meth)
@@ -1248,23 +1238,18 @@ def write_wrapper(outf, meth):
             if meth.return_semantics is not SEM_GIVE and ret_cls != "ctx":
                 raise SignatureNotSupported("non-give return")
 
-            body.append("""
+            body.append(f"""
                 if (result)
-                {
-                    std::unique_ptr <isl::%(ret_cls)s>
-                        uptr_result(new %(ret_cls)s(result));
-                    return %(ret_val)s;
-                }
+                {{
+                    std::unique_ptr <isl::{ret_cls}>
+                        uptr_result(new {ret_cls}(result));
+                    return {isl_obj_ret_val};
+                }}
                 else
-                {
-                    throw isl::error("call to isl_%(cls)s_%(name)s failed");
-                }
-                """ % {
-                    "ret_cls": ret_cls,
-                    "ret_val": isl_obj_ret_val,
-                    "cls": meth.cls,
-                    "name": meth.name,
-                    })
+                {{
+                    throw isl::error("call to isl_{meth.cls}_{meth.name} failed");
+                }}
+                """)
 
     elif meth.return_base_type in ["const char", "char"] and meth.return_ptr == "*":
         if extra_ret_vals:
@@ -1296,36 +1281,36 @@ def write_wrapper(outf, meth):
         if extra_ret_vals:
             processed_return_type = "py::object"
             if len(extra_ret_vals) == 1:
-                body.append("return %s;" % extra_ret_vals[0])
+                body.append(f"return {extra_ret_vals[0]};")
                 ret_descr = extra_ret_descrs[0]
             else:
-                body.append("return py::make_tuple(%s);"
-                        % ", ".join(extra_ret_vals))
-                ret_descr = "tuple: " + ", ".join(extra_ret_descrs)
+                body.append("return py::make_tuple({});".format(
+                    ", ".join(extra_ret_vals)))
+                ret_descr = "tuple: {}".format(", ".join(extra_ret_descrs))
         else:
             ret_descr = "None"
 
     else:
-        raise SignatureNotSupported("ret type: %s %s in %s" % (
-            meth.return_base_type, meth.return_ptr, meth))
+        raise SignatureNotSupported(
+                "ret type: {meth.return_base_type} {meth.return_ptr} in {meth}")
 
     # }}}
 
     outf.write("""
-        %s
-        %s %s_%s(%s)
-        {
-          %s
-        }
-        """ % (
-            "\n".join(preamble),
-            processed_return_type, meth.cls, meth.name,
-            ", ".join(input_args),
-            "\n".join(body)))
+        {preamble}
+        {return_type} {cls}_{name}({inputs})
+        {{
+          {body}
+        }}
+        """.format(
+            preamble="\n".join(preamble),
+            return_type=processed_return_type, cls=meth.cls, name=meth.name,
+            inputs=", ".join(input_args),
+            body="\n".join(body)))
 
-    docs = (["%s(%s)" % (meth.name, ", ".join(arg_names)), ""]
+    docs = (["{}({})".format(meth.name, ", ".join(arg_names)), ""]
             + docs
-            + [":return: %s" % ret_descr])
+            + [f":return: {ret_descr}"])
 
     return arg_names, "\n".join(docs)
 
@@ -1335,16 +1320,16 @@ def write_wrapper(outf, meth):
 # {{{ exposer generator
 
 def write_exposer(outf, meth, arg_names, doc_str):
-    func_name = "isl::%s_%s" % (meth.cls, meth.name)
+    func_name = f"isl::{meth.cls}_{meth.name}"
     py_name = meth.name
 
     nonself_arg_names = arg_names
     if not meth.is_static:
         nonself_arg_names = nonself_arg_names[1:]
-    args_str = ", ".join('py::arg("%s")' % arg_name
-            for arg_name in nonself_arg_names)
+    args_str = ", ".join(
+            f'py::arg("{arg_name}")' for arg_name in nonself_arg_names)
     if args_str:
-        args_str = ", %s" % args_str
+        args_str = f", {args_str}"
 
     if meth.name == "size" and len(meth.args) == 1:
         py_name = "__len__"
@@ -1357,12 +1342,12 @@ def write_exposer(outf, meth, arg_names, doc_str):
     #if meth.is_static:
     #    doc_str = "(static method)\n" + doc_str
 
-    doc_str_arg = ', "%s"' % doc_str.replace("\n", "\\n")
+    doc_str_arg = ', "{}"'.format(doc_str.replace("\n", "\\n"))
 
     wrap_class = CLASS_MAP.get(meth.cls, meth.cls)
 
-    for exp_py_name in [py_name]+extra_py_names:
-        outf.write('wrap_%s.def%s("%s", %s%s);\n' % (
+    for exp_py_name in [py_name] + extra_py_names:
+        outf.write('wrap_{}.def{}("{}", {}{});\n'.format(
             wrap_class, "_static" if meth.is_static else "",
             exp_py_name, func_name, args_str+doc_str_arg))
 
@@ -1387,8 +1372,8 @@ def write_wrappers(expf, wrapf, methods):
 
             if val_versions:
                 # no need to expose C integer versions of things
-                print("SKIP (val version available): %s -> %s"
-                        % (meth, ", ".join(str(s) for s in val_versions)))
+                print("SKIP (val version available): {} -> {}".format(
+                    meth, ", ".join(str(s) for s in val_versions)))
                 continue
 
         try:
@@ -1401,12 +1386,12 @@ def write_wrappers(expf, wrapf, methods):
             write_exposer(expf, meth, arg_names, doc_str)
         except SignatureNotSupported:
             _, e, _ = sys.exc_info()
-            print("SKIP (sig not supported: %s): %s" % (e, meth))
+            print(f"SKIP (sig not supported: {e}): {meth}")
         else:
             #print "WRAPPED:", meth
             pass
 
-    print("SKIP (%d undocumented methods): %s" % (len(undoc), ", ".join(undoc)))
+    print("SKIP ({} undocumented methods): {}".format(len(undoc), ", ".join(undoc)))
 
 
 ADD_VERSIONS = {
@@ -1450,8 +1435,8 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
         fdata.read_header("barvinok/isl.h")
 
     for part, classes in PART_TO_CLASSES.items():
-        expf = open("src/wrapper/gen-expose-%s.inc" % part, "wt")
-        wrapf = open("src/wrapper/gen-wrap-%s.inc" % part, "wt")
+        expf = open(f"src/wrapper/gen-expose-{part}.inc", "wt")
+        wrapf = open(f"src/wrapper/gen-wrap-{part}.inc", "wt")
 
         classes = [
                 cls
