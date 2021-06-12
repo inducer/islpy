@@ -27,8 +27,8 @@ if true; then
   cd "$BUILD_DIR"
 
   rm -Rf  islpy
-  if test "$GITHUB_HEAD_REF" != ""; then
-    with_echo git clone --recursive https://github.com/inducer/islpy.git -b "$GITHUB_HEAD_REF"
+  if test "$GITHUB_HEAD_REF" != "" && test "$GITHUB_REPOSITORY" != ""; then
+    with_echo git clone --recursive https://github.com/$GITHUB_REPOSITORY.git -b "$GITHUB_HEAD_REF"
   elif test "$CI_SERVER_NAME" = "GitLab" && test "$CI_COMMIT_REF_NAME" != ""; then
     with_echo git clone --recursive https://gitlab.tiker.net/inducer/islpy.git -b "$CI_COMMIT_REF_NAME"
   else
