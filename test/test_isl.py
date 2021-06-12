@@ -1,6 +1,3 @@
-# encoding: utf-8
-from __future__ import division, print_function
-
 __copyright__ = "Copyright (C) 2011-15 Andreas Kloeckner"
 
 __license__ = """

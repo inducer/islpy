@@ -196,7 +196,7 @@ def main():
             if "isl_ast_int.c" in fn and conf["USE_SHIPPED_IMATH"]:
                 continue
 
-            inf = open(fn, "r", encoding="utf-8")
+            inf = open(fn, encoding="utf-8")
             try:
                 contents = inf.read()
             finally:
@@ -259,14 +259,14 @@ def main():
         LIBRARIES.extend(conf["GMP_LIBNAME"])
 
     init_filename = "islpy/version.py"
-    with open(init_filename, "r") as version_f:
+    with open(init_filename) as version_f:
         version_py = version_f.read()
     exec(compile(version_py, init_filename, "exec"), conf)
 
     from gen_wrap import gen_wrapper
     gen_wrapper(wrapper_dirs, include_barvinok=conf["USE_BARVINOK"])
 
-    with open("README.rst", "rt") as readme_f:
+    with open("README.rst") as readme_f:
         readme = readme_f.read()
 
     setup(name="islpy",

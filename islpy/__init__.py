@@ -215,13 +215,13 @@ def _add_functionality():
     def generic_reduce(self):
         ctx = self.get_ctx()
         prn = Printer.to_str(ctx)
-        prn = getattr(prn, "print_"+self._base_name)(self)
+        prn = getattr(prn, f"print_{self._base_name}")(self)
 
         # Reconstructing from string will remove apostrophes in dim names,
         # so keep track of dim names with apostrophes
-        dims_with_apostrophes = dict(
-            (dname, pos) for dname, pos in self.get_var_dict().items()
-            if "'" in dname)
+        dims_with_apostrophes = {
+            dname: pos for dname, pos in self.get_var_dict().items()
+            if "'" in dname}
 
         return (
             _read_from_str_wrapper,
@@ -241,14 +241,13 @@ def _add_functionality():
 
     def generic_str(self):
         prn = Printer.to_str(self.get_ctx())
-        getattr(prn, "print_"+self._base_name)(self)
+        getattr(prn, f"print_{self._base_name}")(self)
         return prn.get_str()
 
     def generic_repr(self):
         prn = Printer.to_str(self.get_ctx())
-        getattr(prn, "print_"+self._base_name)(self)
-        return '%s("%s")' % (
-                type(self).__name__, prn.get_str())
+        getattr(prn, f"print_{self._base_name}")(self)
+        return f'{type(self).__name__}("{prn.get_str()}")'
 
     def generic_hash(self):
         return hash((type(self), str(self)))
@@ -257,7 +256,8 @@ def _add_functionality():
         return self.get_hash()
 
     for cls in ALL_CLASSES:
-        if hasattr(cls, "_base_name") and hasattr(Printer, "print_"+cls._base_name):
+        if (hasattr(cls, "_base_name")
+                and hasattr(Printer, f"print_{cls._base_name}")):
             cls.__str__ = generic_str
             cls.__repr__ = generic_repr
 
@@ -311,7 +311,7 @@ def _add_functionality():
 
         def set_dim_id(name, tp, idx):
             if name in result:
-                raise RuntimeError("non-unique var id '%s' encountered" % name)
+                raise RuntimeError(f"non-unique var id '{name}' encountered")
             result[name] = tp, idx
 
         if dimtype is None:
@@ -338,7 +338,7 @@ def _add_functionality():
 
         def set_dim_name(name, tp, idx):
             if name in result:
-                raise RuntimeError("non-unique var name '%s' encountered" % name)
+                raise RuntimeError(f"non-unique var name '{name}' encountered")
             result[name] = tp, idx
 
         if dimtype is None:
@@ -821,17 +821,13 @@ def _add_functionality():
         return not self.is_zero()
 
     def val_repr(self):
-        return '%s("%s")' % (type(self).__name__, self.to_str())
+        return f'{type(self).__name__}("{self.to_str()}")'
 
     def val_to_python(self):
         if not self.is_int():
             raise ValueError("can only convert integer Val to python")
 
-        import sys
-        if sys.version_info >= (3,):
-            return int(self.to_str())
-        else:
-            return int(self.to_str())
+        return int(self.to_str())
 
     Val.__new__ = staticmethod(val_new)
     Val.__init__ = val_bogus_init
@@ -1013,8 +1009,8 @@ def _add_functionality():
                 var_dict = space.get_var_dict(tp)
 
                 all_indices = set(range(space.dim(tp)))
-                leftover_indices = set(var_dict[name][1] for name in names
-                        if name in var_dict)
+                leftover_indices = {var_dict[name][1] for name in names
+                        if name in var_dict}
                 project_indices = all_indices-leftover_indices
                 if not project_indices:
                     break
@@ -1047,8 +1043,8 @@ def _add_functionality():
             var_dict = space.get_var_dict(tp)
             to_eliminate = (
                     set(range(space.dim(tp)))
-                    - set(var_dict[name][1] for name in names
-                        if name in var_dict))
+                    - {var_dict[name][1] for name in names
+                        if name in var_dict})
 
             while to_eliminate:
                 min_index = min(to_eliminate)
@@ -1149,8 +1145,8 @@ def _align_dim_type(template_dt, obj, template, obj_bigger_ok, obj_names,
 
         raise Error("template may not contain any unnamed dimensions")
 
-    obj_names = set(obj_names) - set([None])
-    template_names = set(template_names) - set([None])
+    obj_names = set(obj_names) - {None}
+    template_names = set(template_names) - {None}
 
     names_in_both = obj_names & template_names
 
