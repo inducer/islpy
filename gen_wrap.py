@@ -1169,7 +1169,7 @@ def write_wrapper(outf, meth):
     elif meth.return_base_type == "isl_bool" and not meth.return_ptr:
         # {{{ bool
 
-        body.append("""
+        body.append(f"""
             if (result == isl_bool_error)
             {{
               throw isl::error("call to isl_{meth.cls}_{meth.name} failed");
