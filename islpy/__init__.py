@@ -22,8 +22,6 @@ THE SOFTWARE.
 
 import islpy._isl as _isl
 from islpy.version import VERSION, VERSION_TEXT  # noqa
-import six
-from six.moves import range
 from pytools import memoize_on_first_arg
 
 
@@ -802,9 +800,9 @@ def _add_functionality():
         if context is None:
             context = DEFAULT_CONTEXT
 
-        if isinstance(src, six.string_types):
+        if isinstance(src, str):
             result = cls.read_from_str(context, src)
-        elif isinstance(src, six.integer_types):
+        elif isinstance(src, int):
             result = cls.int_from_si(context, src)
         else:
             raise TypeError("'src' must be int or string")
