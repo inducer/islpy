@@ -1422,6 +1422,7 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
     fdata.read_header("isl/val.h")
     fdata.read_header("isl/vec.h")
     fdata.read_header("isl/mat.h")
+    fdata.read_header("isl/stride_info.h")
     fdata.read_header("isl/schedule.h")
     fdata.read_header("isl/schedule_node.h")
     fdata.read_header("isl/flow.h")
