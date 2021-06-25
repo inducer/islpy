@@ -20,6 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import sys
+import contextlib
+
 import islpy._isl as _isl
 from islpy.version import VERSION, VERSION_TEXT  # noqa
 from pytools import memoize_on_first_arg
@@ -145,14 +148,104 @@ ALL_CLASSES = tuple(getattr(_isl, cls) for cls in dir(_isl) if cls[0].isupper())
 EXPR_CLASSES = tuple(cls for cls in ALL_CLASSES
         if "Aff" in cls.__name__ or "Polynomial" in cls.__name__)
 
-DEFAULT_CONTEXT = Context()
+
+def _module_property(func):
+    """Decorator to turn module functions into properties.
+    Function names must be prefixed with an underscore."""
+    module = sys.modules[func.__module__]
+
+    def base_getattr(name):
+        raise AttributeError(
+            f"module '{module.__name__}' has no attribute '{name}'")
+
+    old_getattr = getattr(module, "__getattr__", base_getattr)
+
+    def new_getattr(name):
+        if f"_{name}" == func.__name__:
+            return func()
+        else:
+            return old_getattr(name)
+
+    module.__getattr__ = new_getattr
+    return func
+
+
+import threading
+
+
+_thread_local_storage = threading.local()
+
+
+def _check_init_default_context():
+    if not hasattr(_thread_local_storage, "islpy_default_contexts"):
+        _thread_local_storage.islpy_default_contexts = [Context()]
+
+
+def get_default_context():
+    """Get or create the default context under current thread.
+
+    :return: the current default :class:`Context`
+
+    .. versionadded:: 2020.3
+    """
+    _check_init_default_context()
+    return _thread_local_storage.islpy_default_contexts[-1]
 
 
 def _get_default_context():
-    """A callable to get the default context for the benefit of Python's
-    ``__reduce__`` protocol.
+    from warnings import warn
+    warn("It appears that you might be deserializing an islpy.Context"
+         "that was serialized by a previous version of islpy."
+         "If so, this is discouraged and please consider to re-serialize"
+         "the Context with the newer version to avoid possible inconsistencies.",
+         UserWarning)
+    return get_default_context()
+
+
+@contextlib.contextmanager
+def push_context(ctx=None):
+    """Context manager to push new default :class:`Context`
+
+    :param ctx: an optional explicit context that is pushed to
+        the stack of default :class:`Context` s
+
+    .. versionadded:: 2020.3
+
+    :mod:`islpy` internally maintains a stack of default :class:`Context` s
+    for each Python thread.
+    By default, each stack is initialized with a base default :class:`Context`.
+    ISL objects being unpickled or initialized from strings will be
+    instantiated within the top :class:`Context` of the stack of
+    the executing thread.
+
+    Usage example::
+
+        with islpy.push_context() as dctx:
+            s = islpy.Set("{[0]: }")
+            assert s.get_ctx() == dctx
+
     """
-    return DEFAULT_CONTEXT
+    if ctx is None:
+        ctx = Context()
+    _check_init_default_context()
+    _thread_local_storage.islpy_default_contexts.append(ctx)
+    yield ctx
+    _thread_local_storage.islpy_default_contexts.pop()
+
+
+@_module_property
+def _DEFAULT_CONTEXT():  # noqa: N802
+    from warnings import warn
+    warn("Use of islpy.DEFAULT_CONTEXT is deprecated "
+         "and will be removed in 2022."
+         " Please use `islpy.get_default_context()` instead. ",
+         FutureWarning,
+         stacklevel=3)
+    return get_default_context()
+
+
+if sys.version_info < (3, 7):
+    DEFAULT_CONTEXT = get_default_context()
 
 
 def _read_from_str_wrapper(cls, context, s, dims_with_apostrophes):
@@ -174,10 +267,14 @@ def _add_functionality():
     # {{{ Context
 
     def context_reduce(self):
-        if self._wraps_same_instance_as(DEFAULT_CONTEXT):
-            return (_get_default_context, ())
-        else:
-            return (Context, ())
+        return (get_default_context, ())
+
+    def context_copy(self):
+        return self
+
+    def context_deepcopy(self, memo):
+        del memo
+        return self
 
     def context_eq(self, other):
         return isinstance(other, Context) and self._wraps_same_instance_as(other)
@@ -186,9 +283,10 @@ def _add_functionality():
         return not self.__eq__(other)
 
     Context.__reduce__ = context_reduce
+    Context.__copy__ = context_copy
+    Context.__deepcopy__ = context_deepcopy
     Context.__eq__ = context_eq
     Context.__ne__ = context_ne
-
     # }}}
 
     # {{{ generic initialization, pickling
@@ -203,7 +301,7 @@ def _add_functionality():
             return cls._prev_new(cls)
 
         if context is None:
-            context = DEFAULT_CONTEXT
+            context = get_default_context()
 
         result = cls.read_from_str(context, s)
         return result
@@ -488,7 +586,7 @@ def _add_functionality():
 
     def id_new(cls, name, user=None, context=None):
         if context is None:
-            context = DEFAULT_CONTEXT
+            context = get_default_context()
 
         result = cls.alloc(context, name, user)
         result._made_from_python = True
@@ -798,7 +896,7 @@ def _add_functionality():
 
     def val_new(cls, src, context=None):
         if context is None:
-            context = DEFAULT_CONTEXT
+            context = get_default_context()
 
         if isinstance(src, str):
             result = cls.read_from_str(context, src)
@@ -1291,7 +1389,7 @@ def make_zero_and_vars(set_vars, params=(), ctx=None):
                 )
     """
     if ctx is None:
-        ctx = DEFAULT_CONTEXT
+        ctx = get_default_context()
 
     if isinstance(set_vars, str):
         set_vars = [s.strip() for s in set_vars.split(",")]
