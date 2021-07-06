@@ -1292,7 +1292,7 @@ def write_wrapper(outf, meth):
 
     else:
         raise SignatureNotSupported(
-                "ret type: {meth.return_base_type} {meth.return_ptr} in {meth}")
+                f"ret type: {meth.return_base_type} {meth.return_ptr} in {meth}")
 
     # }}}
 
