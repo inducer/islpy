@@ -7,9 +7,10 @@ BUILD_DIR=$(mktemp -d -t islpy-barvinok-build-XXXXXXX)
 echo "BUILDING IN $BUILD_DIR"
 
 if test "$1" = ""; then
-  echo "usage: $0 PREFIX_DIR"
+  echo "usage: $0 PREFIX_DIR [GMP_PREFIX_DIR]"
 fi
 PREFIX="$1"
+GMP_PREFIX="${2:-$PREFIX}"
 NTL_VER="10.5.0"
 BARVINOK_GIT_REV="barvinok-0.41.5"
 NPROCS=6
@@ -38,7 +39,7 @@ if true; then
   curl -L -O --insecure http://shoup.net/ntl/ntl-"$NTL_VER".tar.gz
   tar xfz ntl-"$NTL_VER".tar.gz
   cd "$BUILD_DIR/ntl-$NTL_VER/src"
-  ./configure NTL_GMP_LIP=on PREFIX="$PREFIX" TUNE=x86 SHARED=on
+  ./configure NTL_GMP_LIP=on DEF_PREFIX="$PREFIX" GMP_PREFIX="$GMP_PREFIX" TUNE=x86 SHARED=on
   make -j$NPROCS
   make install
 
@@ -62,10 +63,15 @@ if true; then
   ./configure \
     --prefix="$PREFIX" \
     --with-ntl-prefix="$PREFIX" \
+    --with-gmp-prefix="$GMP_PREFIX" \
     --enable-shared-barvinok \
     --with-pet=no
 
-  make -j$NPROCS
+  BARVNOK_ADDITIONAL_MAKE_ARGS=""
+  if [ "$(uname)" == "Darwin" ]; then
+    BARVNOK_ADDITIONAL_MAKE_ARGS=CFLAGS="-Wno-error=implicit-function-declaration"
+  fi
+  make $BARVNOK_ADDITIONAL_MAKE_ARGS -j$NPROCS
   make install
 fi
 
@@ -77,6 +83,10 @@ cd islpy
   --isl-inc-dir=$PREFIX/include \
   --isl-lib-dir=$PREFIX/lib \
   --use-barvinok
-CC=g++ LDSHARED="g++ -shared" python setup.py install
+CPP_LD_EXTRA_FLAGS=""
+if [[ "$(uname)" == "Darwin" ]]; then
+  CPP_LD_EXTRA_FLAGS="-undefined dynamic_lookup"
+fi
+CC=g++ LDSHARED="g++ -shared ${CPP_LD_EXTRA_FLAGS}" python setup.py install
 
 # vim: sw=2
