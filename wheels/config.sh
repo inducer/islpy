@@ -45,7 +45,7 @@ function pre_build {
       cat COPYING.LESSERv3 >> ../doc/misc.rst
       echo "" >> ../doc/misc.rst
     popd
-    build_simple2 isl 0.24 http://isl.gforge.inria.fr tar.gz  \
+    build_simple2 isl 0.24 https://libisl.sourceforge.io tar.gz \
         --enable-shared --disable-static --with-int=gmp --with-gmp-prefix=$BUILD_PREFIX
     pushd isl-0.24
       cat LICENSE >> ../doc/misc.rst
