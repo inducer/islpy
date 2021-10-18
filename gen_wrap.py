@@ -656,6 +656,9 @@ class FunctionData:
         if name in PYTHON_RESERVED_WORDS:
             name = name + "_"
 
+        if name[0].isdigit():
+            name = "fun_" + name
+
         if class_name == "options":
             assert name.startswith("set_") or name.startswith("get_"), (name, c_name)
             name = f"{name[:4]}option_{name[4:]}"
