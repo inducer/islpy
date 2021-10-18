@@ -263,9 +263,18 @@ MACRO_ENUMS = [
 
 # }}}
 
-SAFE_TYPES = list(ENUMS) + ["int", "unsigned", "uint32_t", "size_t", "double",
+INT_TYPES = ["int", "unsigned", "uint32_t", "size_t",
         "long", "unsigned long", "isl_size"]
+FLOAT_TYPES = ["double"]
+SAFE_TYPES = list(ENUMS) + INT_TYPES + FLOAT_TYPES
+
 SAFE_IN_TYPES = SAFE_TYPES + ["const char *", "char *"]
+
+SAFE_TYPE_TO_PY_TYPE = {
+    **{t: t[len("isl_"):] for t in ENUMS},
+    **{t: "int" for t in INT_TYPES},
+    **{t: "float" for t in FLOAT_TYPES},
+}
 
 # {{{ parser helpers
 
@@ -848,9 +857,13 @@ def write_wrapper(outf, meth):
     extra_ret_descrs = []
     preamble = []
 
+    typestub_args = []
+    typestub_extra_ret_types = []
+
     arg_names = []
 
     arg_idx = 0
+
     while arg_idx < len(meth.args):
         arg = meth.args[arg_idx]
         arg_names.append(arg.name)
@@ -875,6 +888,7 @@ def write_wrapper(outf, meth):
                 extra_ret_vals.append(f"py_{arg.name}")
                 extra_ret_descrs.append("(opaque handle to "
                         "manage callback lifetime)")
+                typestub_extra_ret_types.append("Any")
 
             input_args.append(f"py::object py_{arg.name}")
             passed_args.append(cb_name)
@@ -888,6 +902,7 @@ def write_wrapper(outf, meth):
                     sub_arg.name for sub_arg in arg.args
                     if sub_arg.name != "user")
                 ))
+            typestub_args.append(f"{arg.name}: Callable")
 
         elif arg.base_type in SAFE_IN_TYPES and not arg.ptr:
             passed_args.append(f"arg_{arg.name}")
@@ -898,6 +913,8 @@ def write_wrapper(outf, meth):
                 doc_cls = doc_cls[4:]
 
             docs.append(f":param {arg.name}: :class:`{doc_cls}`")
+            typestub_args.append(
+                f"{arg.name}: {SAFE_TYPE_TO_PY_TYPE[arg.base_type]}")
 
         elif arg.base_type in ["char", "const char"] and arg.ptr == "*":
             if arg.semantics is SEM_KEEP:
@@ -907,6 +924,7 @@ def write_wrapper(outf, meth):
             input_args.append(f"{arg.base_type} *{arg.name}")
 
             docs.append(f":param {arg.name}: string")
+            typestub_args.append(f"{arg.name}: str")
 
         elif arg.base_type in ["int", "isl_bool"] and arg.ptr == "*":
             if arg.name in ["exact", "tight"]:
@@ -918,6 +936,7 @@ def write_wrapper(outf, meth):
                     extra_ret_vals.append(f"arg_{arg.name}")
                 extra_ret_descrs.append(
                         f"{arg.name} ({to_py_class(arg.base_type)})")
+                typestub_extra_ret_types.append(f"{to_py_class(arg.base_type)}")
                 arg_names.pop()
             else:
                 raise SignatureNotSupported("int *")
@@ -975,6 +994,7 @@ def write_wrapper(outf, meth):
 
             passed_args.append(f"unique_arg_{arg.name}->m_data")
             docs.append(arg_descr)
+            typestub_args.append(f"{arg.name}: Val")
 
             # }}}
 
@@ -1044,6 +1064,7 @@ def write_wrapper(outf, meth):
                     input_args.append(f"{arg_cls} const &arg_{arg.name}")
 
             docs.append(arg_descr)
+            typestub_args.append(f"{arg.name}: {to_py_class(arg_cls)}")
 
             # }}}
 
@@ -1071,6 +1092,7 @@ def write_wrapper(outf, meth):
             extra_ret_vals.append(f"py_ret_{arg.name}")
             extra_ret_descrs.append(
                     f"{arg.name} (:class:`{to_py_class(ret_cls)}`)")
+            typestub_extra_ret_types.append(f"{to_py_class(ret_cls)}")
 
             # }}}
 
@@ -1094,13 +1116,15 @@ def write_wrapper(outf, meth):
                 """)
             docs.append(f":param {arg.name}: a user-specified Python object")
 
+            typestub_args.append(f"{arg.name}: Any")
+        
         else:
             raise SignatureNotSupported(f"arg type {arg.base_type} {arg.ptr}")
 
         arg_idx += 1
 
     processed_return_type = f"{meth.return_base_type} {meth.return_ptr}"
-
+    
     if meth.return_base_type == "void" and not meth.return_ptr:
         result_capture = ""
     else:
@@ -1114,6 +1138,7 @@ def write_wrapper(outf, meth):
     body += post_call
 
     # {{{ return value processing
+    typestub_ret_type = "Any"
 
     if meth.return_base_type == "int" and not meth.return_ptr:
         # {{{ integer return
@@ -1128,11 +1153,14 @@ def write_wrapper(outf, meth):
                 processed_return_type = "py::object"
                 body.append(f"return py::object(result, {extra_ret_vals[0]});")
                 ret_descr = extra_ret_descrs[0]
+                typestub_ret_type = typestub_extra_ret_types[0]
             else:
                 processed_return_type = "py::object"
                 body.append("return py::make_tuple(result, {});".format(
                     ", ".join(extra_ret_vals)))
                 ret_descr = "tuple: ({})".format(", ".join(extra_ret_descrs))
+                typestub_ret_type = "Tuple[{}]".format(
+                    ", ".join(typestub_extra_ret_types))
         else:
             body.append("return result;")
 
@@ -1156,11 +1184,14 @@ def write_wrapper(outf, meth):
                 processed_return_type = "py::object"
                 body.append(f"return py::object({extra_ret_vals[0]});")
                 ret_descr = extra_ret_descrs[0]
+                typestub_ret_type = typestub_extra_ret_types[0]
             else:
                 processed_return_type = "py::object"
                 body.append("return py::make_tuple({});".format(
                     ", ".join(extra_ret_vals)))
                 ret_descr = "tuple: ({})".format(", ".join(extra_ret_descrs))
+                typestub_ret_type = "Tuple[{}]".format(
+                    ", ".join(typestub_extra_ret_types))
         else:
             body.append("return result;")
 
@@ -1177,17 +1208,21 @@ def write_wrapper(outf, meth):
 
         processed_return_type = "bool"
         ret_descr = "bool"
+        typestub_ret_type = "bool"
 
         if extra_ret_vals:
             if len(extra_ret_vals) == 1:
                 processed_return_type = "py::object"
                 body.append(f"return py::object({extra_ret_vals[0]});")
                 ret_descr = extra_ret_descrs[0]
+                typestub_ret_type = typestub_extra_ret_types[0]
             else:
                 processed_return_type = "py::object"
                 body.append("return py::make_tuple({});".format(
                     ", ".join(extra_ret_vals)))
                 ret_descr = "tuple: ({})".format(", ".join(extra_ret_descrs))
+                typestub_ret_type = "Tuple[{}]".format(
+                    ", ".join(typestub_extra_ret_types))
         else:
             body.append("return result;")
 
@@ -1201,7 +1236,10 @@ def write_wrapper(outf, meth):
 
         body.append("return result;")
         ret_descr = processed_return_type
-
+        try:
+            typestub_ret_type = SAFE_TYPE_TO_PY_TYPE[processed_return_type.strip()]
+        except:
+            breakpoint()
         # }}}
 
     elif meth.return_base_type.startswith("isl_"):
@@ -1219,6 +1257,7 @@ def write_wrapper(outf, meth):
             body.append(f"return py_{meth.args[0].name};")
 
             ret_descr = f":class:`{to_py_class(ret_cls)}` (self)"
+            typestub_ret_type = f"{to_py_class(ret_cls)}"
         else:
             processed_return_type = "py::object"
             isl_obj_ret_val = \
@@ -1229,8 +1268,12 @@ def write_wrapper(outf, meth):
                         isl_obj_ret_val, ", ".join(extra_ret_vals))
                 ret_descr = "tuple: (:class:`{}`, {})".format(
                         to_py_class(ret_cls), ", ".join(extra_ret_descrs))
+                typestub_ret_type = "Tuple[{}, {}]".format(
+                        to_py_class(ret_cls), 
+                        ", ".join(typestub_extra_ret_types))
             else:
                 ret_descr = f":class:`{to_py_class(ret_cls)}`"
+                typestub_ret_type = f"{to_py_class(ret_cls)}"
 
             if meth.return_semantics is None and ret_cls != "ctx":
                 raise Undocumented(meth)
@@ -1266,6 +1309,7 @@ def write_wrapper(outf, meth):
             body.append("free(result);")
 
         ret_descr = "string"
+        typestub_ret_type = "str"
 
     elif (meth.return_base_type == "void"
             and meth.return_ptr == "*"
@@ -1276,6 +1320,7 @@ def write_wrapper(outf, meth):
             """)
         ret_descr = "a user-specified python object"
         processed_return_type = "py::object"
+        typestub_ret_type = "Any"
 
     elif meth.return_base_type == "void" and not meth.return_ptr:
         if extra_ret_vals:
@@ -1283,13 +1328,16 @@ def write_wrapper(outf, meth):
             if len(extra_ret_vals) == 1:
                 body.append(f"return {extra_ret_vals[0]};")
                 ret_descr = extra_ret_descrs[0]
+                typestub_ret_type = typestub_extra_ret_types[0]
             else:
                 body.append("return py::make_tuple({});".format(
                     ", ".join(extra_ret_vals)))
                 ret_descr = "tuple: {}".format(", ".join(extra_ret_descrs))
+                typestub_ret_type = "Tuple[{}]".format(
+                    ", ".join(typestub_extra_ret_types))
         else:
             ret_descr = "None"
-
+            typestub_ret_type = "None"
     else:
         raise SignatureNotSupported(
                 f"ret type: {meth.return_base_type} {meth.return_ptr} in {meth}")
@@ -1311,8 +1359,11 @@ def write_wrapper(outf, meth):
     docs = (["{}({})".format(meth.name, ", ".join(arg_names)), ""]
             + docs
             + [f":return: {ret_descr}"])
+    
+    typestub_meth = "def {}({}) -> {}: ...".format(
+        meth.name, ', '.join(typestub_args), typestub_ret_type)
 
-    return arg_names, "\n".join(docs)
+    return arg_names, "\n".join(docs), typestub_meth
 
 # }}}
 
@@ -1353,10 +1404,10 @@ def write_exposer(outf, meth, arg_names, doc_str):
 
 # }}}
 
-
-def write_wrappers(expf, wrapf, methods):
+def write_wrappers(expf, wrapf, typestubf, cls, methods):
     undoc = []
 
+    typestub_methods = []
     for meth in methods:
         #print "TRY_WRAP:", meth
         if meth.name.endswith("_si") or meth.name.endswith("_ui"):
@@ -1377,13 +1428,15 @@ def write_wrappers(expf, wrapf, methods):
                 continue
 
         try:
-            arg_names, doc_str = write_wrapper(wrapf, meth)
+            arg_names, doc_str, typestub_meth_str = write_wrapper(wrapf, meth)
             write_exposer(expf, meth, arg_names, doc_str)
+            typestub_methods.append(typestub_meth_str)
         except Undocumented:
             undoc.append(str(meth))
         except Retry:
-            arg_names, doc_str = write_wrapper(wrapf, meth)
+            arg_names, doc_str, typestub_meth_str = write_wrapper(wrapf, meth)
             write_exposer(expf, meth, arg_names, doc_str)
+            typestub_methods.append(typestub_meth_str)
         except SignatureNotSupported:
             _, e, _ = sys.exc_info()
             print(f"SKIP (sig not supported: {e}): {meth}")
@@ -1391,8 +1444,19 @@ def write_wrappers(expf, wrapf, methods):
             #print "WRAPPED:", meth
             pass
 
+    write_typestubs(typestubf, cls, typestub_methods)
+
     print("SKIP ({} undocumented methods): {}".format(len(undoc), ", ".join(undoc)))
 
+
+def write_typestubs(out_f, cls, method_strs):
+    out_f.write(f"class {to_py_class(cls)}:\n")
+    if len(method_strs):
+        for method_str in method_strs:
+            out_f.write(f"\t{method_str}\n")
+        out_f.write("\n")
+    else:
+        out_f.write("\t...\n\n")
 
 ADD_VERSIONS = {
         "union_pw_aff": 15,
@@ -1438,6 +1502,7 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
     for part, classes in PART_TO_CLASSES.items():
         expf = open(f"src/wrapper/gen-expose-{part}.inc", "wt")
         wrapf = open(f"src/wrapper/gen-wrap-{part}.inc", "wt")
+        typestubf = open(f"src/wrapper/gen-typestub-{part}.inc", "wt")
 
         classes = [
                 cls
@@ -1446,13 +1511,13 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
                 or ADD_VERSIONS.get(cls) is None
                 or ADD_VERSIONS.get(cls) <= isl_version]
 
-        write_wrappers(expf, wrapf, [
-            meth
-            for cls in classes
-            for meth in fdata.classes_to_methods.get(cls, [])])
+        for cls in classes:
+            methods = [meth for meth in fdata.classes_to_methods.get(cls, [])]
+            write_wrappers(expf, wrapf, typestubf, cls, methods)
 
         expf.close()
         wrapf.close()
+        typestubf.close()
 
 
 if __name__ == "__main__":
