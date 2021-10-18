@@ -235,25 +235,36 @@ CLASS_MAP = {
 
 ENUMS = {
     # ctx.h
-    "isl_error",
-    "isl_stat",
-    "isl_bool",
+    "isl_error": [
+        "none", "abort", "unknown", "internal", "invalid", "unsupported"
+    ],
+    "isl_stat": ["error", "ok"],
+    "isl_bool": [],
 
     # space.h
-    "isl_dim_type",
+    "isl_dim_type": ["cst", "param", "in_", "out", "set", "div", "all"],
 
     # schedule_type.h
-    "isl_schedule_node_type",
+    "isl_schedule_node_type": [
+        "error", "band", "context", "domain", "expansion", "extension",
+        "filter", "leaf", "guard", "mark", "sequence", "set"
+    ],
 
     # ast_type.h
-    "isl_ast_expr_op_type",
-    "isl_ast_expr_type",
-    "isl_ast_node_type",
-    "isl_ast_loop_type",
+    "isl_ast_expr_op_type": [
+        "error", "and_", "and_then", "or_", "or_else", "max", "min", "minus",
+        "add", "sub", "mul", "div", "fdiv_q", "pdiv_q", "pdiv_r", "zdiv_r",
+        "cond", "select", "eq", "le", "lt", "ge", "gt", "call", "access",
+        "member", "address_of"
+    ],
+    "isl_ast_expr_type": ["error", "op", "id", "int"],
+    "isl_ast_node_type": ["error", "for_", "if_", "block", "user"],
+    "isl_ast_loop_type": ["error", "default", "atomic", "unroll", "separate"],
 
     # polynomial_type.h
-    "isl_fold",
-    }
+    "isl_fold": ["min", "max", "list"],
+}
+
 
 TYPEDEFD_ENUMS = ["isl_stat", "isl_bool"]
 MACRO_ENUMS = [
@@ -1236,10 +1247,8 @@ def write_wrapper(outf, meth):
 
         body.append("return result;")
         ret_descr = processed_return_type
-        try:
-            typestub_ret_type = SAFE_TYPE_TO_PY_TYPE[processed_return_type.strip()]
-        except:
-            breakpoint()
+        typestub_ret_type = SAFE_TYPE_TO_PY_TYPE[processed_return_type.strip()]
+
         # }}}
 
     elif meth.return_base_type.startswith("isl_"):
@@ -1449,6 +1458,18 @@ def write_wrappers(expf, wrapf, typestubf, cls, methods):
     print("SKIP ({} undocumented methods): {}".format(len(undoc), ", ".join(undoc)))
 
 
+def write_typestub_headers(out_f):
+    out_f.write("from typing import Callable, Any, Tuple\n\n")
+    for enum, keys in ENUMS.items():
+        out_f.write(f"class {SAFE_TYPE_TO_PY_TYPE[enum]}:\n")
+        if len(keys):
+            for key in keys:
+                out_f.write(f"\t{key}: int\n")
+        else:
+            out_f.write("\t...\n")
+        out_f.write("\n")
+
+
 def write_typestubs(out_f, cls, method_strs):
     out_f.write(f"class {to_py_class(cls)}:\n")
     if len(method_strs):
@@ -1457,6 +1478,7 @@ def write_typestubs(out_f, cls, method_strs):
         out_f.write("\n")
     else:
         out_f.write("\t...\n\n")
+
 
 ADD_VERSIONS = {
         "union_pw_aff": 15,
@@ -1499,10 +1521,12 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
     if include_barvinok:
         fdata.read_header("barvinok/isl.h")
 
+    typestubf = open(f"islpy/_isl.pyi", "wt")
+    write_typestub_headers(typestubf)
+
     for part, classes in PART_TO_CLASSES.items():
         expf = open(f"src/wrapper/gen-expose-{part}.inc", "wt")
         wrapf = open(f"src/wrapper/gen-wrap-{part}.inc", "wt")
-        typestubf = open(f"src/wrapper/gen-typestub-{part}.inc", "wt")
 
         classes = [
                 cls
@@ -1517,7 +1541,8 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
 
         expf.close()
         wrapf.close()
-        typestubf.close()
+    
+    typestubf.close()
 
 
 if __name__ == "__main__":
