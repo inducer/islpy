@@ -24,6 +24,7 @@ import re
 import sys
 import os
 from os.path import join
+import textwrap
 
 SEM_TAKE = "take"
 SEM_GIVE = "give"
@@ -916,7 +917,7 @@ def write_wrapper(outf, meth):
                     sub_arg.name for sub_arg in arg.args
                     if sub_arg.name != "user")
                 ))
-            typestub_args.append(f"{arg.name}: Callable")
+            typestub_args.append("Callable")
 
         elif arg.base_type in SAFE_IN_TYPES and not arg.ptr:
             passed_args.append(f"arg_{arg.name}")
@@ -927,8 +928,7 @@ def write_wrapper(outf, meth):
                 doc_cls = doc_cls[4:]
 
             docs.append(f":param {arg.name}: :class:`{doc_cls}`")
-            typestub_args.append(
-                f"{arg.name}: {SAFE_TYPE_TO_PY_TYPE[arg.base_type]}")
+            typestub_args.append(SAFE_TYPE_TO_PY_TYPE[arg.base_type])
 
         elif arg.base_type in ["char", "const char"] and arg.ptr == "*":
             if arg.semantics is SEM_KEEP:
@@ -938,7 +938,7 @@ def write_wrapper(outf, meth):
             input_args.append(f"{arg.base_type} *{arg.name}")
 
             docs.append(f":param {arg.name}: string")
-            typestub_args.append(f"{arg.name}: str")
+            typestub_args.append("str")
 
         elif arg.base_type in ["int", "isl_bool"] and arg.ptr == "*":
             if arg.name in ["exact", "tight"]:
@@ -946,11 +946,12 @@ def write_wrapper(outf, meth):
                 passed_args.append(f"&arg_{arg.name}")
                 if arg.base_type == "isl_bool":
                     extra_ret_vals.append(f"(bool) arg_{arg.name}")
+                    typestub_extra_ret_types.append("bool")
                 else:
                     extra_ret_vals.append(f"arg_{arg.name}")
+                    typestub_extra_ret_types.append("int")
                 extra_ret_descrs.append(
                         f"{arg.name} ({to_py_class(arg.base_type)})")
-                typestub_extra_ret_types.append(f"{to_py_class(arg.base_type)}")
                 arg_names.pop()
             else:
                 raise SignatureNotSupported("int *")
@@ -1008,7 +1009,7 @@ def write_wrapper(outf, meth):
 
             passed_args.append(f"unique_arg_{arg.name}->m_data")
             docs.append(arg_descr)
-            typestub_args.append(f"{arg.name}: Val")
+            typestub_args.append("Val")
 
             # }}}
 
@@ -1078,7 +1079,7 @@ def write_wrapper(outf, meth):
                     input_args.append(f"{arg_cls} const &arg_{arg.name}")
 
             docs.append(arg_descr)
-            typestub_args.append(f"{arg.name}: {to_py_class(arg_cls)}")
+            typestub_args.append(str(to_py_class(arg_cls)))
 
             # }}}
 
@@ -1130,7 +1131,7 @@ def write_wrapper(outf, meth):
                 """)
             docs.append(f":param {arg.name}: a user-specified Python object")
 
-            typestub_args.append(f"{arg.name}: Any")
+            typestub_args.append(f"Any")
         
         else:
             raise SignatureNotSupported(f"arg type {arg.base_type} {arg.ptr}")
@@ -1372,8 +1373,12 @@ def write_wrapper(outf, meth):
             + docs
             + [f":return: {ret_descr}"])
     
-    typestub_meth = "def {}({}) -> {}: ...".format(
-        meth.name, ', '.join(typestub_args), typestub_ret_type)
+    typestub_args_str = ", ".join([f"{arg_name}: '{arg_type}'" 
+        for arg_name, arg_type in zip(arg_names, typestub_args)])
+    typestub_meth = "def {}({}) -> '{}': ...".format(
+        meth.name, typestub_args_str, typestub_ret_type)
+    if meth.is_static:
+        typestub_meth = "@staticmethod\n" + typestub_meth
 
     return arg_names, "\n".join(docs), typestub_meth
 
@@ -1477,7 +1482,7 @@ def write_typestubs(out_f, cls, method_strs):
     out_f.write(f"class {to_py_class(cls)}:\n")
     if len(method_strs):
         for method_str in method_strs:
-            out_f.write(f"\t{method_str}\n")
+            out_f.write(textwrap.indent(method_str, "\t") + "\n")
         out_f.write("\n")
     else:
         out_f.write("\t...\n\n")
