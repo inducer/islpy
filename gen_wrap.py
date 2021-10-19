@@ -872,7 +872,7 @@ def write_wrapper(outf, meth):
     extra_ret_descrs = []
     preamble = []
 
-    typestub_args = []
+    typestub_arg_types = []
     typestub_extra_ret_types = []
 
     arg_names = []
@@ -917,18 +917,20 @@ def write_wrapper(outf, meth):
                     sub_arg.name for sub_arg in arg.args
                     if sub_arg.name != "user")
                 ))
-            typestub_args.append("Callable")
+            typestub_arg_types.append("Callable")
 
         elif arg.base_type in SAFE_IN_TYPES and not arg.ptr:
             passed_args.append(f"arg_{arg.name}")
             input_args.append(f"{arg.base_type} arg_{arg.name}")
 
             doc_cls = arg.base_type
+            typestub_arg_type = SAFE_TYPE_TO_PY_TYPE[arg.base_type]
             if doc_cls.startswith("isl_"):
                 doc_cls = doc_cls[4:]
+                typestub_arg_type = "_isl." + typestub_arg_type
 
             docs.append(f":param {arg.name}: :class:`{doc_cls}`")
-            typestub_args.append(SAFE_TYPE_TO_PY_TYPE[arg.base_type])
+            typestub_arg_types.append(typestub_arg_type)
 
         elif arg.base_type in ["char", "const char"] and arg.ptr == "*":
             if arg.semantics is SEM_KEEP:
@@ -938,7 +940,7 @@ def write_wrapper(outf, meth):
             input_args.append(f"{arg.base_type} *{arg.name}")
 
             docs.append(f":param {arg.name}: string")
-            typestub_args.append("str")
+            typestub_arg_types.append("str")
 
         elif arg.base_type in ["int", "isl_bool"] and arg.ptr == "*":
             if arg.name in ["exact", "tight"]:
@@ -1009,7 +1011,7 @@ def write_wrapper(outf, meth):
 
             passed_args.append(f"unique_arg_{arg.name}->m_data")
             docs.append(arg_descr)
-            typestub_args.append("Val")
+            typestub_arg_types.append("Val")
 
             # }}}
 
@@ -1079,7 +1081,7 @@ def write_wrapper(outf, meth):
                     input_args.append(f"{arg_cls} const &arg_{arg.name}")
 
             docs.append(arg_descr)
-            typestub_args.append(str(to_py_class(arg_cls)))
+            typestub_arg_types.append(f"_isl.{to_py_class(arg_cls)}")
 
             # }}}
 
@@ -1107,7 +1109,7 @@ def write_wrapper(outf, meth):
             extra_ret_vals.append(f"py_ret_{arg.name}")
             extra_ret_descrs.append(
                     f"{arg.name} (:class:`{to_py_class(ret_cls)}`)")
-            typestub_extra_ret_types.append(f"{to_py_class(ret_cls)}")
+            typestub_extra_ret_types.append(f"_isl.{to_py_class(ret_cls)}")
 
             # }}}
 
@@ -1131,7 +1133,7 @@ def write_wrapper(outf, meth):
                 """)
             docs.append(f":param {arg.name}: a user-specified Python object")
 
-            typestub_args.append(f"Any")
+            typestub_arg_types.append(f"Any")
         
         else:
             raise SignatureNotSupported(f"arg type {arg.base_type} {arg.ptr}")
@@ -1252,6 +1254,8 @@ def write_wrapper(outf, meth):
         body.append("return result;")
         ret_descr = processed_return_type
         typestub_ret_type = SAFE_TYPE_TO_PY_TYPE[processed_return_type.strip()]
+        if "isl" in processed_return_type:
+            typestub_ret_type = "_isl." + typestub_ret_type
 
         # }}}
 
@@ -1270,7 +1274,7 @@ def write_wrapper(outf, meth):
             body.append(f"return py_{meth.args[0].name};")
 
             ret_descr = f":class:`{to_py_class(ret_cls)}` (self)"
-            typestub_ret_type = f"{to_py_class(ret_cls)}"
+            typestub_ret_type = f"_isl.{to_py_class(ret_cls)}"
         else:
             processed_return_type = "py::object"
             isl_obj_ret_val = \
@@ -1286,7 +1290,7 @@ def write_wrapper(outf, meth):
                         ", ".join(typestub_extra_ret_types))
             else:
                 ret_descr = f":class:`{to_py_class(ret_cls)}`"
-                typestub_ret_type = f"{to_py_class(ret_cls)}"
+                typestub_ret_type = f"_isl.{to_py_class(ret_cls)}"
 
             if meth.return_semantics is None and ret_cls != "ctx":
                 raise Undocumented(meth)
@@ -1373,14 +1377,8 @@ def write_wrapper(outf, meth):
             + docs
             + [f":return: {ret_descr}"])
     
-    typestub_args_str = ", ".join([f"{arg_name}: '{arg_type}'" 
-        for arg_name, arg_type in zip(arg_names, typestub_args)])
-    typestub_meth = "def {}({}) -> '{}': ...".format(
-        meth.name, typestub_args_str, typestub_ret_type)
-    if meth.is_static:
-        typestub_meth = "@staticmethod\n" + typestub_meth
-
-    return arg_names, "\n".join(docs), typestub_meth
+    typestub_info = (arg_names, typestub_arg_types, typestub_ret_type)
+    return arg_names, "\n".join(docs), typestub_info
 
 # }}}
 
@@ -1424,7 +1422,7 @@ def write_exposer(outf, meth, arg_names, doc_str):
 def write_wrappers(expf, wrapf, typestubf, cls, methods):
     undoc = []
 
-    typestub_methods = []
+    typestub_infos = []
     for meth in methods:
         #print "TRY_WRAP:", meth
         if meth.name.endswith("_si") or meth.name.endswith("_ui"):
@@ -1445,15 +1443,15 @@ def write_wrappers(expf, wrapf, typestubf, cls, methods):
                 continue
 
         try:
-            arg_names, doc_str, typestub_meth_str = write_wrapper(wrapf, meth)
+            arg_names, doc_str, typestub_info = write_wrapper(wrapf, meth)
             write_exposer(expf, meth, arg_names, doc_str)
-            typestub_methods.append(typestub_meth_str)
+            typestub_infos.append(typestub_info)
         except Undocumented:
             undoc.append(str(meth))
         except Retry:
-            arg_names, doc_str, typestub_meth_str = write_wrapper(wrapf, meth)
+            arg_names, doc_str, typestub_info = write_wrapper(wrapf, meth)
             write_exposer(expf, meth, arg_names, doc_str)
-            typestub_methods.append(typestub_meth_str)
+            typestub_infos.append(typestub_info)
         except SignatureNotSupported:
             _, e, _ = sys.exc_info()
             print(f"SKIP (sig not supported: {e}): {meth}")
@@ -1461,13 +1459,14 @@ def write_wrappers(expf, wrapf, typestubf, cls, methods):
             #print "WRAPPED:", meth
             pass
 
-    write_typestubs(typestubf, cls, typestub_methods)
+    write_typestubs(typestubf, cls, methods, typestub_infos)
 
     print("SKIP ({} undocumented methods): {}".format(len(undoc), ", ".join(undoc)))
 
 
 def write_typestub_headers(out_f):
     out_f.write("from typing import Callable, Any, Tuple\n\n")
+    out_f.write("from islpy import _isl\n\n")
     for enum, keys in ENUMS.items():
         out_f.write(f"class {SAFE_TYPE_TO_PY_TYPE[enum]}:\n")
         if len(keys):
@@ -1478,10 +1477,18 @@ def write_typestub_headers(out_f):
         out_f.write("\n")
 
 
-def write_typestubs(out_f, cls, method_strs):
+def write_typestubs(out_f, cls, methods, typestub_infos):
     out_f.write(f"class {to_py_class(cls)}:\n")
-    if len(method_strs):
-        for method_str in method_strs:
+    if len(typestub_infos):
+        for meth, typestub_info in zip(methods, typestub_infos):
+            arg_names, typestub_arg_types, typestub_ret_type = typestub_info
+            typestub_args_str = ", ".join([f"{arg_name}: '{arg_type}'" 
+                for arg_name, arg_type in zip(arg_names, typestub_arg_types)])
+            method_str = "def {}({}) -> '{}': ...".format(
+                meth.name, typestub_args_str, typestub_ret_type)
+            if meth.is_static:
+                method_str = "@staticmethod\n" + method_str
+
             out_f.write(textwrap.indent(method_str, "\t") + "\n")
         out_f.write("\n")
     else:
