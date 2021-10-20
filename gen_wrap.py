@@ -1142,15 +1142,15 @@ def write_wrapper(outf, meth):
                 """)
             docs.append(f":param {arg.name}: a user-specified Python object")
 
-            typestub_arg_types.append(f"Any")
-        
+            typestub_arg_types.append("Any")
+
         else:
             raise SignatureNotSupported(f"arg type {arg.base_type} {arg.ptr}")
 
         arg_idx += 1
 
     processed_return_type = f"{meth.return_base_type} {meth.return_ptr}"
-    
+
     if meth.return_base_type == "void" and not meth.return_ptr:
         result_capture = ""
     else:
@@ -1295,7 +1295,7 @@ def write_wrapper(outf, meth):
                 ret_descr = "tuple: (:class:`{}`, {})".format(
                         to_py_class(ret_cls), ", ".join(extra_ret_descrs))
                 typestub_ret_type = "Tuple[{}, {}]".format(
-                        to_py_class(ret_cls), 
+                        to_py_class(ret_cls),
                         ", ".join(typestub_extra_ret_types))
             else:
                 ret_descr = f":class:`{to_py_class(ret_cls)}`"
@@ -1385,9 +1385,6 @@ def write_wrapper(outf, meth):
     docs = (["{}({})".format(meth.name, ", ".join(arg_names)), ""]
             + docs
             + [f":return: {ret_descr}"])
-    
-    if meth.cls == "multi_aff" and meth.name == "get_tuple_name":
-        breakpoint()
 
     typestub_info = (meth, arg_names, typestub_arg_types, typestub_ret_type)
     return arg_names, "\n".join(docs), typestub_info
@@ -1430,6 +1427,7 @@ def write_exposer(outf, meth, arg_names, doc_str):
             exp_py_name, func_name, args_str+doc_str_arg))
 
 # }}}
+
 
 def write_wrappers(expf, wrapf, typestubf, cls, methods):
     undoc = []
@@ -1495,7 +1493,7 @@ def write_typestubs(out_f, cls, typestub_infos):
         for typestub_info in typestub_infos:
             (meth, arg_names,
                 typestub_arg_types, typestub_ret_type) = typestub_info
-            typestub_args_str = ", ".join([f"{arg_name}: '{arg_type}'" 
+            typestub_args_str = ", ".join([f"{arg_name}: '{arg_type}'"
                 for arg_name, arg_type in zip(arg_names, typestub_arg_types)])
             method_str = "def {}({}) -> '{}': ...".format(
                 meth.name, typestub_args_str, typestub_ret_type)
@@ -1549,7 +1547,7 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
     if include_barvinok:
         fdata.read_header("barvinok/isl.h")
 
-    typestubf = open(f"islpy/_isl.pyi", "wt")
+    typestubf = open("islpy/_isl.pyi", "wt")
     write_typestub_headers(typestubf)
 
     for part, classes in PART_TO_CLASSES.items():
@@ -1569,7 +1567,7 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
 
         expf.close()
         wrapf.close()
-    
+
     typestubf.close()
 
 
