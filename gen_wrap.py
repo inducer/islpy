@@ -1386,7 +1386,10 @@ def write_wrapper(outf, meth):
             + docs
             + [f":return: {ret_descr}"])
     
-    typestub_info = (arg_names, typestub_arg_types, typestub_ret_type)
+    if meth.cls == "multi_aff" and meth.name == "get_tuple_name":
+        breakpoint()
+
+    typestub_info = (meth, arg_names, typestub_arg_types, typestub_ret_type)
     return arg_names, "\n".join(docs), typestub_info
 
 # }}}
@@ -1468,7 +1471,7 @@ def write_wrappers(expf, wrapf, typestubf, cls, methods):
             #print "WRAPPED:", meth
             pass
 
-    write_typestubs(typestubf, cls, methods, typestub_infos)
+    write_typestubs(typestubf, cls, typestub_infos)
 
     print("SKIP ({} undocumented methods): {}".format(len(undoc), ", ".join(undoc)))
 
@@ -1486,11 +1489,12 @@ def write_typestub_headers(out_f):
         out_f.write("\n")
 
 
-def write_typestubs(out_f, cls, methods, typestub_infos):
+def write_typestubs(out_f, cls, typestub_infos):
     out_f.write(f"class {to_py_class(cls)}:\n")
     if len(typestub_infos):
-        for meth, typestub_info in zip(methods, typestub_infos):
-            arg_names, typestub_arg_types, typestub_ret_type = typestub_info
+        for typestub_info in typestub_infos:
+            (meth, arg_names,
+                typestub_arg_types, typestub_ret_type) = typestub_info
             typestub_args_str = ", ".join([f"{arg_name}: '{arg_type}'" 
                 for arg_name, arg_type in zip(arg_names, typestub_arg_types)])
             method_str = "def {}({}) -> '{}': ...".format(
