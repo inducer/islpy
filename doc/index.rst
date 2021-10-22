@@ -2,7 +2,7 @@ Welcome to islpy's documentation!
 =================================
 
 islpy is a Python wrapper around Sven Verdoolaege's `isl
-<http://isl.gforge.inria.fr/>`_, a library for manipulating sets and
+<https://libisl.sourceforge.io/>`_, a library for manipulating sets and
 relations of integer points bounded by linear constraints.
 
 Supported operations on sets include
@@ -52,7 +52,7 @@ Overview
 This manual will not try to teach you much about the isl itself, it simply
 lists, in a reference fashion, all the entrypoints available in :mod:`islpy`.
 To get information on how to use the isl, see the real `isl manual
-<http://isl.gforge.inria.fr/manual.pdf>`_. The `manual
+<https://libisl.sourceforge.io/manual.pdf>`_. The `manual
 <http://barvinok.gforge.inria.fr/barvinok.pdf>`_ for the `barvinok
 package <http://barvinok.gforge.inria.fr/>`_ is also quite helpful to get
 an idea.
