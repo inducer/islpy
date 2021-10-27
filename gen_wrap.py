@@ -444,7 +444,7 @@ class FunctionData:
             # Temporary fix to https://github.com/inducer/islpy/issues/73
             # We simply add an additional space for all 
             # "space -> line-continuation -> word" pattern
-            contents = self.PPCP_DROP_SPACE_FIX_RE.sub(r'\1 \n\2', contents)
+            contents = self.PPCP_DROP_SPACE_FIX_RE.sub(r'\1\\\n \2', contents)
             return contents
         finally:
             inf.close()
@@ -486,9 +486,7 @@ class FunctionData:
         macro_header_contents = [
                 self.get_header_contents(mh)
                 for mh in self.macro_headers]
-        
-        if fname == "isl/aff.h":
-            breakpoint()
+
         prepro_header = preprocess_with_macros(
                 macro_header_contents, self.get_header_contents(fname))
 
