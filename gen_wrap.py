@@ -416,7 +416,7 @@ class FunctionData:
     INVALID_PY_IDENTIFIER_RENAMING_MAP = {
         "2exp": "two_exp"
     }
-    
+
     PPCP_DROP_SPACE_FIX_RE = re.compile(r"(\s)\\\n(\w)")
 
     def __init__(self, include_dirs):
@@ -442,9 +442,9 @@ class FunctionData:
         try:
             contents = inf.read()
             # Temporary fix to https://github.com/inducer/islpy/issues/73
-            # We simply add an additional space for all 
+            # We simply add an additional space for all
             # "space -> line-continuation -> word" pattern
-            contents = self.PPCP_DROP_SPACE_FIX_RE.sub(r'\1\\\n \2', contents)
+            contents = self.PPCP_DROP_SPACE_FIX_RE.sub(r"\1\\\n \2", contents)
             return contents
         finally:
             inf.close()
