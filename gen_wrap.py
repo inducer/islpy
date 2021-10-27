@@ -412,6 +412,11 @@ def preprocess_with_macros(macro_header_contents, code):
 # {{{ FunctionData (includes parser)
 
 class FunctionData:
+
+    INVALID_PY_IDENTIFIER_RENAMING_MAP = {
+        "2exp": "two_exp"
+    }
+
     def __init__(self, include_dirs):
         self.classes_to_methods = {}
         self.include_dirs = include_dirs
@@ -655,6 +660,13 @@ class FunctionData:
 
         if name in PYTHON_RESERVED_WORDS:
             name = name + "_"
+
+        name = self.INVALID_PY_IDENTIFIER_RENAMING_MAP.get(name, name)
+
+        if name[0].isdigit():
+            print(f"SKIP: {class_name} {name} "
+                   "(unhandled invalid python identifier)")
+            return
 
         if class_name == "options":
             assert name.startswith("set_") or name.startswith("get_"), (name, c_name)
