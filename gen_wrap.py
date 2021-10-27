@@ -416,6 +416,8 @@ class FunctionData:
     INVALID_PY_IDENTIFIER_RENAMING_MAP = {
         "2exp": "two_exp"
     }
+    
+    PPCP_DROP_SPACE_FIX_RE = re.compile(r"(\s)\\\n(\w)")
 
     def __init__(self, include_dirs):
         self.classes_to_methods = {}
@@ -438,7 +440,12 @@ class FunctionData:
             raise RuntimeError(f"header '{fname}' not found")
 
         try:
-            return inf.read()
+            contents = inf.read()
+            # Temporary fix to https://github.com/inducer/islpy/issues/73
+            # We simply add an additional space for all 
+            # "space -> line-continuation -> word" pattern
+            contents = self.PPCP_DROP_SPACE_FIX_RE.sub(r'\1 \n\2', contents)
+            return contents
         finally:
             inf.close()
 
@@ -479,7 +486,9 @@ class FunctionData:
         macro_header_contents = [
                 self.get_header_contents(mh)
                 for mh in self.macro_headers]
-
+        
+        if fname == "isl/aff.h":
+            breakpoint()
         prepro_header = preprocess_with_macros(
                 macro_header_contents, self.get_header_contents(fname))
 
