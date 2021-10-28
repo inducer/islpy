@@ -70,5 +70,5 @@ enum isl_ast_loop_type {
 struct isl_ast_print_options;
 typedef struct isl_ast_print_options isl_ast_print_options;
 
-struct isl_ast_expr;struct isl_ast_expr_list;typedef struct isl_ast_expr_list isl_ast_expr_list;
-struct isl_ast_node;struct __isl_export isl_ast_node_list;typedef struct isl_ast_node_list isl_ast_node_list;
+struct isl_ast_expr; struct isl_ast_expr_list; typedef struct isl_ast_expr_list isl_ast_expr_list;
+struct isl_ast_node; struct __isl_export isl_ast_node_list; typedef struct isl_ast_node_list isl_ast_node_list;
