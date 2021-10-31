@@ -935,13 +935,20 @@ def _add_functionality():
     for args_triple in [
             (BasicSet, Set, Set.from_basic_set),
             (BasicMap, Map, Map.from_basic_map),
+            (BasicSet, UnionSet, lambda x: UnionSet.from_set(Set.from_basic_set(x))),
+
             (Set, UnionSet, UnionSet.from_set),
             (Map, UnionMap, UnionMap.from_map),
-
-            (BasicSet, UnionSet, lambda x: UnionSet.from_set(Set.from_basic_set(x))),
             (BasicMap, UnionMap, lambda x: UnionMap.from_map(Map.from_basic_map(x))),
 
             (Aff, PwAff, PwAff.from_aff),
+            (PwAff, UnionPwAff, UnionPwAff.from_pw_aff),
+            (Aff, UnionPwAff, UnionPwAff.from_aff),
+
+            (MultiAff, PwMultiAff, PwMultiAff.from_multi_aff),
+            (PwMultiAff, UnionPwMultiAff, UnionPwMultiAff.from_pw_multi_aff),
+            (MultiAff, UnionPwMultiAff, UnionPwMultiAff.from_multi_aff),
+
             (Space, LocalSpace, LocalSpace.from_space),
             ]:
         add_upcasts(*args_triple)

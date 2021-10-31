@@ -185,11 +185,20 @@ PYBIND11_MODULE(_isl, m)
   islpy_expose_part3(m);
 
   py::implicitly_convertible<isl::basic_set, isl::set>();
-  py::implicitly_convertible<isl::basic_map, isl::map>();
-  py::implicitly_convertible<isl::basic_set, isl::union_set>();
-  py::implicitly_convertible<isl::basic_map, isl::union_map>();
   py::implicitly_convertible<isl::set, isl::union_set>();
+  py::implicitly_convertible<isl::basic_set, isl::union_set>();
+
+  py::implicitly_convertible<isl::basic_map, isl::map>();
   py::implicitly_convertible<isl::map, isl::union_map>();
-  py::implicitly_convertible<isl::space, isl::local_space>();
+  py::implicitly_convertible<isl::basic_map, isl::union_map>();
+
   py::implicitly_convertible<isl::aff, isl::pw_aff>();
+  py::implicitly_convertible<isl::pw_aff, isl::union_pw_aff>();
+  py::implicitly_convertible<isl::aff, isl::union_pw_aff>();
+
+  py::implicitly_convertible<isl::multi_aff, isl::pw_multi_aff>();
+  py::implicitly_convertible<isl::pw_multi_aff, isl::union_pw_multi_aff>();
+  py::implicitly_convertible<isl::multi_aff, isl::union_pw_multi_aff>();
+
+  py::implicitly_convertible<isl::space, isl::local_space>();
 }

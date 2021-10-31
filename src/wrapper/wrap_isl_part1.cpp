@@ -91,16 +91,19 @@ void islpy_expose_part1(py::module &m)
   wrap_pw_aff.def(py::init<isl::aff &>());
 
   MAKE_WRAP(union_pw_aff, UnionPwAff);
+  wrap_union_pw_aff.def(py::init<isl::pw_aff &>());
 
   MAKE_WRAP(multi_id, MultiId);
 
   MAKE_WRAP(multi_aff, MultiAff);
 
-  MAKE_WRAP(multi_pw_aff, MultiPwAff);
-
   MAKE_WRAP(pw_multi_aff, PwMultiAff);
+  wrap_pw_multi_aff.def(py::init<isl::multi_aff &>());
 
   MAKE_WRAP(union_pw_multi_aff, UnionPwMultiAff);
+  wrap_union_pw_multi_aff.def(py::init<isl::pw_multi_aff &>());
+
+  MAKE_WRAP(multi_pw_aff, MultiPwAff);
 
   MAKE_WRAP(multi_union_pw_aff, MultiUnionPwAff);
 
