@@ -214,11 +214,25 @@ namespace isl
     WRAP_CLASS_CONTENT(pw_aff);
     MAKE_CAST_CTOR(pw_aff, aff, isl_pw_aff_from_aff);
   };
-  WRAP_CLASS(union_pw_aff);
+  struct union_pw_aff
+  {
+    WRAP_CLASS_CONTENT(union_pw_aff);
+    MAKE_CAST_CTOR(union_pw_aff, pw_aff, isl_union_pw_aff_from_pw_aff);
+  };
+
   WRAP_CLASS(multi_aff);
+  struct pw_multi_aff
+  {
+    WRAP_CLASS_CONTENT(pw_multi_aff);
+    MAKE_CAST_CTOR(pw_multi_aff, multi_aff, isl_pw_multi_aff_from_multi_aff);
+  };
+  struct union_pw_multi_aff
+  {
+    WRAP_CLASS_CONTENT(union_pw_multi_aff);
+    MAKE_CAST_CTOR(union_pw_multi_aff, pw_multi_aff, isl_union_pw_multi_aff_from_pw_multi_aff);
+  };
+
   WRAP_CLASS(multi_pw_aff);
-  WRAP_CLASS(pw_multi_aff);
-  WRAP_CLASS(union_pw_multi_aff);
   WRAP_CLASS(multi_union_pw_aff);
 
   WRAP_CLASS(id);
