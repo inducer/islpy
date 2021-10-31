@@ -42,7 +42,7 @@ Python 3 + Barvinok:
     python3 -m venv .env
     source .env/bin/activate
     python -m ensurepip
-    pip install pcpp
+    pip install pcpp numpy pytest
     ./build-with-barvinok.sh "$HOME/barvinok-build"
     (cd test; LD_LIBRARY_PATH="$HOME/barvinok-build/lib" python -m pytest --tb=native -rxsw)
 
