@@ -57,11 +57,14 @@ lists:
 Called with          Argument Type
 ==================== ==========================
 :class:`BasicSet`    :class:`Set`
-:class:`BasicMap`    :class:`Map`
 :class:`Set`         :class:`UnionSet`
+:class:`BasicMap`    :class:`Map`
 :class:`Map`         :class:`UnionMap`
-:class:`Space`       :class:`LocalSpace`
 :class:`Aff`         :class:`PwAff`
+:class:`PwAff`       :class:`UnionPwAff`
+:class:`MultiAff`    :class:`PwMultiAff`
+:class:`PwMultiAff`  :class:`UnionPwMultiAff`
+:class:`Space`       :class:`LocalSpace`
 ==================== ==========================
 
 as well as casts contained in the transitive closure of this 'casting graph'.
