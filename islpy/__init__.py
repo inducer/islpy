@@ -934,10 +934,10 @@ def _add_functionality():
 
     for args_triple in [
             (BasicSet, Set, Set.from_basic_set),
-            (BasicMap, Map, Map.from_basic_map),
+            (Set, UnionSet, UnionSet.from_set),
             (BasicSet, UnionSet, lambda x: UnionSet.from_set(Set.from_basic_set(x))),
 
-            (Set, UnionSet, UnionSet.from_set),
+            (BasicMap, Map, Map.from_basic_map),
             (Map, UnionMap, UnionMap.from_map),
             (BasicMap, UnionMap, lambda x: UnionMap.from_map(Map.from_basic_map(x))),
 
