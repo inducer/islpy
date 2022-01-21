@@ -1417,6 +1417,7 @@ ADD_VERSIONS = {
 
 def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
     fdata = FunctionData(["."] + include_dirs)
+    fdata.read_header("isl/ctx.h")
     fdata.read_header("isl/id.h")
     fdata.read_header("isl/space.h")
     fdata.read_header("isl/set.h")
