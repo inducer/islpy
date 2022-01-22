@@ -57,9 +57,11 @@ PYBIND11_MODULE(_isl, m)
   py::enum_<isl_error>(m, "error")
     .ENUM_VALUE(isl_error_, none)
     .ENUM_VALUE(isl_error_, abort)
+    .ENUM_VALUE(isl_error_, alloc)
     .ENUM_VALUE(isl_error_, unknown)
     .ENUM_VALUE(isl_error_, internal)
     .ENUM_VALUE(isl_error_, invalid)
+    .ENUM_VALUE(isl_error_, quota)
     .ENUM_VALUE(isl_error_, unsupported)
     ;
 
