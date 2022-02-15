@@ -649,7 +649,15 @@ class FunctionData:
 
         assert class_name is not None
 
-        if name in ["free", "cow"]:
+        if class_name == "ctx":
+            if name in ["alloc", "ref", "deref"]:
+                return
+            if "last_error" in name:
+                return
+            if name in ["set_error", "reset_error"]:
+                return
+
+        if name in ["free", "cow", "ref", "deref"]:
             return
 
         try:
