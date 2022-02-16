@@ -1351,14 +1351,16 @@ def affs_from_space(space):
 
 class SuppressedWarnings:
     def __init__(self, ctx):
-        self.ctx = ctx
+        from warnings import warn
+        warn("islpy.SuppressedWarnings is a deprecated no-op and will be removed "
+                "in 2023. Simply remove the use of it to avoid this warning.",
+                DeprecationWarning, stacklevel=1)
 
     def __enter__(self):
-        self.prev_on_error = self.ctx.get_on_error()
-        self.ctx.set_on_error(on_error.CONTINUE)
+        pass
 
     def __exit__(self, type, value, traceback):
-        self.ctx.set_on_error(self.prev_on_error)
+        pass
 
 
 # {{{ give sphinx something to import so we can produce docs

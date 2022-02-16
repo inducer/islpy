@@ -870,6 +870,8 @@ def write_wrapper(outf, meth):
 
     arg_names = []
 
+    checks.append("isl_ctx *islpy_ctx = nullptr;")
+
     arg_idx = 0
     while arg_idx < len(meth.args):
         arg = meth.args[arg_idx]
@@ -949,8 +951,6 @@ def write_wrapper(outf, meth):
             input_args.append(f"py::object py_{arg.name}")
             checks.append("""
                 std::unique_ptr<val> unique_arg_%(name)s;
-                isl_ctx *ctx_for_%(name)s =
-                    %(first_arg_base_type)s_get_ctx(arg_%(first_arg)s.m_data);
 
                 try
                 {
@@ -969,7 +969,7 @@ def write_wrapper(outf, meth):
                 {
                     if (!unique_arg_%(name)s.get())
                     {
-                        isl_val *tmp_ptr = isl_val_int_from_si(ctx_for_%(name)s,
+                        isl_val *tmp_ptr = isl_val_int_from_si(islpy_ctx,
                           py::cast<long>(py_%(name)s));
                         if (!tmp_ptr)
                             throw isl::error("failed to create arg "
@@ -1063,6 +1063,16 @@ def write_wrapper(outf, meth):
                     passed_args.append(f"arg_{arg.name}.m_data")
                     input_args.append(f"{arg_cls} const &arg_{arg.name}")
 
+            if arg_idx == 0:
+                if arg.base_type == "isl_ctx":
+                    checks.append(f"""
+                        islpy_ctx = arg_{arg.name}.m_data;
+                        """)
+                else:
+                    checks.append(f"""
+                        islpy_ctx = {arg.base_type}_get_ctx(arg_{arg.name}.m_data);
+                        """)
+
             docs.append(arg_descr)
 
             # }}}
@@ -1128,12 +1138,37 @@ def write_wrapper(outf, meth):
 
     body = checks + body
 
+    body.append("if (islpy_ctx) isl_ctx_reset_error(islpy_ctx);")
+
     body.append("{}{}({});".format(
         result_capture, meth.c_name, ", ".join(passed_args)))
 
     body += post_call
 
     # {{{ return value processing
+
+    err_handling_body = f"""{{
+                std::string errmsg = "call to isl_{meth.cls}_{meth.name} failed: ";
+                if (islpy_ctx)
+                {{
+                    const char *isl_msg = isl_ctx_last_error_msg(islpy_ctx);
+                    if (isl_msg)
+                        errmsg += isl_msg;
+                    else
+                        errmsg += "<no message>";
+
+                    const char *err_file = isl_ctx_last_error_file(islpy_ctx);
+                    if (err_file)
+                    {{
+                        errmsg += " in ";
+                        errmsg += err_file;
+                        errmsg += ":";
+                        errmsg += std::to_string(isl_ctx_last_error_line(islpy_ctx));
+                    }}
+                }}
+                throw isl::error(errmsg);
+            }}
+            """
 
     if meth.return_base_type == "int" and not meth.return_ptr:
         # {{{ integer return
@@ -1163,9 +1198,8 @@ def write_wrapper(outf, meth):
 
         body.append(f"""
             if (result == isl_stat_error)
-            {{
-              throw isl::error("call to isl_{meth.cls}_{meth.name} failed");
-            }}""")
+            {err_handling_body}
+            """)
 
         assert not (meth.name.startswith("is_") or meth.name.startswith("has_"))
 
@@ -1191,9 +1225,8 @@ def write_wrapper(outf, meth):
 
         body.append(f"""
             if (result == isl_bool_error)
-            {{
-              throw isl::error("call to isl_{meth.cls}_{meth.name} failed");
-            }}""")
+            {err_handling_body}
+            """)
 
         processed_return_type = "bool"
         ret_descr = "bool"
@@ -1266,9 +1299,7 @@ def write_wrapper(outf, meth):
                     return {isl_obj_ret_val};
                 }}
                 else
-                {{
-                    throw isl::error("call to isl_{meth.cls}_{meth.name} failed");
-                }}
+                {err_handling_body}
                 """)
 
     elif meth.return_base_type in ["const char", "char"] and meth.return_ptr == "*":
