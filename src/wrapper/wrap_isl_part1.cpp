@@ -28,6 +28,11 @@ void islpy_expose_part1(py::module &m)
         []()
         {
           isl_ctx *result = isl_ctx_alloc();
+
+          // Sounds scary, but just means "don't print a message".
+          // We implement our own error handling.
+          isl_options_set_on_error(result, ISL_ON_ERROR_CONTINUE);
+
           if (result)
           {
             try
