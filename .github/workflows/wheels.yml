@@ -33,7 +33,7 @@ jobs:
         export MB_PYTHON_OSX_VER=10.9
         git submodule update --init --recursive
         CONFIG_PATH=wheels/config.sh
-        (cd wheels; git clone https://github.com/matthew-brett/multibuild)
+        (cd wheels; git clone https://github.com/multi-build/multibuild)
         source wheels/multibuild/common_utils.sh
         source wheels/multibuild/travis_steps.sh
         if [[ "$(uname)" == "Darwin" ]]; then
@@ -47,6 +47,8 @@ jobs:
       env:
         PLAT: ${{ matrix.arch }}
         MB_PYTHON_VERSION: ${{ matrix.python_version }}
+        # depended upon by pytools
+        BUILD_DEPENDS: "numpy"
 
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
