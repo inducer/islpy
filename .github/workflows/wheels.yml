@@ -47,8 +47,10 @@ jobs:
       env:
         PLAT: ${{ matrix.arch }}
         MB_PYTHON_VERSION: ${{ matrix.python_version }}
+
         # depended upon by pytools
         BUILD_DEPENDS: "numpy"
+        TEST_DEPENDS: "numpy"
 
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
