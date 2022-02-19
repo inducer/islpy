@@ -20,9 +20,67 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+from typing import Optional, TypeVar, cast, Callable, Any
+
 import islpy._isl as _isl
 from islpy.version import VERSION, VERSION_TEXT  # noqa
-from pytools import memoize_on_first_arg
+
+# {{{ copied verbatim from pytools to avoid numpy/pytools dependency
+
+F = TypeVar("F", bound=Callable[..., Any])
+
+
+class _HasKwargs:
+    pass
+
+
+def _memoize_on_first_arg(function: F, cache_dict_name: Optional[str] = None) -> F:
+    """Like :func:`memoize_method`, but for functions that take the object
+    in which do memoization information is stored as first argument.
+
+    Supports cache deletion via ``function_name.clear_cache(self)``.
+    """
+    from sys import intern
+
+    if cache_dict_name is None:
+        cache_dict_name = intern(
+                f"_memoize_dic_{function.__module__}{function.__name__}"
+                )
+
+    def wrapper(obj, *args, **kwargs):
+        if kwargs:
+            key = (_HasKwargs, frozenset(kwargs.items())) + args
+        else:
+            key = args
+
+        try:
+            return getattr(obj, cache_dict_name)[key]
+        except AttributeError:
+            attribute_error = True
+        except KeyError:
+            attribute_error = False
+
+        result = function(obj, *args, **kwargs)
+        if attribute_error:
+            object.__setattr__(obj, cache_dict_name, {key: result})
+            return result
+        else:
+            getattr(obj, cache_dict_name)[key] = result
+            return result
+
+    def clear_cache(obj):
+        object.__delattr__(obj, cache_dict_name)
+
+    from functools import update_wrapper
+    new_wrapper = update_wrapper(wrapper, function)
+
+    # type-ignore because mypy has a point here, stuffing random attributes
+    # into the function's dict is moderately sketchy.
+    new_wrapper.clear_cache = clear_cache  # type: ignore[attr-defined]
+
+    return cast(F, new_wrapper)
+
+# }}}
 
 
 Error = _isl.Error
@@ -597,7 +655,7 @@ def _add_functionality():
         """
         return self.get_space().get_id_dict(dimtype)
 
-    @memoize_on_first_arg
+    @_memoize_on_first_arg
     def obj_get_var_dict(self, dimtype=None):
         """Return a dictionary mapping variable names to tuples of
         (:class:`dim_type`, index).
@@ -612,7 +670,7 @@ def _add_functionality():
         """Return a list of :class:`Id` instances for :class:`dim_type` *dimtype*."""
         return [self.get_dim_name(dimtype, i) for i in range(self.dim(dimtype))]
 
-    @memoize_on_first_arg
+    @_memoize_on_first_arg
     def obj_get_var_names(self, dimtype):
         """Return a list of dim names (in order) for :class:`dim_type` *dimtype*."""
         return [self.get_dim_name(dimtype, i) for i in range(self.dim(dimtype))]
