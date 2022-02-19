@@ -37,7 +37,6 @@ function pre_build {
     elif [[ "$PLAT" == "i686" ]]; then
         export ABI=32
     fi
-    python -m pip install numpy
     echo "Bundled dependencies in the wheel" >> doc/misc.rst
     build_simple2 gmp  6.1.2 https://gmplib.org/download/gmp tar.bz2 \
         --enable-shared --disable-static --with-pic --enable-fat

@@ -303,8 +303,6 @@ def main():
                 ],
           install_requires=[
               "pytest>=2",
-              # "Mako>=0.3.6",
-              "pytools>=2021.2.3",
               ],
           ext_modules=[
               Extension(
