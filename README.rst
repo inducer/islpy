@@ -12,7 +12,7 @@ islpy: Polyhedral Analysis from Python
     :target: https://pypi.org/project/islpy/
 
 islpy is a Python wrapper around Sven Verdoolaege's `isl
-<http://www.kotnet.org/~skimo/isl/>`_, a library for manipulating sets and
+<https://libisl.sourceforge.io/>`_, a library for manipulating sets and
 relations of integer points bounded by linear constraints.
 
 Supported operations on sets include
@@ -32,5 +32,12 @@ bounds on piecewise step-polynomials.
 
 Islpy comes with comprehensive `documentation <http://documen.tician.de/islpy>`_.
 
-*Requirements:* islpy needs a C++ compiler to build. GMP, which used to be
-a dependency, is no longer required.
+*Requirements:* islpy needs a C++ compiler to build. It can optionally make use
+of GMP for support of large integers.
+
+One important thing to know about islpy is that it exposes every function in isl
+that is visible in the headers, not just what isl's authors consider its
+documented, public API (marked by ``__isl_export``). These (technically)
+undocumented functions are marked in the islpy documentation. Many of them are useful
+and essential for certain operations, but isl's API stability guarantees do not
+apply to them. Use them at your own risk.

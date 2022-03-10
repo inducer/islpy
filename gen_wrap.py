@@ -1393,6 +1393,12 @@ def write_exposer(outf, meth, arg_names, doc_str):
     #if meth.is_static:
     #    doc_str = "(static method)\n" + doc_str
 
+    if not meth.is_exported:
+        doc_str = doc_str + (
+                "\n\n.. warning::\n\n    "
+                "This function is not part of the officially public isl API. "
+                "Use at your own risk.")
+
     doc_str_arg = ', "{}"'.format(doc_str.replace("\n", "\\n"))
 
     wrap_class = CLASS_MAP.get(meth.cls, meth.cls)
