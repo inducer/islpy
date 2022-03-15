@@ -27,6 +27,13 @@
 #include <barvinok/isl.h>
 #endif
 
+#ifdef ISLPY_INCLUDE_ISL_INTERNAL_HEADERS
+// Your scientists were so preoccupied with whether or not they could, they
+// didn't stop to think if they should.
+//   -- Dr. Ian Malcolm
+#include "../../isl/isl_equalities.h"
+#endif
+
 #include <iostream>
 #include <stdexcept>
 #include <pybind11/pybind11.h>
