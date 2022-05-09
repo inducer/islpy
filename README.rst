@@ -11,7 +11,8 @@ islpy: Polyhedral Analysis from Python
     :alt: Python Package Index Release Page
     :target: https://pypi.org/project/islpy/
 .. image:: https://zenodo.org/badge/2021524.svg
-   :target: https://zenodo.org/badge/latestdoi/2021524
+    :alt: Zenodo DOI for latest release
+    :target: https://zenodo.org/badge/latestdoi/2021524
 
 islpy is a Python wrapper around Sven Verdoolaege's `isl
 <https://libisl.sourceforge.io/>`_, a library for manipulating sets and
