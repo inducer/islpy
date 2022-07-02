@@ -137,7 +137,7 @@ def main():
 
     if conf["USE_SHIPPED_ISL"]:
         from glob import glob
-        isl_blacklist = [
+        isl_blocklist = [
                 "_templ.c",
                 "_templ_yaml.c",
                 "mp_get",
@@ -166,12 +166,12 @@ def main():
                 "isl_pw_hash.c",
                 "isl_pw_eval.c",
                 "isl_pw_union_opt.c",
-                "isl_pw_union_opt.c",
+                "isl_type_check_match_range_multi_val.c",
                 ]
 
         for fn in glob("isl/*.c"):
             blacklisted = False
-            for bl in isl_blacklist:
+            for bl in isl_blocklist:
                 if bl in fn:
                     blacklisted = True
                     break
