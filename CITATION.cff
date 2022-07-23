@@ -10,7 +10,8 @@ authors:
   given-names: "Cambridge"
 - family-names: "Kulkarni"
   given-names: "Kaushik"
-- alias: "iasakura"
+# Disabled pending https://github.com/zenodo/zenodo/issues/2343
+# - alias: "iasakura"
 - family-names: "Almahallawi"
   given-names: "Deyaaeldeen"
 - family-names: "Gao"
@@ -21,7 +22,8 @@ authors:
   given-names: "Alex"
 - family-names: "Wala"
   given-names: "Matt"
-- alias: "bhuztez"
+# Disabled pending https://github.com/zenodo/zenodo/issues/2343
+# - alias: "bhuztez"
 
 title: "islpy"
 version: 2022.1.2
