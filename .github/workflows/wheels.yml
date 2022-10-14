@@ -22,7 +22,7 @@ jobs:
             arch: i686
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build, install and test
       run: |
         if [[ "$(uname)" == "Linux" ]]; then
