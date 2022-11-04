@@ -298,12 +298,12 @@ def main():
           packages=["islpy"],
 
           python_requires="~=3.6",
-            setup_requires=[
-                "pybind11",
-                ],
-          install_requires=[
-              "pytest>=2",
+          setup_requires=[
+              "pybind11",
               ],
+          extras_require={
+              "test": ["pytest>=2"],
+              },
           ext_modules=[
               Extension(
                   "islpy._isl",
