@@ -7,7 +7,7 @@ islpy: Polyhedral Analysis from Python
 .. image:: https://github.com/inducer/islpy/workflows/CI/badge.svg?branch=main&event=push
     :alt: Github Build Status
     :target: https://github.com/inducer/islpy/actions?query=branch%3Amain+workflow%3ACI+event%3Apush
-.. image:: https://badge.fury.io/py/islpy.png
+.. image:: https://badge.fury.io/py/islpy.svg
     :alt: Python Package Index Release Page
     :target: https://pypi.org/project/islpy/
 .. image:: https://zenodo.org/badge/2021524.svg
