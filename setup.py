@@ -297,7 +297,7 @@ def main():
 
           packages=["islpy"],
 
-          python_requires="~=3.6",
+          python_requires="~=3.8",
           setup_requires=[
               "pybind11",
               ],
