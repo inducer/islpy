@@ -1370,6 +1370,10 @@ def write_wrapper(outf, meth):
 
 # {{{ exposer generator
 
+def is_hash(meth):
+    return meth.name == "get_hash" and len(meth.args) == 1
+
+
 def write_exposer(outf, meth, arg_names, doc_str):
     func_name = f"isl::{meth.cls}_{meth.name}"
     py_name = meth.name
@@ -1385,7 +1389,7 @@ def write_exposer(outf, meth, arg_names, doc_str):
     if meth.name == "size" and len(meth.args) == 1:
         py_name = "__len__"
 
-    if meth.name == "get_hash" and len(meth.args) == 1:
+    if is_hash(meth):
         py_name = "__hash__"
 
     extra_py_names = []
@@ -1508,6 +1512,16 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
             meth
             for cls in classes
             for meth in fdata.classes_to_methods.get(cls, [])])
+
+        for cls in classes:
+            has_isl_hash = any(
+                    is_hash(meth) for meth in fdata.classes_to_methods.get(cls, []))
+
+            if not has_isl_hash:
+                # pybind11's C++ object base class has an object identity
+                # __hash__ that everyone inherits automatically. We don't
+                # want that.
+                expf.write(f'wrap_{cls}.attr("__hash__") = py::none();\n')
 
         expf.close()
         wrapf.close()

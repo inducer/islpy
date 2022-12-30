@@ -313,9 +313,6 @@ def _add_functionality():
             cls.__str__ = generic_str
             cls.__repr__ = generic_repr
 
-        if not hasattr(cls, "__hash__"):
-            raise AssertionError(f"not hashable: {cls}")
-
     # }}}
 
     # {{{ Python set-like behavior
@@ -348,6 +345,13 @@ def _add_functionality():
     # }}}
 
     # {{{ Space
+
+    def space_hash(self):
+        return hash((type(self),
+                     self.dim(dim_type.param),
+                     self.dim(dim_type.in_),
+                     self.dim(dim_type.out),
+                     self.dim(dim_type.div)))
 
     def space_get_id_dict(self, dimtype=None):
         """Return a dictionary mapping variable :class:`Id` instances to tuples
@@ -446,6 +450,7 @@ def _add_functionality():
 
         return result
 
+    Space.__hash__ = space_hash
     Space.create_from_names = staticmethod(space_create_from_names)
     Space.get_var_dict = space_get_var_dict
     Space.get_id_dict = space_get_id_dict
@@ -908,6 +913,12 @@ def _add_functionality():
     # note: automatic upcasts for method arguments are provided through
     # 'implicitly_convertible' on the C++ side of the wrapper.
 
+    def make_upcasting_hash(special_method, upcast_method):
+        def wrapper(basic_instance):
+            return hash((type(basic_instance), upcast_method(basic_instance)))
+
+        return wrapper
+
     def make_new_upcast_wrapper(method, upcast):
         # This function provides a scope in which method and upcast
         # are not changed from one iteration of the enclosing for
@@ -916,7 +927,6 @@ def _add_functionality():
         def wrapper(basic_instance, *args, **kwargs):
             special_instance = upcast(basic_instance)
             return method(special_instance, *args, **kwargs)
-
         return wrapper
 
     def make_existing_upcast_wrapper(basic_method, special_method, upcast):
@@ -937,6 +947,18 @@ def _add_functionality():
 
     def add_upcasts(basic_class, special_class, upcast_method):
         from functools import update_wrapper
+
+        # {{{ implicitly upcast __hash__
+
+        # We don't use hasattr() here because in the C++ part of the wrapper
+        # we overwrite pybind's unwanted default __hash__ implementation
+        # with None.
+        if (getattr(basic_class, "__hash__", None) is None
+                and getattr(special_class, "__hash__", None) is not None):
+            wrapper = make_upcasting_hash(special_class.__hash__, upcast_method)
+            basic_class.__hash__ = update_wrapper(wrapper, basic_class.__hash__)
+
+        # }}}
 
         def my_ismethod(class_, method_name):
             if method_name.startswith("_"):
