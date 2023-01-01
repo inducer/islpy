@@ -457,6 +457,44 @@ def test_sched_constraints_set_validity():
     assert str(validity) == str(validity2)
 
 
+def test_space_hash():
+    # Direct from-string Space constructors are recent and broke barvinok CI
+    # which involves older isl versions.
+    s1 = isl.Set("[n] -> {[i]: 1=1}").space
+    s2 = isl.Set("[n] -> {[j]}: 1=1").space
+    s3 = isl.Set("[n] -> {[j, k]: 1=1}").space
+    s4 = isl.Set("[m, n] -> {[j, k]: 1=1}").space
+
+    i_id = isl.Id("i", context=isl.DEFAULT_CONTEXT)
+    j_id = isl.Id("j", context=isl.DEFAULT_CONTEXT)
+
+    s1_i = s1.set_dim_id(isl.dim_type.set, 0, i_id)
+    s2_i = s2.set_dim_id(isl.dim_type.set, 0, j_id)
+
+    def assert_equal(a, b):
+        assert a == b
+        assert hash(a) == hash(b)
+
+    def assert_not_equal(a, b):
+        assert a != b
+        # not guaranteed, but highly likely
+        assert hash(a) != hash(b)
+
+    assert_equal(s1, s2)
+    assert_equal(s1_i, s2_i)
+    assert_not_equal(s3,  s1)
+    assert_not_equal(s4, s1)
+
+
+def test_basicset_hash():
+    # https://github.com/inducer/islpy/issues/102
+    # isl does not currently (2022-12-30) offer hashing for BasicSet.
+
+    a1 = isl.BasicSet("{[i]: 0<=i<512}")
+    a2 = isl.BasicSet("{[i]: 0<=i<512}")
+    assert hash(a1) == hash(a2)
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
