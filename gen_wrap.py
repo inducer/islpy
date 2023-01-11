@@ -804,7 +804,7 @@ def get_callback(cb_name, cb):
                 wrapper_retval->invalidate();
                 return unwrapped_retval;
             }
-            """ % dict(ret_type_name=cb.return_base_type[4:]))
+            """ % {"ret_type_name": cb.return_base_type[4:]})
         error_return = "nullptr"
 
     else:
@@ -839,17 +839,17 @@ def get_callback(cb_name, cb):
               return %(error_return)s;
             }
         }
-        """ % dict(
-                ret_type=ret_type,
-                cb_name=cb_name,
-                input_args=(
+        """ % {
+                "ret_type": ret_type,
+                "cb_name": cb_name,
+                "input_args": (
                     ", ".join(f"{arg.base_type} {arg.ptr}c_arg_{arg.name}"
                         for arg in cb.args)),
-                pre_call="\n".join(pre_call),
-                passed_args=", ".join(passed_args),
-                post_call="\n".join(post_call),
-                error_return=error_return,
-                )
+                "pre_call": "\n".join(pre_call),
+                "passed_args": ", ".join(passed_args),
+                "post_call": "\n".join(post_call),
+                "error_return": error_return,
+                }
 
 # }}}
 
@@ -981,11 +981,9 @@ def write_wrapper(outf, meth):
                 {
                     throw isl::error("unrecognized argument for %(name)s");
                 }
-                """ % dict(
-                    name=arg.name,
-                    first_arg_base_type=meth.args[0].base_type,
-                    first_arg=meth.args[0].name,
-                    ))
+                """ % {
+                    "name": arg.name,
+                    })
 
             if arg.semantics is None and arg.base_type != "isl_ctx":
                 raise Undocumented(meth)
@@ -1013,10 +1011,10 @@ def write_wrapper(outf, meth):
                     if (!arg_%(name)s.is_valid())
                       throw isl::error(
                         "passed invalid arg to isl_%(meth)s for %(name)s");
-                    """ % dict(
-                        name=arg.name,
-                        meth=f"{meth.cls}_{meth.name}",
-                        cls=arg_cls))
+                    """ % {
+                        "name": arg.name,
+                        "meth": f"{meth.cls}_{meth.name}",
+                        "cls": arg_cls})
                 passed_args.append(f"arg_{arg.name}.m_data")
                 post_call.append(f"arg_{arg.name}.invalidate();")
                 arg_descr += " (mutated in-place)"
@@ -1029,7 +1027,7 @@ def write_wrapper(outf, meth):
                     if (!arg_%(name)s.is_valid())
                       throw isl::error(
                         "passed invalid arg to isl_%(meth)s for %(name)s");
-                    """ % dict(name=arg.name, meth=f"{meth.cls}_{meth.name}"))
+                    """ % {"name": arg.name, "meth": f"{meth.cls}_{meth.name}"})
 
                 if arg.semantics is SEM_TAKE:
                     if arg_cls not in NON_COPYABLE:
@@ -1046,10 +1044,10 @@ def write_wrapper(outf, meth):
                                 auto_arg_%(name)s = std::unique_ptr<%(cls)s>(
                                     new %(cls)s(tmp_ptr));
                             }
-                            """ % dict(
-                                name=arg.name,
-                                meth=f"{meth.cls}_{meth.name}",
-                                cls=arg_cls))
+                            """ % {
+                                "name": arg.name,
+                                "meth": f"{meth.cls}_{meth.name}",
+                                "cls": arg_cls})
 
                         post_call.append(f"auto_arg_{arg.name}.release();")
                         passed_args.append(f"auto_arg_{arg.name}->m_data")
@@ -1096,7 +1094,7 @@ def write_wrapper(outf, meth):
                   py_ret_%(name)s = handle_from_new_ptr(
                       new %(ret_cls)s(ret_%(name)s));
                 }
-                """ % dict(name=arg.name, ret_cls=ret_cls))
+                """ % {"name": arg.name, "ret_cls": ret_cls})
 
             extra_ret_vals.append(f"py_ret_{arg.name}")
             extra_ret_descrs.append(
