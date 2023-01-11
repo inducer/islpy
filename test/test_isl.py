@@ -165,7 +165,7 @@ def test_count_brick_ish():
         counts.append(a.card())
 
     for pwq in counts:
-        print("EVAL", pwq, "=", pwq.eval_with_dict(dict(n=10)))
+        print("EVAL", pwq, "=", pwq.eval_with_dict({"n": 10}))
 
 
 def test_eval_pw_qpolynomial():
@@ -174,7 +174,7 @@ def test_eval_pw_qpolynomial():
 
     pwq = isl.PwQPolynomial.from_pw_aff(pwaff)
 
-    pwq.eval_with_dict(dict(n=10))
+    pwq.eval_with_dict({"n": 10})
 
 
 def test_schedule():
