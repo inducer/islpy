@@ -1,6 +1,7 @@
 #include "wrap_helpers.hpp"
 #include <isl/ctx.h>
 #include <isl/id.h>
+#include <isl/val.h>
 #include <isl/space.h>
 #include <isl/set.h>
 #include <isl/map.h>
