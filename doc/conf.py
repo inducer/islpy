@@ -20,7 +20,7 @@ version = ".".join(str(x) for x in ver_dic["VERSION"])
 release = ver_dic["VERSION_TEXT"]
 
 intersphinx_mapping = {
-        "https://docs.python.org/3/": None,
+        "python": ("https://docs.python.org/3/", None),
         }
 
 def autodoc_process_signature(app, what, name, obj, options, signature,
