@@ -57,3 +57,7 @@ gmp-*
 isl-*
 wheelhouse
 venv
+
+_skbuild/
+libnanobind-static.a
+CMakeFiles/

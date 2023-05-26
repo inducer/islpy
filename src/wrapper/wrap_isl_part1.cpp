@@ -20,32 +20,34 @@ namespace islpy
   }
 }
 
-void islpy_expose_part1(py::module &m)
+void islpy_expose_part1(py::module_ &m)
 {
-  py::class_<isl::ctx, std::shared_ptr<isl::ctx> >
+  py::class_<isl::ctx>
     wrap_ctx(m, "Context");
-  wrap_ctx.def(py::init(
-        []()
-        {
-          isl_ctx *result = isl_ctx_alloc();
+  wrap_ctx.def("__init__",
+               [](isl::ctx *self)
+               {
+                 isl_ctx *result = isl_ctx_alloc();
 
-          // Sounds scary, but just means "don't print a message".
-          // We implement our own error handling.
-          isl_options_set_on_error(result, ISL_ON_ERROR_CONTINUE);
+                 // Sounds scary, but just means "don't print a message".
+                 // We implement our own error handling.
+                 isl_options_set_on_error(result, ISL_ON_ERROR_CONTINUE);
 
-          if (result)
-          {
-            try
-            { return new isl::ctx(result); }
-            catch (...)
-            {
-              isl_ctx_free(result);
-              throw;
-            }
-          }
-          else
-            PYTHON_ERROR(RuntimeError, "failed to create context");
-        }));
+                 if (result)
+                 {
+                   try
+                   {
+                     new(self) isl::ctx(result);
+                   }
+                   catch (...)
+                   {
+                     isl_ctx_free(result);
+                     throw;
+                   }
+                 }
+                 else
+                   PYTHON_ERROR(RuntimeError, "failed to create context");
+               });
   wrap_ctx.attr("_base_name") = "ctx";
   wrap_ctx.attr("_isl_name") = "isl_ctx";
   wrap_ctx.def("_is_valid", &isl::ctx::is_valid);
@@ -84,6 +86,23 @@ void islpy_expose_part1(py::module &m)
 
   MAKE_WRAP(printer, Printer);
   MAKE_WRAP(val, Val);
+  wrap_val.def("__init__",
+      [](isl::val *t, long i, isl::ctx *ctx_wrapper)
+      {
+        isl_ctx *ctx = nullptr;
+        if (ctx_wrapper && ctx_wrapper->is_valid())
+          ctx = ctx_wrapper->m_data;
+        if (!ctx)
+          ctx = isl::get_default_context();
+        if (!ctx)
+          throw isl::error("Val constructor: no context available");
+        isl_val *result = isl_val_int_from_si(ctx, i);
+        if (result)
+          new (t) isl::val(result);
+        else
+          isl::handle_isl_error(ctx, "isl_val_from_si");
+      }, py::arg("i"), py::arg("context").none(true)=py::none()
+      );
 
   MAKE_WRAP(multi_val, MultiVal);
   MAKE_WRAP(vec, Vec);
@@ -93,26 +112,48 @@ void islpy_expose_part1(py::module &m)
   MAKE_WRAP(aff, Aff);
 
   MAKE_WRAP(pw_aff, PwAff);
-  wrap_pw_aff.def(py::init<isl::aff &>());
+  wrap_pw_aff.def(py::init_implicit<isl::aff const &>());
 
   MAKE_WRAP(union_pw_aff, UnionPwAff);
-  wrap_union_pw_aff.def(py::init<isl::pw_aff &>());
+  wrap_union_pw_aff.def(py::init_implicit<isl::aff const &>());
+  wrap_union_pw_aff.def(py::init_implicit<isl::pw_aff const &>());
 
   MAKE_WRAP(multi_id, MultiId);
 
   MAKE_WRAP(multi_aff, MultiAff);
 
   MAKE_WRAP(pw_multi_aff, PwMultiAff);
-  wrap_pw_multi_aff.def(py::init<isl::multi_aff &>());
+  wrap_pw_multi_aff.def(py::init_implicit<isl::multi_aff const &>());
 
   MAKE_WRAP(union_pw_multi_aff, UnionPwMultiAff);
-  wrap_union_pw_multi_aff.def(py::init<isl::pw_multi_aff &>());
+  wrap_union_pw_multi_aff.def(py::init_implicit<isl::pw_multi_aff const &>());
 
   MAKE_WRAP(multi_pw_aff, MultiPwAff);
 
   MAKE_WRAP(multi_union_pw_aff, MultiUnionPwAff);
 
   MAKE_WRAP(id, Id);
+  wrap_id.def("__init__",
+      [](isl::id *t, const char *name, py::object user, isl::ctx *ctx_wrapper)
+      {
+        isl_ctx *ctx = nullptr;
+        if (ctx_wrapper && ctx_wrapper->is_valid())
+          ctx = ctx_wrapper->m_data;
+        if (!ctx)
+          ctx = isl::get_default_context();
+        if (!ctx)
+          throw isl::error("Id constructor: no context available");
+        Py_INCREF(user.ptr());
+        isl_id *result = isl_id_alloc(ctx, name, user.ptr());
+        isl_id_set_free_user(result, isl::my_decref);
+        if (result)
+          new (t) isl::id(result);
+        else
+          isl::handle_isl_error(ctx, "isl_id_alloc");
+      }, py::arg("name"),
+      py::arg("user").none(true)=py::none(),
+      py::arg("context").none(true)=py::none()
+      );
   wrap_id.def("__eq__", islpy::id_eq, py::arg("other"),
       "__eq__(self, other)\n\n"
       ":param self: :class:`Id`\n"
@@ -128,7 +169,7 @@ void islpy_expose_part1(py::module &m)
 
   MAKE_WRAP(space, Space);
   MAKE_WRAP(local_space, LocalSpace);
-  wrap_local_space.def(py::init<isl::space &>());
+  wrap_local_space.def(py::init_implicit<isl::space const &>());
 
 #include "gen-expose-part1.inc"
 }

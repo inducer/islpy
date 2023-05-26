@@ -1,19 +1,15 @@
 #ifndef PYCUDA_WRAP_HELPERS_HEADER_SEEN
 #define PYCUDA_WRAP_HELPERS_HEADER_SEEN
 
+#include <nanobind/nanobind.h>
 
-
-#include <pybind11/pybind11.h>
-#include <pybind11/operators.h>
-
-
-namespace py = pybind11;
+namespace py = nanobind;
 
 
 #define PYTHON_ERROR(TYPE, REASON) \
 { \
   PyErr_SetString(PyExc_##TYPE, REASON); \
-  throw pybind11::error_already_set(); \
+  throw py::python_error(); \
 }
 
 #define ENUM_VALUE(PREFIX, NAME) \
@@ -23,13 +19,13 @@ namespace py = pybind11;
   def(#NAME, &cls::NAME)
 
 #define DEF_SIMPLE_METHOD_WITH_ARGS(NAME, ARGS) \
-  def(#NAME, &cls::NAME, pybind11::args ARGS)
+  def(#NAME, &cls::NAME, py::args ARGS)
 
 #define DEF_SIMPLE_FUNCTION(NAME) \
-  pybind11::def(#NAME, &NAME)
+  py::def(#NAME, &NAME)
 
 #define DEF_SIMPLE_FUNCTION_WITH_ARGS(NAME, ARGS) \
-  pybind11::def(#NAME, &NAME, pybind11::args ARGS)
+  py::def(#NAME, &NAME, py::args ARGS)
 
 #define DEF_SIMPLE_RO_MEMBER(NAME) \
   def_readonly(#NAME, &cls::NAME)
@@ -40,9 +36,9 @@ namespace py = pybind11;
 namespace
 {
   template <typename T>
-  inline pybind11::object handle_from_new_ptr(T *ptr)
+  inline py::object handle_from_new_ptr(T *ptr)
   {
-    return py::cast(ptr, py::return_value_policy::take_ownership);
+    return py::cast(ptr, py::rv_policy::take_ownership);
   }
 }
 

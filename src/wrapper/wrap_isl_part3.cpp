@@ -5,7 +5,7 @@ namespace isl
 #include "gen-wrap-part3.inc"
 }
 
-void islpy_expose_part3(py::module &m)
+void islpy_expose_part3(py::module_ &m)
 {
   MAKE_WRAP(qpolynomial, QPolynomial);
   MAKE_WRAP(pw_qpolynomial, PwQPolynomial);
