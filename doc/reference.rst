@@ -107,25 +107,25 @@ Symbolic Constants
 .. autoclass:: error
     :members:
     :undoc-members:
-    :exclude-members: names, values
+    :exclude-members: names, values, @entries
 
 .. autoclass:: dim_type
     :members:
     :undoc-members:
-    :exclude-members: names, values
+    :exclude-members: names, values, @entries
 
 .. autoclass:: fold
     :members:
     :undoc-members:
-    :exclude-members: names, values
+    :exclude-members: names, values, @entries
 
 .. autoclass:: format
     :members:
-    :undoc-members:
+    :undoc-members: @entries
 
 .. autoclass:: yaml_style
     :members:
-    :undoc-members:
+    :undoc-members: @entries
 
 Output
 ^^^^^^

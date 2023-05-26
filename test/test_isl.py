@@ -93,8 +93,15 @@ def test_upcast():
     a = isl.PwAff("[n] -> { [(-1 - floor((-n)/4))] }")
     b = isl.Aff("[n] -> { [(-1 - floor((-n)/4))] }")
 
+    isl.PwAff(b)
+
     assert b.is_equal(a)
     assert a.is_equal(b)
+
+    s = isl.BasicSet("[n] -> {[i,j,k]: i<=j + k and (exists m: m=j+k) "
+        "and n mod 5 = 17}")
+
+    isl.UnionSet(s)
 
 
 def test_pickling():

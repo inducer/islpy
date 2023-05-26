@@ -83,10 +83,6 @@ cd islpy
   --isl-inc-dir=$PREFIX/include \
   --isl-lib-dir=$PREFIX/lib \
   --use-barvinok
-CPP_LD_EXTRA_FLAGS="-Wl,-rpath,${PREFIX}/lib"
-if [[ "$(uname)" == "Darwin" ]]; then
-  CPP_LD_EXTRA_FLAGS+="-undefined dynamic_lookup"
-fi
-CC=g++ LDSHARED="g++ -shared ${CPP_LD_EXTRA_FLAGS}" python setup.py install
+python -m pip install .
 
 # vim: sw=2

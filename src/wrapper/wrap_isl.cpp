@@ -1,33 +1,70 @@
 #include "wrap_isl.hpp"
 
-void islpy_expose_part1(py::module &m);
-void islpy_expose_part2(py::module &m);
-void islpy_expose_part3(py::module &m);
+void islpy_expose_part1(py::module_ &m);
+void islpy_expose_part2(py::module_ &m);
+void islpy_expose_part3(py::module_ &m);
 
 namespace isl
 {
   ctx_use_map_t ctx_use_map;
+
+  [[noreturn]] void handle_isl_error(isl_ctx *ctx, std::string const &func_name)
+  {
+    std::string errmsg = "call to " + func_name + " failed: ";
+    if (ctx)
+    {
+      const char *isl_msg = isl_ctx_last_error_msg(ctx);
+      if (isl_msg)
+        errmsg += isl_msg;
+      else
+        errmsg += "<no message>";
+
+      const char *err_file = isl_ctx_last_error_file(ctx);
+      if (err_file)
+      {
+        errmsg += " in ";
+        errmsg += err_file;
+        errmsg += ":";
+        errmsg += std::to_string(isl_ctx_last_error_line(ctx));
+      }
+    }
+    throw isl::error(errmsg);
+  }
+
+  isl_ctx *get_default_context()
+  {
+    py::module_ mod = py::module_::import_("islpy");
+    py::object ctx_py = mod.attr("DEFAULT_CONTEXT");
+    if (!ctx_py.is_none())
+    {
+      isl::ctx *ctx_wrapper = py::cast<isl::ctx *>(ctx_py);
+      if (ctx_wrapper->is_valid())
+        return ctx_wrapper->m_data;
+    }
+    return nullptr;
+  }
 }
 
 
-PYBIND11_MODULE(_isl, m)
+NB_MODULE(_isl, m)
 {
-  py::options options;
-  options.disable_function_signatures();
+  // py::options options;
+  // options.disable_function_signatures();
 
-  static py::exception<isl::error> ISLError(m, "Error", nullptr);
+  static py::exception<isl::error> ISLError(m, "Error");
+
   py::register_exception_translator(
-        [](std::exception_ptr p)
+      [](const std::exception_ptr &p, void * /* unused */)
+      {
+        try
         {
-          try
-          {
-            if (p) std::rethrow_exception(p);
-          }
-          catch (isl::error &err)
-          {
-            ISLError(err.what());
-          }
-        });
+          std::rethrow_exception(p);
+        }
+        catch (const isl::error &e)
+        {
+          PyErr_SetString(ISLError.ptr(), e.what());
+        }
+      });
 
   // py::docstring_options doc_opt(true, false, false);
 
@@ -186,21 +223,9 @@ PYBIND11_MODULE(_isl, m)
   islpy_expose_part2(m);
   islpy_expose_part3(m);
 
-  py::implicitly_convertible<isl::basic_set, isl::set>();
-  py::implicitly_convertible<isl::set, isl::union_set>();
   py::implicitly_convertible<isl::basic_set, isl::union_set>();
 
-  py::implicitly_convertible<isl::basic_map, isl::map>();
-  py::implicitly_convertible<isl::map, isl::union_map>();
   py::implicitly_convertible<isl::basic_map, isl::union_map>();
 
-  py::implicitly_convertible<isl::aff, isl::pw_aff>();
-  py::implicitly_convertible<isl::pw_aff, isl::union_pw_aff>();
-  py::implicitly_convertible<isl::aff, isl::union_pw_aff>();
-
-  py::implicitly_convertible<isl::multi_aff, isl::pw_multi_aff>();
-  py::implicitly_convertible<isl::pw_multi_aff, isl::union_pw_multi_aff>();
   py::implicitly_convertible<isl::multi_aff, isl::union_pw_multi_aff>();
-
-  py::implicitly_convertible<isl::space, isl::local_space>();
 }

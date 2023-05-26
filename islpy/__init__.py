@@ -229,6 +229,15 @@ def _read_from_str_wrapper(cls, context, s, dims_with_apostrophes):
 def _add_functionality():
     import islpy._isl as _isl  # noqa
 
+    # {{{ dim_type
+
+    def dim_type_reduce(v):
+        return (dim_type, (int(v),))
+
+    dim_type.__reduce__ = dim_type_reduce
+
+    # }}}
+
     # {{{ Context
 
     def context_reduce(self):
@@ -251,25 +260,6 @@ def _add_functionality():
 
     # {{{ generic initialization, pickling
 
-    def obj_new(cls, s=None, context=None):
-        """Construct a new object from :class:`str` s.
-
-        :arg context: a :class:`islpy.Context` to use. If not supplied, use a
-            global default context.
-        """
-        if not isinstance(s, str):
-            return cls._prev_new(cls)
-
-        if context is None:
-            context = DEFAULT_CONTEXT
-
-        result = cls.read_from_str(context, s)
-        return result
-
-    def obj_bogus_init(self, s, context=None):
-        if not isinstance(s, str) and self._prev_init is not None:
-            self._prev_init(s)
-
     def generic_reduce(self):
         ctx = self.get_ctx()
         prn = Printer.to_str(ctx)
@@ -287,10 +277,6 @@ def _add_functionality():
 
     for cls in ALL_CLASSES:
         if hasattr(cls, "read_from_str"):
-            cls._prev_new = cls.__new__
-            cls.__new__ = obj_new
-            cls._prev_init = getattr(cls, "__init__", None)
-            cls.__init__ = obj_bogus_init
             cls.__reduce__ = generic_reduce
 
     # }}}
@@ -535,20 +521,6 @@ def _add_functionality():
 
     # {{{ Id
 
-    def id_new(cls, name, user=None, context=None):
-        if context is None:
-            context = DEFAULT_CONTEXT
-
-        result = cls.alloc(context, name, user)
-        result._made_from_python = True
-        return result
-
-    def id_bogus_init(self, name, user=None, context=None):
-        assert self._made_from_python
-        del self._made_from_python
-
-    Id.__new__ = staticmethod(id_new)
-    Id.__init__ = id_bogus_init
     Id.user = property(Id.get_user)
     Id.name = property(Id.get_name)
 
@@ -845,24 +817,6 @@ def _add_functionality():
 
     # {{{ Val
 
-    def val_new(cls, src, context=None):
-        if context is None:
-            context = DEFAULT_CONTEXT
-
-        if isinstance(src, str):
-            result = cls.read_from_str(context, src)
-        elif isinstance(src, int):
-            result = cls.int_from_si(context, src)
-        else:
-            raise TypeError("'src' must be int or string")
-
-        result._made_from_python = True
-        return result
-
-    def val_bogus_init(self, src, context=None):
-        assert self._made_from_python
-        del self._made_from_python
-
     def val_rsub(self, other):
         return -self + other
 
@@ -878,8 +832,6 @@ def _add_functionality():
 
         return int(self.to_str())
 
-    Val.__new__ = staticmethod(val_new)
-    Val.__init__ = val_bogus_init
     Val.__add__ = Val.add
     Val.__radd__ = Val.add
     Val.__sub__ = Val.sub
@@ -949,8 +901,7 @@ def _add_functionality():
 
             # Here we're desperately trying to filter out static methods,
             # based on what seems to be a common feature.
-            if any("builtin_function_or_method" in meth_superclass.__name__
-                    for meth_superclass in type(method).__mro__):
+            if type(method).__name__ == "nb_func":
                 return False
 
             return True
