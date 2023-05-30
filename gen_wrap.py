@@ -288,7 +288,7 @@ FUNC_PTR_RE = re.compile(r"""
     re.VERBOSE)
 STRUCT_DECL_RE = re.compile(
         r"(__isl_export\s+)?struct\s+(__isl_export\s+)?([a-z_A-Z0-9]+)\s*;")
-ARG_RE = re.compile(r"^((?:\w+)\s+)+(\**)\s*(\w+)$")
+ARG_RE = re.compile(r"^((?:const\s+)?(?:\w+\s+)+)(\**)\s*(\w+)$")
 INLINE_SEMICOLON_RE = re.compile(r"\;[ \t]*(?=\w)")
 SUBCLASS_RE = re.compile(
         r"__isl_subclass\s*"
