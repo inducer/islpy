@@ -28,8 +28,8 @@ if true; then
   cd "$BUILD_DIR"
 
   rm -Rf  islpy
-  if test "$GITHUB_HEAD_REF" != "" && test "$GITHUB_REPOSITORY" != ""; then
-    with_echo git clone --recursive https://github.com/$GITHUB_REPOSITORY.git -b "$GITHUB_HEAD_REF"
+  if test "$GITHUB_HEAD_REF" != "" && test "$GITHUB_HEAD_REPOSITORY" != ""; then
+    with_echo git clone --recursive https://github.com/$GITHUB_HEAD_REPOSITORY.git -b "$GITHUB_HEAD_REF"
   elif test "$CI_SERVER_NAME" = "GitLab" && test "$CI_COMMIT_REF_NAME" != ""; then
     with_echo git clone --recursive https://gitlab.tiker.net/inducer/islpy.git -b "$CI_COMMIT_REF_NAME"
   else
@@ -67,11 +67,11 @@ if true; then
     --enable-shared-barvinok \
     --with-pet=no
 
-  BARVNOK_ADDITIONAL_MAKE_ARGS=""
+  BARVINOK_ADDITIONAL_MAKE_ARGS=""
   if [ "$(uname)" == "Darwin" ]; then
-    BARVNOK_ADDITIONAL_MAKE_ARGS=CFLAGS="-Wno-error=implicit-function-declaration"
+    BARVINOK_ADDITIONAL_MAKE_ARGS=CFLAGS="-Wno-error=implicit-function-declaration"
   fi
-  make $BARVNOK_ADDITIONAL_MAKE_ARGS -j$NPROCS
+  make $BARVINOK_ADDITIONAL_MAKE_ARGS -j$NPROCS
   make install
 fi
 

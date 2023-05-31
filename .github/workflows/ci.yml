@@ -126,6 +126,8 @@ jobs:
     barvinok:
         name: "Test barvinok build script"
         runs-on: ubuntu-latest
+        env:
+            GITHUB_HEAD_REPOSITORY: ${{github.event.pull_request.head.repo.full_name}}
         steps:
         -   uses: actions/checkout@v3
         -
