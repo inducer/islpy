@@ -918,6 +918,8 @@ def write_wrapper(outf, meth):
             doc_cls = arg.base_type
             if doc_cls.startswith("isl_"):
                 doc_cls = doc_cls[4:]
+            if doc_cls == "unsigned long":
+                doc_cls = "int"
 
             docs.append(f":param {arg.name}: :class:`{doc_cls}`")
 
