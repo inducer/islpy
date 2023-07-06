@@ -1,3 +1,0 @@
-[tool.cibuildwheel]
-
-skip = "*-win-* [cp]p3[67]-*"

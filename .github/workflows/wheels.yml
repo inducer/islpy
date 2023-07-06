@@ -24,8 +24,11 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.12.1
         # (here: set these in pyproject.toml to the extent possible)
-        # env:
-        #   CIBW_SOME_OPTION: value
+        # (Note: An existing pyproject.toml file will override setup.py in
+        #  recent setuptools versions, thus pyproject.toml needs to
+        #  specify the complete build systems in that case.)
+        env:
+          CIBW_SKIP: "*-win-* [cp]p3[67]-*"
         #    ...
         # with:
         #   package-dir: .
