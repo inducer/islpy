@@ -68,7 +68,7 @@ def get_config_schema():
         ])
 
 
-# {{{ awful monkeypatching to build only isl (and not the wrapper) with -O2
+# {{{ awful monkeypatching to fix the isl (not islpy) build on Mac/clang
 
 class Hooked_compile:  # noqa: N801
     def __init__(self, orig__compile, compiler):
@@ -79,17 +79,11 @@ class Hooked_compile:  # noqa: N801
         compiler = self.compiler
         prev_compiler_so = compiler.compiler_so
 
-        # The C++ wrapper takes an awfully long time to compile
-        # with any optimization, on gcc 10 (2020-06-30, AK).
-        if src.startswith("src/wrapper"):
-            compiler.compiler_so = [opt for opt in compiler.compiler_so
-                    if not (
-                        opt.startswith("-O")
-                        or opt.startswith("-g"))]
         if src.endswith(".c"):
             # Some C compilers (Apple clang IIRC?) really don't like having C++
             # flags passed to them.
-            options = [opt for opt in args[2] if "gnu++" not in opt]
+            options = [opt for opt in args[2]
+                if "-std=gnu++" not in opt and "-std=c++" not in opt]
 
             import sys
             # https://github.com/inducer/islpy/issues/39
