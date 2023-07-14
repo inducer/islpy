@@ -48,6 +48,8 @@ def get_config_schema():
         Switch("USE_BARVINOK", False, "Include wrapper for Barvinok"),
         Switch("USE_IMATH_SIO", True, "When using imath, use small-integer "
             "optimization"),
+        Switch("INCLUDE_INTERNAL", True, "Expose infuriatingly useful "
+            "but sadly very internal functionality of isl"),
 
         IncludeDir("GMP", []),
         LibraryDir("GMP", []),
@@ -258,7 +260,11 @@ def main():
     exec(compile(version_py, init_filename, "exec"), conf)
 
     from gen_wrap import gen_wrapper
-    gen_wrapper(wrapper_dirs, include_barvinok=conf["USE_BARVINOK"])
+    gen_wrapper(wrapper_dirs, include_barvinok=conf["USE_BARVINOK"],
+            include_internal=conf["INCLUDE_INTERNAL"])
+
+    if conf["INCLUDE_INTERNAL"]:
+        EXTRA_DEFINES["ISLPY_INCLUDE_ISL_INTERNAL_HEADERS"] = 1
 
     with open("README.rst") as readme_f:
         readme = readme_f.read()

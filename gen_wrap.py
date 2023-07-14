@@ -117,7 +117,7 @@ class CallbackArgument:
 class Method:
     def __init__(self, cls, name, c_name,
             return_semantics, return_base_type, return_ptr,
-            args, is_exported, is_constructor):
+            args, is_exported, is_constructor, is_internal):
         self.cls = cls
         self.name = name
         assert name
@@ -128,6 +128,7 @@ class Method:
         self.args = args
         self.mutator_veto = False
         self.is_exported = is_exported
+        self.is_internal = is_internal
         self.is_constructor = is_constructor
 
         if not self.is_static:
@@ -490,7 +491,7 @@ class FunctionData:
 
     # {{{ read_header
 
-    def read_header(self, fname):
+    def read_header(self, fname, is_internal=False):
         lines = self.get_preprocessed_header(fname).split("\n")
 
         # heed continuations, split at semicolons
@@ -562,13 +563,13 @@ class FunctionData:
                     line = lines[i].strip()
 
                 if not STRUCT_DECL_RE.search(decl):
-                    self.parse_decl(decl)
+                    self.parse_decl(decl, is_internal)
 
     # }}}
 
     # {{{ parse_decl
 
-    def parse_decl(self, decl):
+    def parse_decl(self, decl, is_internal):
         decl_match = DECL_RE.match(decl)
         if decl_match is None:
             print(f"WARNING: func decl regexp not matched: {decl}")
@@ -702,7 +703,8 @@ class FunctionData:
         cls_meth_list.append(Method(
                 class_name, name, c_name,
                 return_semantics, return_base_type, return_ptr,
-                args, is_exported=is_exported, is_constructor=is_constructor))
+                args, is_exported=is_exported, is_constructor=is_constructor,
+                is_internal=is_internal))
 
         self.seen_c_names.add(c_name)
 
@@ -1394,10 +1396,18 @@ def write_exposer(outf, meth, arg_names, doc_str):
     #    doc_str = "(static method)\n" + doc_str
 
     if not meth.is_exported:
-        doc_str = doc_str + (
-                "\n\n.. warning::\n\n    "
-                "This function is not part of the officially public isl API. "
-                "Use at your own risk.")
+        if meth.is_internal:
+            doc_str = doc_str + (
+                    "\n\n.. warning::\n\n    "
+                    "This function is so internal, it is not even exposed in isl's "
+                    "public headers. We declared it on our own, in hopes that "
+                    "isl didn't change the functions prototype. "
+                    "Really, if you have any sense at all, don't use this.")
+        else:
+            doc_str = doc_str + (
+                    "\n\n.. warning::\n\n    "
+                    "This function is not part of the officially public isl API. "
+                    "Use at your own risk.")
 
     doc_str_arg = ', "{}"'.format(doc_str.replace("\n", "\\n"))
 
@@ -1460,7 +1470,8 @@ ADD_VERSIONS = {
         }
 
 
-def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
+def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None,
+        include_internal=False):
     fdata = FunctionData(["."] + include_dirs)
     fdata.read_header("isl/ctx.h")
     fdata.read_header("isl/id.h")
@@ -1489,6 +1500,12 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
     fdata.read_header("isl/ast_build.h")
     fdata.read_header("isl/ast_type.h")
     fdata.read_header("isl/ilp.h")
+
+    if include_internal:
+        # We're reaching deep into isl here, to functions that we're not
+        # supposed to touch.
+        fdata.include_dirs.append("isl")
+        fdata.read_header("isl_equalities.h", is_internal=True)
 
     if include_barvinok:
         fdata.read_header("barvinok/isl.h")
