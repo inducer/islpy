@@ -24,6 +24,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+# Needed for aksetup to be found
+import sys
+
+sys.path.extend(["."])
+
 from aksetup_helper import (
         check_pybind11, get_pybind_include,
         get_config, setup, check_git_submodules, Extension,
