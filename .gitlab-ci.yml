@@ -74,10 +74,8 @@ Documentation:
     . ci-support-v0
     build_py_project_in_venv
 
-    # https://github.com/sphinx-doc/sphinx/issues/9200
-    CI_SUPPORT_SPHINX_VERSION_SPECIFIER="!=4.0.0"
-
     build_docs
+    maybe_upload_docs
 
   tags:
   - python3
