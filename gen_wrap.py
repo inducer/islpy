@@ -20,10 +20,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+from dataclasses import dataclass
 import re
 import sys
 import os
 from os.path import join
+from typing import Sequence, List
 
 SEM_TAKE = "take"
 SEM_GIVE = "give"
@@ -94,41 +96,40 @@ def to_py_class(cls):
 
 # {{{ data model
 
+@dataclass
 class Argument:
-    def __init__(self, name, semantics, base_type, ptr):
-        self.name = name
-        self.semantics = semantics
-        self.base_type = base_type
-        self.ptr = ptr
+    is_const: bool
+    name: str
+    semantics: str
+    base_type: str
+    ptr: str
 
 
+@dataclass
 class CallbackArgument:
-    def __init__(self, name,
-            return_semantics, return_decl_words, return_base_type, return_ptr, args):
-        self.name = name
-        self.return_semantics = return_semantics
-        assert isinstance(return_decl_words, list)
-        self.return_decl_words = return_decl_words
-        self.return_base_type = return_base_type
-        self.return_ptr = return_ptr
-        self.args = args
+    name: str
+    return_semantics: str
+    return_decl_words: List[str]
+    return_base_type: str
+    return_ptr: str
+    args: Sequence[Argument]
 
 
+@dataclass
 class Method:
-    def __init__(self, cls, name, c_name,
-            return_semantics, return_base_type, return_ptr,
-            args, is_exported, is_constructor):
-        self.cls = cls
-        self.name = name
-        assert name
-        self.c_name = c_name
-        self.return_semantics = return_semantics
-        self.return_base_type = return_base_type
-        self.return_ptr = return_ptr
-        self.args = args
-        self.mutator_veto = False
-        self.is_exported = is_exported
-        self.is_constructor = is_constructor
+    cls: str
+    name: str
+    c_name: str
+    return_semantics: str
+    return_base_type: str
+    return_ptr: str
+    args: Sequence[Argument]
+    is_exported: bool
+    is_constructor: bool
+    mutator_veto: bool = False
+
+    def __post_init__(self):
+        assert self.name
 
         if not self.is_static:
             self.args[0].name = "self"
