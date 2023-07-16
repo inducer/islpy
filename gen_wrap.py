@@ -361,11 +361,17 @@ def parse_arg(arg):
 
     words = [w for w in words if w not in ["struct", "enum"]]
 
+    is_const = False
+    if words[0] == "const":
+        is_const = True
+        del words[0]
+
     rebuilt_arg = " ".join(words)
     arg_match = ARG_RE.match(rebuilt_arg)
 
     assert arg_match is not None, rebuilt_arg
     return Argument(
+            is_const=is_const,
             name=arg_match.group(3),
             semantics=semantics,
             base_type=arg_match.group(1).strip(),
@@ -913,6 +919,8 @@ def write_wrapper(outf, meth):
                 ))
 
         elif arg.base_type in SAFE_IN_TYPES and not arg.ptr:
+            assert not arg.is_const
+
             passed_args.append(f"arg_{arg.name}")
             input_args.append(f"{arg.base_type} arg_{arg.name}")
 
