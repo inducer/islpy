@@ -49,6 +49,7 @@ def test_basics():
     for pt in points:
         print(pt)
 
+    assert len(points) == 17
 
 def test_error_on_invalid_index():
     ctx = isl.Context()
