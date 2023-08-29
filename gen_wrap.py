@@ -1469,6 +1469,57 @@ ADD_VERSIONS = {
         }
 
 
+def add_upcasts(basic_class, special_class, upcast_method, fmap, expf):
+
+    def my_ismethod(class_, method_name):
+        if method_name.startswith("_"):
+            return False
+
+        return True
+
+    expf.write(f"\n\n// {{{{{{ Upcasts from {basic_class} to {special_class}\n\n")
+
+    for special_method in fmap[special_class]:
+        if not my_ismethod(special_class, special_method.name):
+            continue
+
+        found = False
+
+        for basic_method in fmap[basic_class]:
+            if basic_method.name == special_method.name:
+                found = True
+
+        if not found:
+            wrap_class = CLASS_MAP.get(basic_method.cls, basic_method.cls)
+            exp_py_name = special_method.name
+            func_name = "[]"
+
+            arg_names = []
+
+            for arg in special_method.args:
+                arg_names.append(arg.name)
+                if not hasattr(arg, "base_type"):
+                    continue
+                if arg.base_type in ["int", "isl_bool"] and arg.ptr == "*":
+                    if arg.name in ["exact", "tight"]:
+                        arg_names.pop()
+                elif arg.base_type.startswith("isl_") and arg.ptr == "**":
+                    arg_names.pop()
+
+            # if not special_method.is_static:
+            #     arg_names = arg_names[1:]
+            args_str = "(" + ", ".join(
+                f"py::arg({arg_name})" for arg_name in arg_names) + ")" + "{}"
+
+            expf.write('wrap_{}.def("{}", {}{});\n'.format(
+                wrap_class, exp_py_name, func_name, args_str))
+
+        # wrap_basic_set.def("foreach_point", [](isl::basic_set &self, py::object fn)
+        #{return isl::set_foreach_point(isl_set_from_basic_set(self.m_data), fn);});
+
+    expf.write("\n// }}}\n\n")
+
+
 def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
     fdata = FunctionData(["."] + include_dirs)
     fdata.read_header("isl/ctx.h")
@@ -1517,6 +1568,18 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
             meth
             for cls in classes
             for meth in fdata.classes_to_methods.get(cls, [])])
+
+        if part == "part1":
+            add_upcasts("aff", "pw_aff", "", fdata.classes_to_methods, expf)
+            add_upcasts("pw_aff", "union_pw_aff", "", fdata.classes_to_methods, expf)
+        elif part == "part2":
+            add_upcasts("basic_set", "set", "", fdata.classes_to_methods, expf)
+            add_upcasts("set", "union_set", "", fdata.classes_to_methods, expf)
+
+            add_upcasts("basic_map", "map", "", fdata.classes_to_methods, expf)
+            add_upcasts("map", "union_map", "", fdata.classes_to_methods, expf)
+        elif part == "part3":
+            pass
 
         expf.close()
         wrapf.close()

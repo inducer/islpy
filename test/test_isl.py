@@ -51,6 +51,7 @@ def test_basics():
 
     assert len(points) == 17
 
+
 def test_error_on_invalid_index():
     ctx = isl.Context()
     my_set = isl.Set("{ [k, l] : 3l >= -k and 3l <= 10 - k "

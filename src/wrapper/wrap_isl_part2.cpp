@@ -33,9 +33,4 @@ void islpy_expose_part2(py::module &m)
   MAKE_WRAP(stride_info, StrideInfo);
 
 #include "gen-expose-part2.inc"
-
-  // additional upcasts
-  wrap_basic_set.def("foreach_point", [](isl::basic_set &self, py::object fn)
-                     { return isl::set_foreach_point(isl_set_from_basic_set(self.m_data), fn); });
-  // [...]
 }
