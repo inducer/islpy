@@ -731,7 +731,7 @@ def get_callback(cb_name, cb):
         if arg.base_type.startswith("isl_"):
             if arg.ptr != "*":
                 raise SignatureNotSupported(
-                        "unsupported callback arg: {arg.base_type} {arg.ptr}")
+                        f"unsupported callback arg: {arg.base_type} {arg.ptr}")
             arg_cls = arg.base_type[4:]
 
             passed_args.append(f"arg_{arg.name}")
