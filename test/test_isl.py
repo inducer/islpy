@@ -173,7 +173,11 @@ def test_count_brick_ish():
     for pwq in counts:
         print("EVAL", pwq, "=", pwq.eval_with_dict({"n": 10}))
 
-    assert pwq.eval_with_dict({"n": 10}) == 100
+    print(counts)
+
+    assert counts[0].eval_with_dict({"n": 10}) == 100
+    if hasattr(a, "card"):
+        assert counts[1].eval_with_dict({"n": 10}) == 55
 
 
 def test_eval_pw_qpolynomial():
