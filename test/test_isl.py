@@ -21,7 +21,7 @@ THE SOFTWARE.
 """
 
 import islpy as isl
-import pytest  # noqa
+import pytest
 
 
 def test_basics():
@@ -48,6 +48,8 @@ def test_basics():
 
     for pt in points:
         print(pt)
+
+    assert len(points) == 17
 
 
 def test_error_on_invalid_index():
@@ -132,7 +134,9 @@ def test_apostrophes_during_pickling():
 
 
 def test_get_id_dict():
-    print(isl.Set("[a] -> {[b]}").get_id_dict(isl.dim_type.param))
+    id_dict = isl.Set("[a] -> {[b]}").get_id_dict(isl.dim_type.param)
+    print(id_dict)
+    assert len(id_dict) == 1
 
 
 def test_get_coefficients_by_name():
@@ -141,6 +145,8 @@ def test_get_coefficients_by_name():
 
     for c in my_set.get_constraints():
         print(c.get_coefficients_by_name())
+
+    assert len(my_set.get_constraints()) == 4
 
 
 def test_count_brick_ish():
@@ -167,6 +173,8 @@ def test_count_brick_ish():
     for pwq in counts:
         print("EVAL", pwq, "=", pwq.eval_with_dict({"n": 10}))
 
+    assert pwq.eval_with_dict({"n": 10}) == 100
+
 
 def test_eval_pw_qpolynomial():
     pwaff = isl.PwAff("[n] -> { [(0)] : n <= 4 and n >= 1; "
@@ -174,7 +182,9 @@ def test_eval_pw_qpolynomial():
 
     pwq = isl.PwQPolynomial.from_pw_aff(pwaff)
 
-    pwq.eval_with_dict({"n": 10})
+    print(pwq.eval_with_dict({"n": 10}))
+
+    assert pwq.eval_with_dict({"n": 10}) == 2
 
 
 def test_schedule():
@@ -302,7 +312,9 @@ def test_affs_from_space():
 
 def test_id_constructor():
     ctx = isl.Context()
-    isl.Id(context=ctx, name="x0")
+    x0 = isl.Id(context=ctx, name="x0")
+    x01 = isl.Id(context=ctx, name="x0")
+    assert x0.name == x01.name
 
 
 def test_creation_error():
@@ -413,7 +425,9 @@ def test_union_casts():
     s2 = isl.BasicSet("{[1]}")
 
     s2.union(s1)  # works fine
-    s1.union(s2)  # does not work
+    s1.union(s2)  # did not work while #29 was not fixed
+
+    assert s2.union(s1) == s1.union(s2)
 
 
 def test_remove_map_if_callback():
