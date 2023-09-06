@@ -1472,12 +1472,12 @@ ADD_VERSIONS = {
         }
 
 
-def add_upcasts(basic_class, special_class, upcast_method, fmap, expf):
+upcasts = {}
+
+
+def add_upcasts(basic_class, special_class, fmap, expf):
 
     def my_ismethod(method):
-
-        if method.name == "is_params":
-            print(method)
         if method.name.startswith("_"):
             return False
 
@@ -1509,8 +1509,15 @@ def add_upcasts(basic_class, special_class, upcast_method, fmap, expf):
             if not my_ismethod(basic_method):
                 continue
 
-        expf.write(f'wrap_{basic_class}.def("{special_method.name}", \
-                     isl::{special_class}_{special_method.name});\n')
+        else:
+            if (basic_class in upcasts
+                    and special_method.name in upcasts[basic_class]):
+                continue
+
+            upcasts.setdefault(basic_class, []).append(special_method.name)
+
+        expf.write(f'wrap_{basic_class}.def("{special_method.name}", '
+                   f"isl::{special_class}_{special_method.name});\n")
 
     expf.write("\n// }}}\n\n")
 
@@ -1564,24 +1571,35 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
             for cls in classes
             for meth in fdata.classes_to_methods.get(cls, [])])
 
-        if part == "part1":
-            add_upcasts("aff", "pw_aff", "", fdata.classes_to_methods, expf)
-            add_upcasts("pw_aff", "union_pw_aff", "", fdata.classes_to_methods, expf)
-            add_upcasts("aff", "union_pw_aff", "", fdata.classes_to_methods, expf)
+        # {{{ add upcasts
 
-            add_upcasts("space", "local_space", "", fdata.classes_to_methods, expf)
+        if part == "part1":
+            add_upcasts("aff", "pw_aff", fdata.classes_to_methods, expf)
+            add_upcasts("pw_aff", "union_pw_aff", fdata.classes_to_methods, expf)
+            add_upcasts("aff", "union_pw_aff", fdata.classes_to_methods, expf)
+
+            add_upcasts("space", "local_space", fdata.classes_to_methods, expf)
+
+            add_upcasts("multi_aff", "pw_multi_aff", fdata.classes_to_methods, expf)
+            add_upcasts("pw_multi_aff", "union_pw_multi_aff",
+                        fdata.classes_to_methods, expf)
+            add_upcasts("multi_aff", "union_pw_multi_aff",
+                        fdata.classes_to_methods, expf)
 
         elif part == "part2":
-            add_upcasts("basic_set", "set", "", fdata.classes_to_methods, expf)
-            add_upcasts("set", "union_set", "", fdata.classes_to_methods, expf)
-            add_upcasts("basic_set", "union_set", "", fdata.classes_to_methods, expf)
+            add_upcasts("basic_set", "set", fdata.classes_to_methods, expf)
+            add_upcasts("set", "union_set", fdata.classes_to_methods, expf)
+            add_upcasts("basic_set", "union_set", fdata.classes_to_methods, expf)
 
-            add_upcasts("basic_map", "map", "", fdata.classes_to_methods, expf)
-            add_upcasts("map", "union_map", "", fdata.classes_to_methods, expf)
-            add_upcasts("basic_map", "union_map", "", fdata.classes_to_methods, expf)
+            add_upcasts("basic_map", "map", fdata.classes_to_methods, expf)
+            add_upcasts("map", "union_map", fdata.classes_to_methods, expf)
+            add_upcasts("basic_map", "union_map", fdata.classes_to_methods, expf)
 
         elif part == "part3":
+            # empty
             pass
+
+        # }}}
 
         expf.close()
         wrapf.close()
