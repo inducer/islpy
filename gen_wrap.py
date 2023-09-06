@@ -1516,8 +1516,11 @@ def add_upcasts(basic_class, special_class, fmap, expf):
 
             upcasts.setdefault(basic_class, []).append(special_method.name)
 
+        doc_str = (f'"\\n\\nUpcast from :class:`{to_py_class(basic_class)}`'
+                   + f' to :class:`{to_py_class(special_class)}`\\n"')
+
         expf.write(f'wrap_{basic_class}.def("{special_method.name}", '
-                   f"isl::{special_class}_{special_method.name});\n")
+                   f"isl::{special_class}_{special_method.name}, {doc_str});\n")
 
     expf.write("\n// }}}\n\n")
 
