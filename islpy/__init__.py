@@ -620,6 +620,7 @@ def _add_functionality():
         return result
 
     Set.get_basic_sets = set_get_basic_sets
+    BasicSet.get_basic_sets = set_get_basic_sets
 
     # }}}
 
@@ -716,6 +717,7 @@ def _add_functionality():
         return result
 
     PwAff.get_pieces = pwaff_get_pieces
+    Aff.get_pieces = pwaff_get_pieces
     PwAff.get_aggregate_domain = pw_get_aggregate_domain
 
     PwQPolynomial.get_pieces = pwqpolynomial_get_pieces
