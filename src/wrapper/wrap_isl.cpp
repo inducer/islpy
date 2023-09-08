@@ -228,4 +228,10 @@ NB_MODULE(_isl, m)
   py::implicitly_convertible<isl::basic_map, isl::union_map>();
 
   py::implicitly_convertible<isl::multi_aff, isl::union_pw_multi_aff>();
+
+  // As far as I can tell, the reported leaks stem from the fact that we copy
+  // many wrapper-exposed symbols from the wrapper namespace (islpy._isl) to
+  // islpy, which keeps these alive past shutdown of the wrapper module (though
+  // they should get cleaned up eventually!). -AK, 2023-09-08
+  py::set_leak_warnings(false);
 }
