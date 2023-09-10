@@ -10,6 +10,7 @@ requires = [
     "scikit-build",
     "nanobind",
     "make",
+    "pcpp",
 ]
 build-backend = "setuptools.build_meta"
 

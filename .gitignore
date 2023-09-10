@@ -61,3 +61,5 @@ venv
 _skbuild/
 libnanobind-static.a
 CMakeFiles/
+
+preproc-headers

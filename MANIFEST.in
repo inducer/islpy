@@ -12,8 +12,6 @@ include isl-supplementary/*.h
 
 include build-with-barvinok.sh
 
-include preproc-headers/*
-
 include src/wrapper/*.h
 include src/wrapper/*.hpp
 include src/wrapper/*.cpp
