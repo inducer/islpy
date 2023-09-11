@@ -36,11 +36,7 @@ def get_config_schema():
             IncludeDir, LibraryDir, Libraries,
             Switch, StringListOption)
 
-    default_cxxflags = [
-            # Required for pybind11:
-            # https://pybind11.readthedocs.io/en/stable/faq.html#someclass-declared-with-greater-visibility-than-the-type-of-its-field-someclass-member-wattributes
-            "-fvisibility=hidden"
-            ]
+    default_cxxflags = []
 
     return ConfigSchema([
         Switch("USE_SHIPPED_ISL", True, "Use included copy of isl"),
