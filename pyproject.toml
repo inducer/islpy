@@ -1,8 +1,19 @@
-[build-system]
-# Minimum requirements for the build system to execute.
-requires = ["setuptools>=42.0.0", "wheel>=0.34.2", "pybind11>=2.5.0"]
-build-backend = "setuptools.build_meta"
-
 [tool.cibuildwheel]
 
 skip = "*-win-* [cp]p3[67]-*"
+
+[build-system]
+requires = [
+    "setuptools>=42,<64",  # https://github.com/scikit-build/scikit-build/pull/737#issuecomment-1215573830
+    "wheel>=0.34.2",
+    "cmake>=3.18<=3.22",
+    "scikit-build",
+    "nanobind",
+    "make",
+    "pcpp",
+]
+build-backend = "setuptools.build_meta"
+
+# Needed for full C++17 support
+[tool.cibuildwheel.macos.environment]
+MACOSX_DEPLOYMENT_TARGET = "10.14"

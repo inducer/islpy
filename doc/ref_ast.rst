@@ -11,18 +11,22 @@ Symbolic Constants
 .. autoclass:: ast_expr_op_type
     :members:
     :undoc-members:
+    :exclude-members: @entries
 
 .. autoclass:: ast_expr_type
     :members:
     :undoc-members:
+    :exclude-members: @entries
 
 .. autoclass:: ast_node_type
     :members:
     :undoc-members:
+    :exclude-members: @entries
 
 .. autoclass:: ast_loop_type
     :members:
     :undoc-members:
+    :exclude-members: @entries
 
 AST Expression
 --------------

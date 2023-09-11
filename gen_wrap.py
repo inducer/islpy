@@ -731,7 +731,7 @@ def get_callback(cb_name, cb):
         if arg.base_type.startswith("isl_"):
             if arg.ptr != "*":
                 raise SignatureNotSupported(
-                        "unsupported callback arg: {arg.base_type} {arg.ptr}")
+                        f"unsupported callback arg: {arg.base_type} {arg.ptr}")
             arg_cls = arg.base_type[4:]
 
             passed_args.append(f"arg_{arg.name}")
@@ -820,7 +820,7 @@ def get_callback(cb_name, cb):
     return """
         static %(ret_type)s %(cb_name)s(%(input_args)s)
         {
-            py::object py_cb = py::reinterpret_borrow<py::object>(
+            py::object py_cb = py::borrow<py::object>(
                 (PyObject *) c_arg_user);
             try
             {
@@ -828,7 +828,7 @@ def get_callback(cb_name, cb):
               py::object retval = py_cb(%(passed_args)s);
               %(post_call)s
             }
-            catch (py::error_already_set &err)
+            catch (py::python_error &err)
             {
               std::cout << "[islpy warning] A Python exception occurred in "
                 "a call back function, ignoring:" << std::endl;
@@ -937,7 +937,13 @@ def write_wrapper(outf, meth):
                 passed_args.append(f"strdup({arg.name})")
             else:
                 passed_args.append(arg.name)
-            input_args.append(f"{arg.base_type} *{arg.name}")
+
+            def _arg_to_const_str(arg: Argument) -> str:
+                if arg.is_const:
+                    return "const "
+                return ""
+
+            input_args.append(f"{_arg_to_const_str(arg)}{arg.base_type} *{arg.name}")
 
             docs.append(f":param {arg.name}: string")
 
@@ -1125,13 +1131,7 @@ def write_wrapper(outf, meth):
         elif (arg.base_type == "void"
                 and arg.ptr == "*"
                 and arg.name == "user"):
-            body.append(f"Py_INCREF(arg_{arg.name}.ptr());")
-            passed_args.append(f"arg_{arg.name}.ptr()")
-            input_args.append(f"py::object arg_{arg.name}")
-            post_call.append(f"""
-                isl_{meth.cls}_set_free_user(result, my_decref);
-                """)
-            docs.append(f":param {arg.name}: a user-specified Python object")
+            raise SignatureNotSupported("void pointer")
 
         else:
             raise SignatureNotSupported(f"arg type {arg.base_type} {arg.ptr}")
@@ -1156,28 +1156,7 @@ def write_wrapper(outf, meth):
 
     # {{{ return value processing
 
-    err_handling_body = f"""{{
-                std::string errmsg = "call to isl_{meth.cls}_{meth.name} failed: ";
-                if (islpy_ctx)
-                {{
-                    const char *isl_msg = isl_ctx_last_error_msg(islpy_ctx);
-                    if (isl_msg)
-                        errmsg += isl_msg;
-                    else
-                        errmsg += "<no message>";
-
-                    const char *err_file = isl_ctx_last_error_file(islpy_ctx);
-                    if (err_file)
-                    {{
-                        errmsg += " in ";
-                        errmsg += err_file;
-                        errmsg += ":";
-                        errmsg += std::to_string(isl_ctx_last_error_line(islpy_ctx));
-                    }}
-                }}
-                throw isl::error(errmsg);
-            }}
-            """
+    err_handling_body = f'handle_isl_error(islpy_ctx, "isl_{meth.cls}_{meth.name}");'
 
     if meth.return_base_type == "int" and not meth.return_ptr:
         # {{{ integer return
@@ -1318,7 +1297,7 @@ def write_wrapper(outf, meth):
         processed_return_type = "py::object"
         body.append("""
             if (result)
-              return py::cast(std::string(result));
+              return py::cast(result);
             else
               return py::none();
             """)
@@ -1332,7 +1311,7 @@ def write_wrapper(outf, meth):
             and meth.name == "get_user"):
 
         body.append("""
-            return py::reinterpret_borrow<py::object>((PyObject *) result);
+            return py::borrow<py::object>((PyObject *) result);
             """)
         ret_descr = "a user-specified python object"
         processed_return_type = "py::object"
@@ -1397,8 +1376,6 @@ def write_exposer(outf, meth, arg_names, doc_str):
     if meth.name == "get_hash" and len(meth.args) == 1:
         py_name = "__hash__"
 
-    extra_py_names = []
-
     #if meth.is_static:
     #    doc_str = "(static method)\n" + doc_str
 
@@ -1412,10 +1389,27 @@ def write_exposer(outf, meth, arg_names, doc_str):
 
     wrap_class = CLASS_MAP.get(meth.cls, meth.cls)
 
-    for exp_py_name in [py_name] + extra_py_names:
-        outf.write('wrap_{}.def{}("{}", {}{});\n'.format(
-            wrap_class, "_static" if meth.is_static else "",
-            exp_py_name, func_name, args_str+doc_str_arg))
+    outf.write(f'wrap_{wrap_class}.def{"_static" if meth.is_static else ""}('
+               f'"{py_name}", {func_name}{args_str+doc_str_arg});\n')
+
+    if meth.name == "read_from_str":
+        assert meth.is_static
+        outf.write(f'wrap_{wrap_class}.def("__init__",'
+            f"[](isl::{wrap_class} *t, const char *s, isl::ctx *ctx_wrapper)"
+            "{"
+            "    isl_ctx *ctx = nullptr;"
+            "    if (ctx_wrapper && ctx_wrapper->is_valid())"
+            "        ctx = ctx_wrapper->m_data;"
+            "    if (!ctx) ctx = isl::get_default_context();"
+            "    if (!ctx)"
+            f'        throw isl::error("from-string conversion of {meth.cls}: "'
+            f'                  "no context available");'
+            f"   isl_{wrap_class} *result = isl_{meth.cls}_read_from_str(ctx, s);"
+            "    if (result)"
+            f"       new (t) isl::{wrap_class}(result);"
+            "    else"
+            f'       isl::handle_isl_error(ctx, "isl_{meth.cls}_read_from_str");'
+            '}, py::arg("s"), py::arg("context").none(true)=py::none());\n')
 
 # }}}
 

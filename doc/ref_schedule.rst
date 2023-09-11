@@ -9,6 +9,7 @@ Schedule
 .. autoclass:: schedule_node_type
     :members:
     :undoc-members:
+    :exclude-members: @entries
 
 .. autoclass:: Schedule
     :members:
