@@ -687,6 +687,56 @@ def _add_functionality():
 
         return result
 
+    def pw_le(self, other):
+        """
+        :return: self <= other
+        """
+        if isinstance(other, int):
+            return self.le_set(self * 0 + other)
+        else:
+            assert isinstance(other, PwAff)
+            return self.le_set(other)
+
+    def pw_lt(self, other):
+        """
+        :return: self < other
+        """
+        if isinstance(other, int):
+            return self.lt_set(self * 0 + other)
+        else:
+            assert isinstance(other, PwAff)
+            return self.lt_set(other)
+
+    def pw_ge(self, other):
+        """
+        :return: self >= other
+        """
+        if isinstance(other, int):
+            return self.ge_set(self * 0 + other)
+        else:
+            assert isinstance(other, PwAff)
+            return self.ge_set(other)
+
+    def pw_gt(self, other):
+        """
+        :return: self >= other
+        """
+        if isinstance(other, int):
+            return self.gt_set(self * 0 + other)
+        else:
+            assert isinstance(other, PwAff)
+            return self.gt_set(other)
+
+    def pw_bool(self):
+        return NotImplementedError(
+                "Converting a PwAff to a boolean is nor supported.")
+
+    PwAff.__le__ = pw_le
+    PwAff.__lt__ = pw_lt
+    PwAff.__ge__ = pw_ge
+    PwAff.__gt__ = pw_gt
+    PwAff.__bool__ = pw_bool
+
     PwAff.get_pieces = pwaff_get_pieces
     PwAff.get_aggregate_domain = pw_get_aggregate_domain
 
@@ -1288,13 +1338,13 @@ def make_zero_and_vars(set_vars, params=(), ctx=None):
         v = isl.make_zero_and_vars("i,j,k", "n")
 
         myset = (
-                v[0].le_set(v["i"] + v["j"])
+                (0 <= v["i"] + v["j"])
                 &
-                (v["i"] + v["j"]).lt_set(v["n"])
+                (v["i"] + v["j"] < v["n"])
                 &
-                (v[0].le_set(v["i"]))
+                (0 <= v["i"])
                 &
-                (v["i"].le_set(13 + v["n"]))
+                (v["i"] <= 13 + v["n"])
                 )
     """
     if ctx is None:
