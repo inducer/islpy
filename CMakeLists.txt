@@ -15,10 +15,16 @@ execute_process(
 list(APPEND CMAKE_PREFIX_PATH "${NB_DIR}")
 find_package(nanobind CONFIG REQUIRED)
 
+IF(DEFINED ENV{CIBUILDWHEEL})
+  set(NOMINSIZE "")
+else()
+  set(NOMINSIZE "NOMINSIZE")
+endif()
+
 nanobind_add_module(
   _isl
   NB_STATIC # Build static libnanobind (the extension module itself remains a shared library)
-  NOMINSIZE # Optimize for speed, not for size
+  ${NOMINSIZE} # Optimize for speed, not for size
   LTO       # Enable LTO
   src/wrapper/wrap_isl.cpp
   src/wrapper/wrap_isl_part1.cpp
