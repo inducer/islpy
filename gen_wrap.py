@@ -1414,7 +1414,7 @@ def write_exposer(outf, meth, arg_names, doc_str):
 # }}}
 
 
-meths = set()
+wrapped_isl_functions = set()
 
 
 def write_wrappers(expf, wrapf, methods):
@@ -1451,7 +1451,7 @@ def write_wrappers(expf, wrapf, methods):
             _, e, _ = sys.exc_info()
             print(f"SKIP (sig not supported: {e}): {meth}")
         else:
-            meths.add(meth.name)
+            wrapped_isl_functions.add(meth.name)
             pass
 
     print("SKIP ({} undocumented methods): {}".format(len(undoc), ", ".join(undoc)))
@@ -1472,13 +1472,10 @@ upcasts = {}
 def add_upcasts(basic_class, special_class, fmap, expf):
 
     def my_ismethod(method):
-        if method.name.startswith("_"):
-            return False
-
         if method.name.endswith("_si") or method.name.endswith("_ui"):
             return False
 
-        if method.name not in meths:
+        if method.name not in wrapped_isl_functions:
             return False
 
         if method.is_static:
@@ -1568,7 +1565,10 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
             for cls in classes
             for meth in fdata.classes_to_methods.get(cls, [])])
 
-        # {{{ add upcasts
+        # {{{ add automatic 'self' upcasts
+
+        # note: automatic upcasts for method arguments are provided through
+        # 'implicitly_convertible'.
 
         if part == "part1":
             add_upcasts("aff", "pw_aff", fdata.classes_to_methods, expf)
