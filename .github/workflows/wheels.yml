@@ -25,8 +25,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.12.3
         env:
         # (here: set these in pyproject.toml to the extent possible)
-        #   CIBW_SOME_OPTION: value
-            PIP_VERBOSE: 1
+            CIBW_BUILD_VERBOSITY: 1
             VERBOSE: 1
         # with:
         #   package-dir: .
