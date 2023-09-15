@@ -26,7 +26,7 @@ jobs:
         env:
         # (here: set these in pyproject.toml to the extent possible)
             CIBW_BUILD_VERBOSITY: 1
-            VERBOSE: 1
+            CIBW_BEFORE_BUILD: export VERBOSE=1
         # with:
         #   package-dir: .
         #   output-dir: wheelhouse
