@@ -33,6 +33,10 @@ nanobind_add_module(
   ${ISL_SOURCES}
 )
 
+set_source_files_properties(src/wrapper/wrap_isl_part1.cpp PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
+set_source_files_properties(src/wrapper/wrap_isl_part2.cpp PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
+set_source_files_properties(src/wrapper/wrap_isl_part3.cpp PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
+
 if(USE_IMATH_FOR_MP)
   target_compile_definitions(_isl PRIVATE USE_IMATH_FOR_MP=1)
 endif()
