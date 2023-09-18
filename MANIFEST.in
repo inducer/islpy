@@ -32,6 +32,7 @@ include configure.py
 include Makefile.in
 include aksetup_helper.py
 include README_SETUP.txt
+include CMakeLists.txt
 
 include README.rst
 include CITATION.cff
