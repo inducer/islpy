@@ -24,8 +24,9 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.12.3
         # (here: set these in pyproject.toml to the extent possible)
-        # env:
-        #   CIBW_SOME_OPTION: value
+        env:
+          # CIBW_SOME_OPTION: value
+          CMAKE_BUILD_PARALLEL_LEVEL: 3
         #    ...
         # with:
         #   package-dir: .

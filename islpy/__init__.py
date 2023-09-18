@@ -592,6 +592,7 @@ def _add_functionality():
         return result
 
     Set.get_basic_sets = set_get_basic_sets
+    BasicSet.get_basic_sets = set_get_basic_sets
 
     # }}}
 
@@ -688,6 +689,7 @@ def _add_functionality():
         return result
 
     PwAff.get_pieces = pwaff_get_pieces
+    Aff.get_pieces = pwaff_get_pieces
     PwAff.get_aggregate_domain = pw_get_aggregate_domain
 
     PwQPolynomial.get_pieces = pwqpolynomial_get_pieces
@@ -854,110 +856,6 @@ def _add_functionality():
     Val.to_python = val_to_python
 
     # }}}
-
-    # {{{ add automatic 'self' upcasts
-
-    # note: automatic upcasts for method arguments are provided through
-    # 'implicitly_convertible' on the C++ side of the wrapper.
-
-    def make_new_upcast_wrapper(method, upcast):
-        # This function provides a scope in which method and upcast
-        # are not changed from one iteration of the enclosing for
-        # loop to the next.
-
-        def wrapper(basic_instance, *args, **kwargs):
-            special_instance = upcast(basic_instance)
-            return method(special_instance, *args, **kwargs)
-
-        return wrapper
-
-    def make_existing_upcast_wrapper(basic_method, special_method, upcast):
-        # This function provides a scope in which method and upcast
-        # are not changed from one iteration of the enclosing for
-        # loop to the next.
-
-        def wrapper(basic_instance, *args, **kwargs):
-            try:
-                return basic_method(basic_instance, *args, **kwargs)
-            except TypeError:
-                pass
-
-            special_instance = upcast(basic_instance)
-            return special_method(special_instance, *args, **kwargs)
-
-        return wrapper
-
-    def add_upcasts(basic_class, special_class, upcast_method):
-        from functools import update_wrapper
-
-        def my_ismethod(class_, method_name):
-            if method_name.startswith("_"):
-                return False
-
-            method = getattr(class_, method_name)
-
-            if not callable(method):
-                return False
-
-            # Here we're desperately trying to filter out static methods,
-            # based on what seems to be a common feature.
-            if type(method).__name__ == "nb_func":
-                return False
-
-            return True
-
-        for method_name in dir(special_class):
-            special_method = getattr(special_class, method_name)
-
-            if not my_ismethod(special_class, method_name):
-                continue
-
-            if hasattr(basic_class, method_name):
-                # method already exists in basic class
-                basic_method = getattr(basic_class, method_name)
-
-                if not my_ismethod(basic_class, method_name):
-                    continue
-
-                wrapper = make_existing_upcast_wrapper(
-                        basic_method, special_method, upcast_method)
-                setattr(
-                        basic_class, method_name,
-                        update_wrapper(wrapper, basic_method))
-            else:
-                # method does not yet exists in basic class
-
-                wrapper = make_new_upcast_wrapper(special_method, upcast_method)
-                setattr(
-                        basic_class, method_name,
-                        update_wrapper(wrapper, special_method))
-
-    for args_triple in [
-            (BasicSet, Set, Set.from_basic_set),
-            (Set, UnionSet, UnionSet.from_set),
-            (BasicSet, UnionSet, lambda x: UnionSet.from_set(Set.from_basic_set(x))),
-
-            (BasicMap, Map, Map.from_basic_map),
-            (Map, UnionMap, UnionMap.from_map),
-            (BasicMap, UnionMap, lambda x: UnionMap.from_map(Map.from_basic_map(x))),
-
-            (Aff, PwAff, PwAff.from_aff),
-            (PwAff, UnionPwAff, UnionPwAff.from_pw_aff),
-            (Aff, UnionPwAff, UnionPwAff.from_aff),
-
-            (MultiAff, PwMultiAff, PwMultiAff.from_multi_aff),
-            (PwMultiAff, UnionPwMultiAff, UnionPwMultiAff.from_pw_multi_aff),
-            (MultiAff, UnionPwMultiAff, UnionPwMultiAff.from_multi_aff),
-
-            (Space, LocalSpace, LocalSpace.from_space),
-            ]:
-        add_upcasts(*args_triple)
-
-    # }}}
-
-    # ORDERING DEPENDENCY: The availability of some of the 'is_equal'
-    # used by rich comparison below depends on the self upcasts created
-    # above.
 
     # {{{ rich comparisons
 

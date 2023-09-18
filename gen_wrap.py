@@ -1414,6 +1414,9 @@ def write_exposer(outf, meth, arg_names, doc_str):
 # }}}
 
 
+wrapped_isl_functions = set()
+
+
 def write_wrappers(expf, wrapf, methods):
     undoc = []
 
@@ -1448,7 +1451,7 @@ def write_wrappers(expf, wrapf, methods):
             _, e, _ = sys.exc_info()
             print(f"SKIP (sig not supported: {e}): {meth}")
         else:
-            # print("WRAPPED:", meth)
+            wrapped_isl_functions.add(meth.name)
             pass
 
     print("SKIP ({} undocumented methods): {}".format(len(undoc), ", ".join(undoc)))
@@ -1461,6 +1464,56 @@ ADD_VERSIONS = {
         "map_list": 15,
         "union_set_list": 15,
         }
+
+
+upcasts = {}
+
+
+def add_upcasts(basic_class, special_class, fmap, expf):
+
+    def my_ismethod(method):
+        if method.name.endswith("_si") or method.name.endswith("_ui"):
+            return False
+
+        if method.name not in wrapped_isl_functions:
+            return False
+
+        if method.is_static:
+            return False
+
+        return True
+
+    expf.write(f"\n// {{{{{{ Upcasts from {basic_class} to {special_class}\n\n")
+
+    for special_method in fmap[special_class]:
+        if not my_ismethod(special_method):
+            continue
+
+        found = False
+
+        for basic_method in fmap[basic_class]:
+            if basic_method.name == special_method.name:
+                found = True
+                break
+
+        if found:
+            if not my_ismethod(basic_method):
+                continue
+
+        else:
+            if (basic_class in upcasts
+                    and special_method.name in upcasts[basic_class]):
+                continue
+
+            upcasts.setdefault(basic_class, []).append(special_method.name)
+
+        doc_str = (f'"\\n\\nUpcast from :class:`{to_py_class(basic_class)}`'
+                   + f' to :class:`{to_py_class(special_class)}`\\n"')
+
+        expf.write(f'wrap_{basic_class}.def("{special_method.name}", '
+                   f"isl::{special_class}_{special_method.name}, {doc_str});\n")
+
+    expf.write("\n// }}}\n\n")
 
 
 def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
@@ -1511,6 +1564,39 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
             meth
             for cls in classes
             for meth in fdata.classes_to_methods.get(cls, [])])
+
+        # {{{ add automatic 'self' upcasts
+
+        # note: automatic upcasts for method arguments are provided through
+        # 'implicitly_convertible'.
+
+        if part == "part1":
+            add_upcasts("aff", "pw_aff", fdata.classes_to_methods, expf)
+            add_upcasts("pw_aff", "union_pw_aff", fdata.classes_to_methods, expf)
+            add_upcasts("aff", "union_pw_aff", fdata.classes_to_methods, expf)
+
+            add_upcasts("space", "local_space", fdata.classes_to_methods, expf)
+
+            add_upcasts("multi_aff", "pw_multi_aff", fdata.classes_to_methods, expf)
+            add_upcasts("pw_multi_aff", "union_pw_multi_aff",
+                        fdata.classes_to_methods, expf)
+            add_upcasts("multi_aff", "union_pw_multi_aff",
+                        fdata.classes_to_methods, expf)
+
+        elif part == "part2":
+            add_upcasts("basic_set", "set", fdata.classes_to_methods, expf)
+            add_upcasts("set", "union_set", fdata.classes_to_methods, expf)
+            add_upcasts("basic_set", "union_set", fdata.classes_to_methods, expf)
+
+            add_upcasts("basic_map", "map", fdata.classes_to_methods, expf)
+            add_upcasts("map", "union_map", fdata.classes_to_methods, expf)
+            add_upcasts("basic_map", "union_map", fdata.classes_to_methods, expf)
+
+        elif part == "part3":
+            # empty
+            pass
+
+        # }}}
 
         expf.close()
         wrapf.close()
