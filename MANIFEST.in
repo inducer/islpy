@@ -38,3 +38,5 @@ include README.rst
 include CITATION.cff
 include isl/LICENSE
 include isl/imath/LICENSE
+
+recursive-exclude preproc-headers *
