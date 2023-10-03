@@ -9,7 +9,7 @@ requires = [
     "cmake>=3.18<=3.22",
     "scikit-build",
     "nanobind",
-    "make",
+    "ninja",
     "pcpp",
 ]
 build-backend = "setuptools.build_meta"
