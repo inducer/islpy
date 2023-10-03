@@ -30,7 +30,7 @@ nanobind_add_module(
 # Work around https://github.com/inducer/islpy/issues/120.
 # See https://stackoverflow.com/questions/43554227/extern-inline-func-results-in-undefined-reference-error
 # for some context.
-set_source_files_properties(${ISL_SOURCES} PROPERTIES COMPILE_OPTIONS -U__USE_EXTERN_INLINES)
+set_source_files_properties(${ISL_SOURCES} PROPERTIES COMPILE_DEFINITIONS __OPTIMIZE_SIZE__)
 
 if(USE_IMATH_FOR_MP)
   target_compile_definitions(_isl PRIVATE USE_IMATH_FOR_MP=1)
