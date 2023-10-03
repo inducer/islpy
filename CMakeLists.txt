@@ -28,7 +28,7 @@ nanobind_add_module(
 )
 
 # Work around https://github.com/inducer/islpy/issues/120
-target_compile_options(_isl PRIVATE -fno-inline)
+set_source_files_properties(${ISL_SOURCES} PROPERTIES COMPILE_OPTIONS -U__USE_EXTERN_INLINES)
 
 if(USE_IMATH_FOR_MP)
   target_compile_definitions(_isl PRIVATE USE_IMATH_FOR_MP=1)
