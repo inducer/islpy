@@ -27,6 +27,7 @@ nanobind_add_module(
   ${ISL_SOURCES}
 )
 
+# Work around https://github.com/inducer/islpy/issues/120
 target_compile_options(_isl PRIVATE -fno-inline)
 
 if(USE_IMATH_FOR_MP)
