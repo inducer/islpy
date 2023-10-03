@@ -6,7 +6,7 @@ skip = "*-win-* [cp]p3[67]-*"
 requires = [
     "setuptools>=42,<64",  # https://github.com/scikit-build/scikit-build/pull/737#issuecomment-1215573830
     "wheel>=0.34.2",
-    "cmake>=3.18<=3.22",
+    "cmake>=3.18",
     "scikit-build",
     "nanobind",
     "ninja",
