@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.18...3.22)
+cmake_minimum_required(VERSION 3.15...3.27)
 project(islpy)
 find_package(Python 3.8 COMPONENTS Interpreter Development.Module REQUIRED)
 
 # Force Release build by default
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  set(CMAKE_BUILD_TYPE Release CACHE STRING Choose the type of build. FORCE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
@@ -15,16 +15,10 @@ execute_process(
 list(APPEND CMAKE_PREFIX_PATH "${NB_DIR}")
 find_package(nanobind CONFIG REQUIRED)
 
-IF(DEFINED ENV{CIBUILDWHEEL})
-  set(NOMINSIZE "")
-else()
-  set(NOMINSIZE "NOMINSIZE")
-endif()
-
 nanobind_add_module(
   _isl
   NB_STATIC # Build static libnanobind (the extension module itself remains a shared library)
-  ${NOMINSIZE} # Optimize for speed, not for size
+  NOMINSIZE # Optimize for speed, not for size
   LTO       # Enable LTO
   src/wrapper/wrap_isl.cpp
   src/wrapper/wrap_isl_part1.cpp
@@ -32,6 +26,11 @@ nanobind_add_module(
   src/wrapper/wrap_isl_part3.cpp
   ${ISL_SOURCES}
 )
+
+# Work around https://github.com/inducer/islpy/issues/120.
+# See https://stackoverflow.com/questions/43554227/extern-inline-func-results-in-undefined-reference-error
+# for some context.
+set_source_files_properties(${ISL_SOURCES} PROPERTIES COMPILE_DEFINITIONS __OPTIMIZE_SIZE__)
 
 if(USE_IMATH_FOR_MP)
   target_compile_definitions(_isl PRIVATE USE_IMATH_FOR_MP=1)

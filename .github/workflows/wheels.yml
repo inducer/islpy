@@ -27,6 +27,8 @@ jobs:
         env:
           # CIBW_SOME_OPTION: value
           CMAKE_BUILD_PARALLEL_LEVEL: 3
+          CIBW_BUILD_VERBOSITY: 1
+          VERBOSE: 1
         #    ...
         # with:
         #   package-dir: .
