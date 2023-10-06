@@ -4,7 +4,13 @@ skip = "*-win-* [cp]p3[67]-*"
 
 [build-system]
 requires = [
-    "setuptools>=42,<64",  # https://github.com/scikit-build/scikit-build/pull/737#issuecomment-1215573830
+    # setuptools >= 64 breaks editable builds:
+    # https://github.com/scikit-build/scikit-build/pull/737#issuecomment-1215573830
+    # setuptools < 64 is incompatible with Python 3.12.
+    # So: no editable builds on Python 3.12, for now.
+    "setuptools>=42,<64;python_version<'3.12'",
+    "setuptools>=64;python_version>='3.12'",
+
     "wheel>=0.34.2",
     "cmake>=3.18",
     "scikit-build",
