@@ -20,6 +20,9 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
-# Needed for full C++17 support
+[tool.cibuildwheel.macos]
+archs = "x86_64 arm64"
+
 [tool.cibuildwheel.macos.environment]
+# Needed for full C++17 support
 MACOSX_DEPLOYMENT_TARGET = "10.14"
