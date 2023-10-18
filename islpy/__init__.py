@@ -87,6 +87,8 @@ Error = _isl.Error
 
 # {{{ name imports
 
+isl_version = _isl.isl_version
+
 Context = _isl.Context
 IdList = _isl.IdList
 ValList = _isl.ValList

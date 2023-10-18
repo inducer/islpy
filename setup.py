@@ -221,6 +221,15 @@ def main():
         cmake_args.append(f"-DISL_INC_DIRS:LIST={';'.join(isl_inc_dirs)}")
 
         cmake_args.append(f"-DISL_SOURCES:list={';'.join(extra_objects)}")
+
+        with open("isl/configure.ac") as inf:
+            isl_version_line, = [ln for ln in inf
+                                 if ln.strip().startswith("versioninfo")]
+
+        _, isl_version = isl_version_line.strip().split("=")
+        isl_version = isl_version.replace(":", ".")
+
+        cmake_args.append(f"-DISL_GIT_HEAD_ID=isl-{isl_version}-included-with-islpy")
     else:
         if conf["ISL_INC_DIR"]:
             cmake_args.append(f"-DISL_INC_DIRS:LIST="

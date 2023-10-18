@@ -69,6 +69,13 @@ Called with          Argument Type
 
 as well as casts contained in the transitive closure of this 'casting graph'.
 
+Version Info
+------------
+
+.. data:: version
+
+.. function:: isl_version
+
 Error Reporting
 ---------------
 
