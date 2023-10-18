@@ -23,6 +23,7 @@
 #include <isl/ast.h>
 #include <isl/ast_build.h>
 #include <isl/options.h>
+#include <isl/version.h>
 
 #ifdef ISLPY_INCLUDE_BARVINOK
 #include <barvinok/isl.h>

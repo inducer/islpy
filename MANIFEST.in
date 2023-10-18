@@ -1,3 +1,4 @@
+include isl/*.ac
 include isl/*.c
 include isl/*.h
 include isl/imath/*.c

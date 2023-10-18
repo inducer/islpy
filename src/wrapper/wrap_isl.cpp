@@ -219,6 +219,8 @@ NB_MODULE(_isl, m)
   ADD_MACRO_ATTR(cls_schedule_algorithm, ISL_SCHEDULE_ALGORITHM_, ISL);
   ADD_MACRO_ATTR(cls_schedule_algorithm, ISL_SCHEDULE_ALGORITHM_, FEAUTRIER);
 
+  m.def("isl_version", [] () { return isl_version(); });
+
   islpy_expose_part1(m);
   islpy_expose_part2(m);
   islpy_expose_part3(m);

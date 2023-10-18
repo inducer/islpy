@@ -53,7 +53,9 @@ endif()
 
 target_include_directories(_isl PRIVATE ${ISL_INC_DIRS})
 
-if(NOT USE_SHIPPED_ISL)
+if(USE_SHIPPED_ISL)
+  target_compile_definitions(_isl PRIVATE GIT_HEAD_ID="${ISL_GIT_HEAD_ID}")
+else()
   target_link_directories(_isl PRIVATE ${ISL_LIB_DIRS})
   target_link_libraries(_isl PRIVATE ${ISL_LIB_NAMES})
 endif()
