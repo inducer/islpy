@@ -181,6 +181,7 @@ NB_MODULE(_isl, m)
     .value("if_", isl_ast_node_if)
     .ENUM_VALUE(isl_ast_node_, block)
     .ENUM_VALUE(isl_ast_node_, user)
+    .ENUM_VALUE(isl_ast_node_, mark)
     ;
 
   py::enum_<isl_ast_loop_type>(m, "ast_loop_type")
