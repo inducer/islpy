@@ -30,3 +30,4 @@ version: 2022.1.2
 doi: 10.5281/zenodo.6345184
 date-released: 2022-03-10
 url: "https://github.com/inducer/islpy"
+license: MIT
