@@ -14,7 +14,7 @@ requires = [
     "wheel>=0.34.2",
     "cmake>=3.18",
     "scikit-build",
-    "nanobind",
+    "nanobind>=1.3",
     "ninja",
     "pcpp",
 ]
