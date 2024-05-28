@@ -25,6 +25,8 @@ from typing import Optional, TypeVar, cast, Callable, Any
 import islpy._isl as _isl
 from islpy.version import VERSION, VERSION_TEXT  # noqa
 
+__version__ = VERSION_TEXT
+
 # {{{ copied verbatim from pytools to avoid numpy/pytools dependency
 
 F = TypeVar("F", bound=Callable[..., Any])
