@@ -107,7 +107,9 @@ NB_MODULE(_isl, m)
     .ENUM_VALUE(isl_stat_, ok)
     ;
 
-  py::enum_<isl_dim_type>(m, "dim_type")
+  // Arithmetic (i.e. export numerical values) to ensure that out == set, as on
+  // the C side.
+  py::enum_<isl_dim_type>(m, "dim_type", py::is_arithmetic())
     .ENUM_VALUE(isl_dim_, cst)
     .ENUM_VALUE(isl_dim_, param)
     .value("in_", isl_dim_in)
