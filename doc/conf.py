@@ -1,13 +1,13 @@
 import re
-
 from urllib.request import urlopen
+
 
 _conf_url = \
         "https://raw.githubusercontent.com/inducer/sphinxconfig/main/sphinxconfig.py"
 with urlopen(_conf_url) as _inf:
     exec(compile(_inf.read(), _conf_url, "exec"), globals())
 
-extensions.remove("sphinx.ext.linkcode")
+extensions.remove("sphinx.ext.linkcode")  # noqa: F821
 
 copyright = "2011-21, Andreas Kloeckner"
 
@@ -23,6 +23,7 @@ intersphinx_mapping = {
         "python": ("https://docs.python.org/3/", None),
         }
 
+
 def autodoc_process_signature(app, what, name, obj, options, signature,
         return_annotation):
     from inspect import ismethod
@@ -37,6 +38,7 @@ def autodoc_process_signature(app, what, name, obj, options, signature,
             signature = "()"
 
     return (signature, return_annotation)
+
 
 def autodoc_process_docstring(app, what, name, obj, options, lines):
     # clear out redundant pybind-generated member list
@@ -61,7 +63,7 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
 
                 doc_match = arg_list_re.match(meth_obj.__doc__)
                 if doc_match is None:
-                    #print(f"'{meth_obj.__doc__}' did not match arg list RE")
+                    # print(f"'{meth_obj.__doc__}' did not match arg list RE")
                     return result
 
                 arg_list = doc_match.group(2).split(", ")

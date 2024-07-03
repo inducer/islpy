@@ -20,12 +20,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from dataclasses import dataclass
+import os
 import re
 import sys
-import os
+from dataclasses import dataclass
 from os.path import join
-from typing import Sequence, List
+from typing import ClassVar, List, Mapping, Sequence
+
 
 SEM_TAKE = "take"
 SEM_GIVE = "give"
@@ -53,19 +54,19 @@ def       for       lambda    try
 """.split()
 
 
-class Retry(RuntimeError):
+class Retry(RuntimeError):  # noqa: N818
     pass
 
 
-class BadArg(ValueError):
+class BadArg(ValueError):  # noqa: N818
     pass
 
 
-class Undocumented(ValueError):
+class Undocumented(ValueError):  # noqa: N818
     pass
 
 
-class SignatureNotSupported(ValueError):
+class SignatureNotSupported(ValueError):  # noqa: N818
     pass
 
 
@@ -184,7 +185,7 @@ PART_TO_CLASSES = {
 
             # others
             "ctx",
-            "printer",  "val", "multi_val", "vec", "mat", "fixed_box",
+            "printer", "val", "multi_val", "vec", "mat", "fixed_box",
             "aff", "pw_aff", "union_pw_aff",
             "multi_aff", "multi_pw_aff", "pw_multi_aff", "union_pw_multi_aff",
             "multi_union_pw_aff",
@@ -264,9 +265,9 @@ MACRO_ENUMS = [
 
 # }}}
 
-SAFE_TYPES = list(ENUMS) + ["int", "unsigned", "uint32_t", "size_t", "double",
-        "long", "unsigned long", "isl_size"]
-SAFE_IN_TYPES = SAFE_TYPES + ["const char *", "char *"]
+SAFE_TYPES = [*list(ENUMS), "int", "unsigned", "uint32_t", "size_t", "double", "long",
+    "unsigned long", "isl_size"]
+SAFE_IN_TYPES = [*SAFE_TYPES, "const char *", "char *"]
 
 # {{{ parser helpers
 
@@ -381,10 +382,13 @@ def parse_arg(arg):
 def preprocess_with_macros(macro_header_contents, code):
     try:
         from pcpp.preprocessor import (
-                Preprocessor as PreprocessorBase, OutputDirective, Action)
-    except ImportError:
+            Action,
+            OutputDirective,
+            Preprocessor as PreprocessorBase,
+        )
+    except ImportError as err:
         raise RuntimeError("pcpp was not found. Please install pcpp before "
-                "installing islpy. 'pip install pcpp' should do the job.")
+                "installing islpy. 'pip install pcpp' should do the job.") from err
 
     class MacroExpandingCPreprocessor(PreprocessorBase):
         def on_directive_handle(self, directive, toks, ifpassthru, precedingtoks):
@@ -420,7 +424,7 @@ def preprocess_with_macros(macro_header_contents, code):
 
 class FunctionData:
 
-    INVALID_PY_IDENTIFIER_RENAMING_MAP = {
+    INVALID_PY_IDENTIFIER_RENAMING_MAP: ClassVar[Mapping[str, str]] = {
         "2exp": "two_exp"
     }
 
@@ -458,11 +462,11 @@ class FunctionData:
         return h.hexdigest()
 
     preprocessed_dir = "preproc-headers"
-    macro_headers = ["isl/multi.h", "isl/list.h"]
+    macro_headers: ClassVar[Sequence[str]] = ["isl/multi.h", "isl/list.h"]
 
     def get_preprocessed_header(self, fname):
         header_hash = self.get_header_hashes(
-                self.macro_headers + [fname])
+                [*self.macro_headers, fname])
 
         # cache preprocessed headers to avoid install-time
         # dependency on pcpp
@@ -490,7 +494,7 @@ class FunctionData:
         prepro_header = preprocess_with_macros(
                 macro_header_contents, self.get_header_contents(fname))
 
-        with open(prepro_fname, "wt") as outf:
+        with open(prepro_fname, "w") as outf:
             outf.write(prepro_header)
 
         return prepro_header
@@ -1347,9 +1351,8 @@ def write_wrapper(outf, meth):
             inputs=", ".join(input_args),
             body="\n".join(body)))
 
-    docs = (["{}({})".format(meth.name, ", ".join(arg_names)), ""]
-            + docs
-            + [f":return: {ret_descr}"])
+    docs = (["{}({})".format(meth.name, ", ".join(arg_names)),
+            "", *docs, f":return: {ret_descr}"])
 
     return arg_names, "\n".join(docs)
 
@@ -1376,7 +1379,7 @@ def write_exposer(outf, meth, arg_names, doc_str):
     if meth.name == "get_hash" and len(meth.args) == 1:
         py_name = "__hash__"
 
-    #if meth.is_static:
+    # if meth.is_static:
     #    doc_str = "(static method)\n" + doc_str
 
     if not meth.is_exported:
@@ -1421,7 +1424,7 @@ def write_wrappers(expf, wrapf, methods):
     undoc = []
 
     for meth in methods:
-        #print "TRY_WRAP:", meth
+        # print "TRY_WRAP:", meth
         if meth.name.endswith("_si") or meth.name.endswith("_ui"):
             val_versions = [
                     meth2
@@ -1517,7 +1520,7 @@ def add_upcasts(basic_class, special_class, fmap, expf):
 
 
 def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
-    fdata = FunctionData(["."] + include_dirs)
+    fdata = FunctionData([".", *include_dirs])
     fdata.read_header("isl/ctx.h")
     fdata.read_header("isl/id.h")
     fdata.read_header("isl/space.h")
@@ -1550,8 +1553,8 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
         fdata.read_header("barvinok/isl.h")
 
     for part, classes in PART_TO_CLASSES.items():
-        expf = open(f"src/wrapper/gen-expose-{part}.inc", "wt")
-        wrapf = open(f"src/wrapper/gen-wrap-{part}.inc", "wt")
+        expf = open(f"src/wrapper/gen-expose-{part}.inc", "w")
+        wrapf = open(f"src/wrapper/gen-wrap-{part}.inc", "w")
 
         classes = [
                 cls

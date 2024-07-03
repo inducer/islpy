@@ -20,10 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from typing import Optional, TypeVar, cast, Callable, Any
+from typing import Any, Callable, Optional, TypeVar, cast
 
 import islpy._isl as _isl
 from islpy.version import VERSION, VERSION_TEXT  # noqa
+
 
 __version__ = VERSION_TEXT
 
@@ -51,7 +52,7 @@ def _memoize_on_first_arg(function: F, cache_dict_name: Optional[str] = None) ->
 
     def wrapper(obj, *args, **kwargs):
         if kwargs:
-            key = (_HasKwargs, frozenset(kwargs.items())) + args
+            key = (_HasKwargs, frozenset(kwargs.items()), *args)
         else:
             key = args
 

@@ -20,8 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-import islpy as isl
 import pytest
+
+import islpy as isl
 
 
 def test_basics():
@@ -211,7 +212,7 @@ def test_schedule():
         access = build.call_from_pw_multi_aff(aff)
         return isl.AstNode.alloc_user(access)
 
-    build, callback_handle = build.set_at_each_domain(callback)
+    build, _callback_handle = build.set_at_each_domain(callback)
 
     ast = build.ast_from_schedule(schedule)
 
@@ -226,8 +227,8 @@ def test_schedule():
         return printer
 
     opts = isl.AstPrintOptions.alloc(isl.DEFAULT_CONTEXT)
-    opts, cb_print_user_handle = opts.set_print_user(cb_print_user)
-    opts, cb_print_for_handle = opts.set_print_for(cb_print_for)
+    opts, _cb_print_user_handle = opts.set_print_user(cb_print_user)
+    opts, _cb_print_for_handle = opts.set_print_for(cb_print_for)
 
     printer = isl.Printer.to_str(isl.DEFAULT_CONTEXT)
     printer = printer.set_output_format(isl.format.C)
@@ -461,7 +462,7 @@ def test_remove_map_if_callback_exc():
     umap = isl.UnionMap.read_from_str(ctx, "{A[0] -> [1]; B[1] -> [2]}")
 
     def callback_throws_exception(m):
-        1/0
+        raise AssertionError()
 
     with pytest.raises(isl.Error):
         umap3 = umap.remove_map_if(callback_throws_exception)

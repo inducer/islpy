@@ -1,5 +1,6 @@
 import islpy as isl
 
+
 space = isl.Space.create_from_names(isl.DEFAULT_CONTEXT, set=["x", "y"])
 
 bset = (isl.BasicSet.universe(space)
@@ -53,8 +54,8 @@ def plot_basic_set(bset, *args, **kwargs):
     if plot_vert:
         pt.plot(vertex_pts[:, 0], vertex_pts[:, 1], "o")
 
-    import matplotlib.path as mpath
     import matplotlib.patches as mpatches
+    import matplotlib.path as mpath
 
     Path = mpath.Path  # noqa
 
@@ -76,7 +77,7 @@ plot_basic_set(bset2, facecolor="green", edgecolor="black", alpha=0.2)
 pt.grid()
 pt.xlim([-1, 6])
 pt.ylim([-1, 8])
-#pt.show()
+# pt.show()
 pt.savefig("before-union.png", dpi=50)
 
 plot_basic_set(union, facecolor="blue", edgecolor="yellow",
