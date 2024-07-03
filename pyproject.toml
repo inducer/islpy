@@ -16,6 +16,54 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
+[tool.inducer-ci-support]
+disable-editable-pip-install = true
+
+[tool.ruff]
+preview = true
+exclude = [
+    "isl",
+    "aksetup_helper.py"
+]
+
+[tool.ruff.lint]
+extend-select = [
+    "B",   # flake8-bugbear
+    "C",   # flake8-comprehensions
+    "E",   # pycodestyle
+    "F",   # pyflakes
+    "G",   # flake8-logging-format
+    "I",   # flake8-isort
+    "N",   # pep8-naming
+    "NPY", # numpy
+    "Q",   # flake8-quotes
+    "UP",  # pyupgrade
+    "RUF", # ruff
+    "W",   # pycodestyle
+]
+extend-ignore = [
+    "C90",  # McCabe complexity
+    "E221", # multiple spaces before operator
+    "E226", # missing whitespace around arithmetic operator
+    "E402", # module-level import not at top of file
+    "UP006", # updated annotations due to __future__ import
+    "UP007", # updated annotations due to __future__ import
+    "UP031", # use f-strings instead of %
+    "UP032", # use f-strings instead of .format
+]
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "double"
+multiline-quotes = "double"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+known-local-folder = [
+    "islpy",
+]
+lines-after-imports = 2
+
 [tool.cibuildwheel]
 # nanobind does not support Py<3.8
 skip = ["*-win-*", "[cp]p3[67]-*"]

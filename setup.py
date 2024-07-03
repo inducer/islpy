@@ -27,14 +27,20 @@ THE SOFTWARE.
 import sys
 from typing import List, Sequence
 
+
 # Needed for aksetup to be found
 sys.path.extend(["."])
 
 
 def get_config_schema():
-    from aksetup_helper import (ConfigSchema,
-            IncludeDir, LibraryDir, Libraries,
-            Switch, StringListOption)
+    from aksetup_helper import (
+        ConfigSchema,
+        IncludeDir,
+        Libraries,
+        LibraryDir,
+        StringListOption,
+        Switch,
+    )
 
     default_cxxflags = [
             # Required for pybind11:
@@ -146,18 +152,18 @@ def _get_isl_sources(use_shipped_imath: bool, use_imath_sio: bool) -> Sequence[s
             "isl/imath/imath.c",
             "isl/imath/imrat.c",
             "isl/imath/gmp_compat.c",
-            #"isl/imath_wrap/imath.c",
-            #"isl/imath_wrap/imrat.c",
-            #"isl/imath_wrap/gmp_compat.c",
+            # "isl/imath_wrap/imath.c",
+            # "isl/imath_wrap/imrat.c",
+            # "isl/imath_wrap/gmp_compat.c",
             ])
 
     return extra_objects
 
 
 def main():
-    from skbuild import setup
     import nanobind  # noqa: F401
     from setuptools import find_packages
+    from skbuild import setup
 
     # {{{ import aksetup_helper bits
 
@@ -165,7 +171,7 @@ def main():
     # FIXME skbuild seems to remove this. Why?
     sys.path.append(".")
 
-    from aksetup_helper import get_config, check_git_submodules
+    from aksetup_helper import check_git_submodules, get_config
     from gen_wrap import gen_wrapper
 
     sys.path = prev_path
@@ -203,7 +209,7 @@ def main():
 
     if conf["USE_SHIPPED_ISL"]:
         cmake_args.append("-DUSE_SHIPPED_ISL:bool=1")
-        isl_inc_dirs = ["isl-supplementary", "isl/include",  "isl"]
+        isl_inc_dirs = ["isl-supplementary", "isl/include", "isl"]
 
         if conf["USE_SHIPPED_IMATH"]:
             cmake_args.append("-DUSE_IMATH_FOR_MP:bool=1")
@@ -223,8 +229,8 @@ def main():
         cmake_args.append(f"-DISL_SOURCES:list={';'.join(extra_objects)}")
 
         with open("isl/configure.ac") as inf:
-            isl_version_line, = [ln for ln in inf
-                                 if ln.strip().startswith("versioninfo")]
+            isl_version_line, = (ln for ln in inf
+                                 if ln.strip().startswith("versioninfo"))
 
         _, isl_version = isl_version_line.strip().split("=")
         isl_version = isl_version.replace(":", ".")
@@ -241,7 +247,7 @@ def main():
 
         cmake_args.append(f"-DISL_LIB_NAMES={';'.join(conf['ISL_LIBNAME'])}")
 
-        cmake_args.append('-DISL_SOURCES:list=')
+        cmake_args.append("-DISL_SOURCES:list=")
 
         isl_inc_dirs = conf["ISL_INC_DIR"]
 
