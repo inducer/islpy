@@ -507,7 +507,7 @@ def _add_functionality():
                     if dim_to_name is None:
                         name = self.get_dim_name(tp, i)
                     else:
-                        name = dim_to_name[(tp, i)]
+                        name = dim_to_name[tp, i]
 
                     result[name] = coeff
 
