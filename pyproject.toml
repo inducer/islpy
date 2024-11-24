@@ -25,6 +25,8 @@ exclude = [
     "isl",
     "aksetup_helper.py"
 ]
+target-version = "py38"
+
 
 [tool.ruff.lint]
 extend-select = [
