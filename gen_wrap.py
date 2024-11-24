@@ -295,7 +295,7 @@ INLINE_SEMICOLON_RE = re.compile(r"\;[ \t]*(?=\w)")
 SUBCLASS_RE = re.compile(
         r"__isl_subclass\s*"
         r"\(\s*"
-        "[0-9a-zA-Z_]+"
+        r"[0-9a-zA-Z_]+"
         r"\s*\)")
 
 
