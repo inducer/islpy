@@ -92,7 +92,7 @@ Convenience
 Lifetime Helpers
 ^^^^^^^^^^^^^^^^
 
-.. class:: ffi_callback_handle
+.. class:: CallbackLifetimeHandle
 
     Some callbacks, notably those in :class:`AstBuild`, need to outlive the
     function call to which they're passed. These callback return a callback

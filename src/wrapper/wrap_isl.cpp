@@ -43,6 +43,9 @@ namespace isl
     }
     return nullptr;
   }
+
+  // bogus, unused, just in service of type annotation
+  struct callback_lifetime_handle { };
 }
 
 
@@ -223,6 +226,8 @@ NB_MODULE(_isl, m)
   ADD_MACRO_ATTR(cls_schedule_algorithm, ISL_SCHEDULE_ALGORITHM_, FEAUTRIER);
 
   m.def("isl_version", [] () { return isl_version(); });
+
+  py::class_<isl::callback_lifetime_handle> wrap_cb_lifetime_handle(m, "CallbackLifetimeHandle");
 
   islpy_expose_part1(m);
   islpy_expose_part2(m);
