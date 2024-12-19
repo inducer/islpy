@@ -1240,20 +1240,6 @@ def affs_from_space(space):
     return result
 
 
-class SuppressedWarnings:
-    def __init__(self, ctx):
-        from warnings import warn
-        warn("islpy.SuppressedWarnings is a deprecated no-op and will be removed "
-                "in 2023. Simply remove the use of it to avoid this warning.",
-                DeprecationWarning, stacklevel=1)
-
-    def __enter__(self):
-        pass
-
-    def __exit__(self, type, value, traceback):
-        pass
-
-
 # {{{ give sphinx something to import so we can produce docs
 
 def _define_doc_link_names():
