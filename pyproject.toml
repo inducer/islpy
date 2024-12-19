@@ -68,6 +68,9 @@ known-local-folder = [
 ]
 lines-after-imports = 2
 
+[tool.ruff.lint.per-file-ignores]
+"islpy/*.pyi" = ["N801", "E501", "I001", "F401", "E202"]
+
 [tool.cibuildwheel]
 # nanobind does not support Py<3.8
 # i686 does not have enough memory for LTO to complete
