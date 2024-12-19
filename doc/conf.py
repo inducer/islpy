@@ -23,22 +23,6 @@ intersphinx_mapping = {
         }
 
 
-def autodoc_process_signature(app, what, name, obj, options, signature,
-        return_annotation):
-    from inspect import ismethod
-    if ismethod(obj) and obj.__doc__:
-        import re
-        pattern = r"^[ \n]*%s(\([a-z_0-9, ]+\))" % re.escape(obj.__name__)
-        func_match = re.match(pattern, obj.__doc__)
-
-        if func_match is not None:
-            signature = func_match.group(1)
-        elif obj.__name__ == "is_valid":
-            signature = "()"
-
-    return (signature, return_annotation)
-
-
 def autodoc_process_docstring(app, what, name, obj, options, lines):
     # clear out redundant pybind-generated member list
     if any("Members" in ln for ln in lines):
@@ -93,4 +77,3 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
 
 def setup(app):
     app.connect("autodoc-process-docstring", autodoc_process_docstring)
-    app.connect("autodoc-process-signature", autodoc_process_signature)
