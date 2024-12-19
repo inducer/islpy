@@ -5,28 +5,27 @@ This command should install :mod:`islpy`::
 
     pip install islpy
 
-You may need to run this with :command:`sudo`.
-If you don't already have `pip <https://pypi.python.org/pypi/pip>`_,
-run this beforehand::
+For a more manual installation from source, `download the source
+<http://pypi.org/project/islpy>`__, unpack it, and say::
 
-    curl -O https://raw.github.com/pypa/pip/master/contrib/get-pip.py
-    python get-pip.py
-
-For a more manual installation, `download the source
-<http://pypi.python.org/pypi/islpy>`_, unpack it, and say::
-
-    python setup.py install
+	pip install -v .
 
 You may also clone its git repository::
 
-    git clone --recursive http://git.tiker.net/trees/islpy.git
-    git clone --recursive git://github.com/inducer/islpy
+    git clone --recursive https://github.com/inducer/islpy.git
 
-Wiki and FAQ
-============
+The following attempts an editable installation, however note
+that this may run into various issues and is not well-supported
+by the build tools::
 
-A `wiki page <http://wiki.tiker.net/IslPy>`_ is also available, where install
-instructions and an FAQ will grow over time.
+    $ pip install --no-build-isolation -e .
+
+Support
+=======
+
+You can try posting questions or comments at the
+`Github Discussions site <https://github.com/inducer/islpy/discussions>`__
+for islpy.
 
 For a mailing list, please consider using the `isl list
 <http://groups.google.com/group/isl-development>`_ until they tell us to get
