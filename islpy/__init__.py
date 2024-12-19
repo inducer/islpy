@@ -205,8 +205,8 @@ def _read_from_str_wrapper(cls, context, s, dims_with_apostrophes):
     cls_from_str = cls.read_from_str(context, s)
 
     # Apostrophes in dim names have been lost, put them back
-    for dim_name, (dim_type, dim_idx) in dims_with_apostrophes.items():
-        cls_from_str = cls_from_str.set_dim_name(dim_type, dim_idx, dim_name)
+    for dim_name, (dt, dim_idx) in dims_with_apostrophes.items():
+        cls_from_str = cls_from_str.set_dim_name(dt, dim_idx, dim_name)
 
     return cls_from_str
 
