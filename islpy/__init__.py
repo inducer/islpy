@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from typing import Any, Callable, Optional, TypeVar, cast
+from typing import Any, Callable, Optional, Sequence, TypeVar, cast
 
 import islpy._isl as _isl
 from islpy.version import VERSION, VERSION_TEXT  # noqa
@@ -636,11 +636,7 @@ def _add_functionality():
 
     # {{{ piecewise
 
-    def pwaff_get_pieces(self):
-        """
-        :return: list of (:class:`Set`, :class:`Aff`)
-        """
-
+    def pwaff_get_pieces(self) -> Sequence[tuple[Set, Aff]]:
         result = []
 
         def append_tuple(*args):
