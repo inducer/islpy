@@ -186,18 +186,6 @@ schedule_algorithm = _isl.schedule_algorithm
 # backward compatibility
 ast_op_type = _isl.ast_expr_op_type
 
-ALL_CLASSES = [Context, IdList, ValList, BasicSetList, BasicMapList, SetList,
-        MapList, UnionSetList, ConstraintList, AffList, PwAffList, AstExprList,
-        AstNodeList, IdToAstExpr, Printer, Val, MultiVal, Vec, Mat, Aff, PwAff,
-        UnionPwAff, MultiAff, MultiPwAff, PwMultiAff, UnionPwMultiAff,
-        UnionPwAffList, MultiUnionPwAff, Id, Constraint, Space, LocalSpace,
-        BasicSet, BasicMap, Set, Map, UnionMap, UnionSet, Point, Vertex, Cell,
-        Vertices, StrideInfo, QPolynomialFold, PwQPolynomialFold,
-        UnionPwQPolynomialFold, UnionPwQPolynomial, QPolynomial, PwQPolynomial,
-        Term, ScheduleConstraints, ScheduleNode, Schedule, AccessInfo,
-        Flow, Restriction, UnionAccessInfo, UnionFlow, AstExpr, AstNode,
-        AstPrintOptions, AstBuild]
-
 # }}}
 
 
