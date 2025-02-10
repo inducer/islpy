@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import shutil
 import sys
 from typing import List, Sequence
 
@@ -275,6 +276,12 @@ def main():
 
     gen_wrapper(isl_inc_dirs, include_barvinok=conf["USE_BARVINOK"])
 
+    setup_requires = []
+    if shutil.which("cmake") is None:
+        setup_requires += ["cmake>=3.18"]
+    if shutil.which("ninja") is None:
+        setup_requires += ["ninja"]
+
     setup(name="islpy",
           version=conf["VERSION_TEXT"],
           description="Wrapper around isl, an integer set library",
@@ -304,6 +311,7 @@ def main():
           packages=find_packages(),
 
           python_requires="~=3.8",
+          setup_requires=setup_requires,
           extras_require={
               "test": ["pytest>=2"],
               },

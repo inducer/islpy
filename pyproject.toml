@@ -8,11 +8,13 @@ requires = [
     "setuptools>=64;python_version>='3.12'",
 
     "wheel>=0.34.2",
-    "cmake>=3.18",
     "scikit-build",
     "nanobind>=1.3",
-    "ninja",
     "pcpp",
+
+    # Added dynamically in setup.py if needed
+    # "cmake>=3.18",
+    # "ninja",
 ]
 build-backend = "setuptools.build_meta"
 
