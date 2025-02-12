@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from typing import Any, Callable, Optional, TypeVar, cast
+from typing import Any, Callable, Optional, Sequence, TypeVar, cast
 
 import islpy._isl as _isl
 from islpy.version import VERSION, VERSION_TEXT  # noqa
@@ -86,105 +86,97 @@ def _memoize_on_first_arg(function: F, cache_dict_name: Optional[str] = None) ->
 # }}}
 
 
-Error = _isl.Error
-
 # {{{ name imports
 
-isl_version = _isl.isl_version
+from islpy._isl import (
+    AccessInfo,
+    Aff,
+    AffList,
+    AstBuild,
+    AstExpr,
+    AstExprList,
+    AstNode,
+    AstNodeList,
+    AstPrintOptions,
+    BasicMap,
+    BasicMapList,
+    BasicSet,
+    BasicSetList,
+    Cell,
+    Constraint,
+    ConstraintList,
+    Context,
+    Error,
+    FixedBox,
+    Flow,
+    Id,
+    IdList,
+    IdToAstExpr,
+    LocalSpace,
+    Map,
+    MapList,
+    Mat,
+    MultiAff,
+    MultiId,
+    MultiPwAff,
+    MultiUnionPwAff,
+    MultiVal,
+    Point,
+    Printer,
+    PwAff,
+    PwAffList,
+    PwMultiAff,
+    PwMultiAffList,
+    PwQPolynomial,
+    PwQPolynomialFold,
+    PwQPolynomialFoldList,
+    PwQPolynomialList,
+    QPolynomial,
+    QPolynomialFold,
+    QPolynomialList,
+    Restriction,
+    Schedule,
+    ScheduleConstraints,
+    ScheduleNode,
+    Set,
+    SetList,
+    Space,
+    StrideInfo,
+    Term,
+    UnionAccessInfo,
+    UnionFlow,
+    UnionMap,
+    UnionMapList,
+    UnionPwAff,
+    UnionPwAffList,
+    UnionPwMultiAff,
+    UnionPwMultiAffList,
+    UnionPwQPolynomial,
+    UnionPwQPolynomialFold,
+    UnionSet,
+    UnionSetList,
+    Val,
+    ValList,
+    Vec,
+    Vertex,
+    Vertices,
+    ast_expr_op_type,
+    ast_expr_type,
+    ast_loop_type,
+    ast_node_type,
+    bound,
+    dim_type,
+    error,
+    fold,
+    format,
+    isl_version,
+    on_error,
+    schedule_algorithm,
+    schedule_node_type,
+    stat,
+    yaml_style,
+)
 
-Context = _isl.Context
-IdList = _isl.IdList
-ValList = _isl.ValList
-BasicSetList = _isl.BasicSetList
-BasicMapList = _isl.BasicMapList
-SetList = _isl.SetList
-MapList = _isl.MapList
-UnionSetList = _isl.UnionSetList
-ConstraintList = _isl.ConstraintList
-AffList = _isl.AffList
-PwAffList = _isl.PwAffList
-PwMultiAffList = _isl.PwMultiAffList
-AstExprList = _isl.AstExprList
-AstNodeList = _isl.AstNodeList
-
-QPolynomialList = _isl.QPolynomialList
-PwQPolynomialList = _isl.PwQPolynomialList
-PwQPolynomialFoldList = _isl.PwQPolynomialFoldList
-
-UnionPwAffList = _isl.UnionPwAffList
-UnionPwMultiAffList = _isl.UnionPwMultiAffList
-UnionMapList = _isl.UnionMapList
-UnionSetList = _isl.UnionSetList
-
-IdToAstExpr = _isl.IdToAstExpr
-Printer = _isl.Printer
-Val = _isl.Val
-MultiVal = _isl.MultiVal
-Vec = _isl.Vec
-Mat = _isl.Mat
-FixedBox = _isl.FixedBox
-Aff = _isl.Aff
-PwAff = _isl.PwAff
-UnionPwAff = _isl.UnionPwAff
-MultiAff = _isl.MultiAff
-MultiPwAff = _isl.MultiPwAff
-PwMultiAff = _isl.PwMultiAff
-UnionPwMultiAff = _isl.UnionPwMultiAff
-UnionPwAffList = _isl.UnionPwAffList
-MultiUnionPwAff = _isl.MultiUnionPwAff
-Id = _isl.Id
-MultiId = _isl.MultiId
-Constraint = _isl.Constraint
-Space = _isl.Space
-LocalSpace = _isl.LocalSpace
-BasicSet = _isl.BasicSet
-BasicMap = _isl.BasicMap
-Set = _isl.Set
-Map = _isl.Map
-UnionMap = _isl.UnionMap
-UnionSet = _isl.UnionSet
-Point = _isl.Point
-Vertex = _isl.Vertex
-Cell = _isl.Cell
-Vertices = _isl.Vertices
-StrideInfo = _isl.StrideInfo
-QPolynomialFold = _isl.QPolynomialFold
-PwQPolynomialFold = _isl.PwQPolynomialFold
-UnionPwQPolynomialFold = _isl.UnionPwQPolynomialFold
-UnionPwQPolynomial = _isl.UnionPwQPolynomial
-QPolynomial = _isl.QPolynomial
-PwQPolynomial = _isl.PwQPolynomial
-Term = _isl.Term
-ScheduleConstraints = _isl.ScheduleConstraints
-ScheduleNode = _isl.ScheduleNode
-Schedule = _isl.Schedule
-AccessInfo = _isl.AccessInfo
-Flow = _isl.Flow
-Restriction = _isl.Restriction
-UnionAccessInfo = _isl.UnionAccessInfo
-UnionFlow = _isl.UnionFlow
-AstExpr = _isl.AstExpr
-AstNode = _isl.AstNode
-AstPrintOptions = _isl.AstPrintOptions
-AstBuild = _isl.AstBuild
-
-error = _isl.error
-stat = _isl.stat
-dim_type = _isl.dim_type
-schedule_node_type = _isl.schedule_node_type
-ast_expr_op_type = _isl.ast_expr_op_type
-ast_expr_type = _isl.ast_expr_type
-ast_node_type = _isl.ast_node_type
-ast_loop_type = _isl.ast_loop_type
-fold = _isl.fold
-format = _isl.format
-yaml_style = _isl.yaml_style
-bound = _isl.bound
-on_error = _isl.on_error
-schedule_algorithm = _isl.schedule_algorithm
-
-# backward compatibility
-ast_op_type = _isl.ast_expr_op_type
 
 # }}}
 
@@ -213,8 +205,8 @@ def _read_from_str_wrapper(cls, context, s, dims_with_apostrophes):
     cls_from_str = cls.read_from_str(context, s)
 
     # Apostrophes in dim names have been lost, put them back
-    for dim_name, (dim_type, dim_idx) in dims_with_apostrophes.items():
-        cls_from_str = cls_from_str.set_dim_name(dim_type, dim_idx, dim_name)
+    for dim_name, (dt, dim_idx) in dims_with_apostrophes.items():
+        cls_from_str = cls_from_str.set_dim_name(dt, dim_idx, dim_name)
 
     return cls_from_str
 
@@ -644,11 +636,7 @@ def _add_functionality():
 
     # {{{ piecewise
 
-    def pwaff_get_pieces(self):
-        """
-        :return: list of (:class:`Set`, :class:`Aff`)
-        """
-
+    def pwaff_get_pieces(self) -> Sequence[tuple[Set, Aff]]:
         result = []
 
         def append_tuple(*args):
@@ -1240,20 +1228,6 @@ def affs_from_space(space):
     return result
 
 
-class SuppressedWarnings:
-    def __init__(self, ctx):
-        from warnings import warn
-        warn("islpy.SuppressedWarnings is a deprecated no-op and will be removed "
-                "in 2023. Simply remove the use of it to avoid this warning.",
-                DeprecationWarning, stacklevel=1)
-
-    def __enter__(self):
-        pass
-
-    def __exit__(self, type, value, traceback):
-        pass
-
-
 # {{{ give sphinx something to import so we can produce docs
 
 def _define_doc_link_names():
@@ -1267,5 +1241,95 @@ _define_doc_link_names()
 
 # }}}
 
+__all__ = (
+    "AccessInfo",
+    "Aff",
+    "AffList",
+    "AstBuild",
+    "AstExpr",
+    "AstExprList",
+    "AstNode",
+    "AstNodeList",
+    "AstPrintOptions",
+    "BasicMap",
+    "BasicMapList",
+    "BasicSet",
+    "BasicSetList",
+    "Cell",
+    "Constraint",
+    "ConstraintList",
+    "Context",
+    "Error",
+    "FixedBox",
+    "Flow",
+    "Id",
+    "IdList",
+    "IdToAstExpr",
+    "LocalSpace",
+    "Map",
+    "MapList",
+    "Mat",
+    "MultiAff",
+    "MultiId",
+    "MultiPwAff",
+    "MultiUnionPwAff",
+    "MultiVal",
+    "Point",
+    "Printer",
+    "PwAff",
+    "PwAffList",
+    "PwMultiAff",
+    "PwMultiAffList",
+    "PwQPolynomial",
+    "PwQPolynomialFold",
+    "PwQPolynomialFoldList",
+    "PwQPolynomialList",
+    "QPolynomial",
+    "QPolynomialFold",
+    "QPolynomialList",
+    "Restriction",
+    "Schedule",
+    "ScheduleConstraints",
+    "ScheduleNode",
+    "Set",
+    "SetList",
+    "Space",
+    "StrideInfo",
+    "Term",
+    "UnionAccessInfo",
+    "UnionFlow",
+    "UnionMap",
+    "UnionMapList",
+    "UnionPwAff",
+    "UnionPwAffList",
+    "UnionPwAffList",
+    "UnionPwMultiAff",
+    "UnionPwMultiAffList",
+    "UnionPwQPolynomial",
+    "UnionPwQPolynomialFold",
+    "UnionSet",
+    "UnionSetList",
+    "UnionSetList",
+    "Val",
+    "ValList",
+    "Vec",
+    "Vertex",
+    "Vertices",
+    "ast_expr_op_type",
+    "ast_expr_type",
+    "ast_loop_type",
+    "ast_node_type",
+    "bound",
+    "dim_type",
+    "error",
+    "fold",
+    "format",
+    "isl_version",
+    "on_error",
+    "schedule_algorithm",
+    "schedule_node_type",
+    "stat",
+    "yaml_style",
+)
 
 # vim: foldmethod=marker
