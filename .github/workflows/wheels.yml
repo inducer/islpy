@@ -21,26 +21,13 @@ jobs:
         with:
           submodules: recursive
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
-      - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.19.2
-
       - name: Build wheels
-        run: python -m cibuildwheel --output-dir wheelhouse
+        uses: pypa/cibuildwheel@v2.22.0
         # (here: set these in pyproject.toml to the extent possible)
-        env:
+        # env:
           # CIBW_SOME_OPTION: value
-          CMAKE_BUILD_PARALLEL_LEVEL: 3
-          CIBW_BUILD_VERBOSITY: 1
-          VERBOSE: 1
-        #    ...
-        # with:
-        #   package-dir: .
-        #   output-dir: wheelhouse
-        #   config-file: "{package}/pyproject.toml"
+          # CIBW_BUILD_VERBOSITY: 1
+          # VERBOSE: 1
 
       - uses: actions/upload-artifact@v4
         with:
