@@ -286,6 +286,7 @@ def main():
           version=conf["VERSION_TEXT"],
           description="Wrapper around isl, an integer set library",
           long_description=readme,
+          long_description_content_type="text/x-rst",
           author="Andreas Kloeckner",
           author_email="inform@tiker.net",
           license="MIT",
