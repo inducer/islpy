@@ -62,4 +62,23 @@ endif()
 
 install(TARGETS _isl LIBRARY DESTINATION .)
 
+# {{{ Generate stubs (.pyi files)
+
+# Pass -DREBUILD_STUBS to regenerate the stubs.
+if(REBUILD_STUBS)
+  nanobind_add_stub(
+    _isl_stub
+    MODULE _isl
+    OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/islpy/_isl.pyi"
+    PYTHON_PATH "${CMAKE_INSTALL_PREFIX}/islpy"
+    DEPENDS _isl
+  )
+
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/islpy/_isl.pyi DESTINATION .)
+else()
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/islpy/_isl.pyi DESTINATION .)
+endif()
+
+# }}}
+
 # vim: sw=2

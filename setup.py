@@ -73,6 +73,8 @@ def get_config_schema():
             help="Any extra C++ compiler options to include"),
         StringListOption("LDFLAGS", [],
             help="Any extra linker options to include"),
+
+        Switch("REBUILD_STUBS", False, "Should _isl.pyi be rebuilt?"),
         ])
 
 
@@ -274,6 +276,9 @@ def main():
         cmake_args.append(f"-DCMAKE_CXX_FLAGS:STRING="
                 f"{' '.join(conf['CXXFLAGS'])}")
 
+    if conf["REBUILD_STUBS"]:
+        cmake_args.append("-DREBUILD_STUBS:bool=1")
+
     gen_wrapper(isl_inc_dirs, include_barvinok=conf["USE_BARVINOK"])
 
     setup_requires = []
@@ -312,6 +317,9 @@ def main():
           packages=find_packages(),
 
           python_requires="~=3.8",
+          install_requires=[
+              "typing_extensions>=4.0.0"  # needed by nanobind stubgen for py<3.12
+          ],
           setup_requires=setup_requires,
           extras_require={
               "test": ["pytest>=2"],
