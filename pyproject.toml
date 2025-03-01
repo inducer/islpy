@@ -73,6 +73,9 @@ lines-after-imports = 2
 # i686 does not have enough memory for LTO to complete
 skip = ["pp*", "cp3[67]-*", "*_i686"]
 
+test-requires = "pytest"
+test-command = "pytest {project}/test"
+
 [tool.cibuildwheel.macos]
 archs = "x86_64 arm64"
 
