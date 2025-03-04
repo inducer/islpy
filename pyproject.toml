@@ -70,11 +70,8 @@ lines-after-imports = 2
 
 [tool.cibuildwheel]
 # nanobind does not support Py<3.8
-skip = ["*-win-*", "[cp]p3[67]-*"]
-
-[tool.cibuildwheel.linux]
 # i686 does not have enough memory for LTO to complete
-skip = ["[cp]p3[67]-*", "*_i686"]
+skip = ["pp*", "cp3[67]-*", "*_i686"]
 
 [tool.cibuildwheel.macos]
 archs = "x86_64 arm64"
