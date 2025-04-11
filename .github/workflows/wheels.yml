@@ -50,7 +50,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: cibw-sdist-${{ matrix.os }}
+          name: cibw-sdist
           path: dist/*.tar.gz
 
   upload_pypi:
