@@ -37,10 +37,7 @@ jobs:
 
   build_sdist:
     name: Build source distribution
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, ubuntu-22.04-arm]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
