@@ -76,9 +76,6 @@ skip = ["pp*", "cp3[67]-*", "*_i686"]
 test-requires = "pytest"
 test-command = "pytest {project}/test"
 
-[tool.cibuildwheel.macos]
-archs = "x86_64 arm64"
-
 [tool.cibuildwheel.macos.environment]
 # Needed for full C++17 support
 MACOSX_DEPLOYMENT_TARGET = "10.14"
