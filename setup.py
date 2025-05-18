@@ -296,7 +296,6 @@ def main():
               "Intended Audience :: Developers",
               "Intended Audience :: Other Audience",
               "Intended Audience :: Science/Research",
-              "License :: OSI Approved :: MIT License",
               "Natural Language :: English",
               "Programming Language :: C++",
               "Programming Language :: Python",
