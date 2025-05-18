@@ -2,8 +2,7 @@ import re
 from urllib.request import urlopen
 
 
-_conf_url = \
-        "https://raw.githubusercontent.com/inducer/sphinxconfig/main/sphinxconfig.py"
+_conf_url = "https://tiker.net/sphinxconfig-v0.py"
 with urlopen(_conf_url) as _inf:
     exec(compile(_inf.read(), _conf_url, "exec"), globals())
 
