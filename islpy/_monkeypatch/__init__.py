@@ -1,7 +1,14 @@
+import sys
 from collections.abc import Callable, Sequence
 from typing import Any, ClassVar, Protocol, TypeVar, cast
 
-import islpy._isl as _isl
+
+if "_isl" not in sys.modules:
+    import islpy._isl as _isl
+else:
+    # This is used for monkeypatching during stub generation.
+    # See stubgen/stubgen.py and CMakeLists for orchestration details.
+    import _isl  # pyright: ignore[reportMissingImports]
 
 
 ALL_CLASSES: tuple[type, ...] = tuple(
