@@ -71,7 +71,7 @@ class SignatureNotSupported(ValueError):  # noqa: N818
     pass
 
 
-def to_py_class(cls):
+def to_py_class(cls: str):
     if cls.startswith("isl_"):
         cls = cls[4:]
 
@@ -102,7 +102,7 @@ def to_py_class(cls):
 class Argument:
     is_const: bool
     name: str
-    semantics: str
+    semantics: str | None
     base_type: str
     ptr: str
 
@@ -221,7 +221,7 @@ PART_TO_CLASSES = {
             "ast_build",
         ]
         }
-CLASSES = []
+CLASSES: list[str] = []
 for cls_list in PART_TO_CLASSES.values():
     CLASSES.extend(cls_list)
 
@@ -300,9 +300,9 @@ SUBCLASS_RE = re.compile(
         r"\s*\)")
 
 
-def filter_semantics(words):
-    semantics = []
-    other_words = []
+def filter_semantics(words: Sequence[str]):
+    semantics: list[str] = []
+    other_words: list[str] = []
     for w in words:
         if w in ISL_SEM_TO_SEM:
             semantics.append(ISL_SEM_TO_SEM[w])
@@ -316,7 +316,7 @@ def filter_semantics(words):
         return None, other_words
 
 
-def split_at_unparenthesized_commas(s):
+def split_at_unparenthesized_commas(s: str):
     paren_level = 0
     i = 0
     last_start = 0
@@ -336,7 +336,7 @@ def split_at_unparenthesized_commas(s):
     yield s[last_start:i]
 
 
-def parse_arg(arg):
+def parse_arg(arg: str) -> CallbackArgument | Argument:
     if "(*" in arg:
         arg_match = FUNC_PTR_RE.match(arg)
         assert arg_match is not None, f"fptr: {arg}"
@@ -429,7 +429,7 @@ class FunctionData:
         "2exp": "two_exp"
     }
 
-    def __init__(self, include_dirs):
+    def __init__(self, include_dirs: Sequence[str]):
         self.classes_to_methods = {}
         self.include_dirs = include_dirs
         self.seen_c_names = set()
@@ -454,7 +454,7 @@ class FunctionData:
         finally:
             inf.close()
 
-    def get_header_hashes(self, fnames):
+    def get_header_hashes(self, fnames: Sequence[str]):
         import hashlib
         h = hashlib.sha256()
         h.update(b"v1-")
@@ -465,7 +465,7 @@ class FunctionData:
     preprocessed_dir = "preproc-headers"
     macro_headers: ClassVar[Sequence[str]] = ["isl/multi.h", "isl/list.h"]
 
-    def get_preprocessed_header(self, fname):
+    def get_preprocessed_header(self, fname: str) -> str:
         header_hash = self.get_header_hashes(
                 [*self.macro_headers, fname])
 
@@ -502,11 +502,11 @@ class FunctionData:
 
     # {{{ read_header
 
-    def read_header(self, fname):
+    def read_header(self, fname: str):
         lines = self.get_preprocessed_header(fname).split("\n")
 
         # heed continuations, split at semicolons
-        new_lines = []
+        new_lines: list[str] = []
         i = 0
         while i < len(lines):
             my_line = lines[i].strip()
@@ -580,7 +580,7 @@ class FunctionData:
 
     # {{{ parse_decl
 
-    def parse_decl(self, decl):
+    def parse_decl(self, decl: str):
         decl_match = DECL_RE.match(decl)
         if decl_match is None:
             print(f"WARNING: func decl regexp not matched: {decl}")
@@ -868,20 +868,20 @@ def get_callback(cb_name, cb):
 
 # {{{ wrapper generator
 
-def write_wrapper(outf, meth):
-    body = []
-    checks = []
-    docs = []
+def write_wrapper(outf: TextIO, meth: Method):
+    body: list[str] = []
+    checks: list[str] = []
+    docs: list[str] = []
 
-    passed_args = []
-    input_args = []
-    post_call = []
-    extra_ret_vals = []
-    extra_ret_types = []
-    preamble = []
+    passed_args: list[str] = []
+    input_args: list[str] = []
+    post_call: list[str] = []
+    extra_ret_vals: list[str] = []
+    extra_ret_types: list[str] = []
+    preamble: list[str] = []
 
-    arg_names = []
-    arg_sigs = []
+    arg_names: list[str] = []
+    arg_sigs: list[str] = []
 
     checks.append("isl_ctx *islpy_ctx = nullptr;")
 
@@ -1359,7 +1359,7 @@ def write_wrapper(outf, meth):
 
 # {{{ exposer generator
 
-def write_exposer(outf, meth, arg_names, doc_str, sig_str):
+def write_exposer(outf: TextIO, meth: Method, arg_names, doc_str: str, sig_str: str):
     func_name = f"isl::{meth.cls}_{meth.name}"
     py_name = meth.name
 
@@ -1419,7 +1419,7 @@ def write_exposer(outf, meth, arg_names, doc_str, sig_str):
 wrapped_isl_functions = set()
 
 
-def write_wrappers(expf, wrapf, methods):
+def write_wrappers(expf, wrapf, methods: Sequence[Method]):
     undoc = []
 
     for meth in methods:
