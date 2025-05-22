@@ -44,14 +44,13 @@ extend-select = [
     "UP",  # pyupgrade
     "RUF", # ruff
     "W",   # pycodestyle
+    "TC",
 ]
 extend-ignore = [
     "C90",  # McCabe complexity
     "E221", # multiple spaces before operator
     "E226", # missing whitespace around arithmetic operator
     "E402", # module-level import not at top of file
-    "UP006", # updated annotations due to __future__ import
-    "UP007", # updated annotations due to __future__ import
     "UP031", # use f-strings instead of %
     "UP032", # use f-strings instead of .format
 ]

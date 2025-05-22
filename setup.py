@@ -26,7 +26,7 @@ THE SOFTWARE.
 
 import shutil
 import sys
-from typing import List, Sequence
+from collections.abc import Sequence
 
 
 # Needed for aksetup to be found
@@ -77,7 +77,7 @@ def get_config_schema():
 
 
 def _get_isl_sources(use_shipped_imath: bool, use_imath_sio: bool) -> Sequence[str]:
-    extra_objects: List[str] = []
+    extra_objects: list[str] = []
 
     from glob import glob
     isl_blocklist = [
