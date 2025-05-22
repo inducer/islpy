@@ -310,7 +310,7 @@ def main():
 
           packages=find_packages(),
 
-          python_requires="~=3.8",
+          python_requires="~=3.10",
           setup_requires=setup_requires,
           extras_require={
               "test": ["pytest>=2"],
