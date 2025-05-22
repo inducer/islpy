@@ -1388,10 +1388,12 @@ def write_exposer(outf: TextIO, meth: Method, arg_names, doc_str: str, sig_str: 
 
     wrap_class = CLASS_MAP.get(meth.cls, meth.cls)
 
+    newline = "\n"
+    escaped_newline = "\\n"
     outf.write(f'wrap_{wrap_class}.def{"_static" if meth.is_static else ""}('
                f'"{py_name}", {func_name}{args_str}'
                f', py::sig("def {py_name}{sig_str}")'
-               f', "{py_name}{sig_str}\\n{doc_str.replace("\n", "\\n")}"'
+               f', "{py_name}{sig_str}\\n{doc_str.replace(newline, escaped_newline)}"'
                ');\n')
 
     if meth.name == "read_from_str":
