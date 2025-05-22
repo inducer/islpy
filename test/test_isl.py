@@ -305,7 +305,15 @@ def test_make_zero_and_vars():
             & (v["i"].le_set(13 + v["n"]))
             )
 
+    myset2 = (
+            (0 <= v["i"] + v["j"])
+            & (v["i"] + v["j"] < v["n"])
+            & (0 <= v["i"])
+            & (v["i"] <= 13 + v["n"])
+            )
+
     print(myset)
+    assert myset == myset2
 
 
 def test_affs_from_space():
