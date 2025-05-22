@@ -27,7 +27,7 @@ exclude = [
     "isl",
     "aksetup_helper.py"
 ]
-target-version = "py38"
+target-version = "py310"
 
 
 [tool.ruff.lint]
@@ -74,7 +74,7 @@ lines-after-imports = 2
 [tool.cibuildwheel]
 # nanobind does not support Py<3.8
 # i686 does not have enough memory for LTO to complete
-skip = ["pp*", "cp3[67]-*", "*_i686"]
+skip = ["pp*", "cp3[6789]-*", "*_i686"]
 
 test-requires = "pytest"
 test-command = "pytest {project}/test"
