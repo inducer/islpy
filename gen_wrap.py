@@ -1396,6 +1396,17 @@ def write_exposer(outf: TextIO, meth: Method, arg_names, doc_str: str, sig_str: 
                f', "{py_name}{sig_str}\\n{doc_str.replace(newline, escaped_newline)}"'
                ');\n')
 
+    if meth.name == "get_space":
+        outf.write(f'wrap_{wrap_class}.def_prop_ro('
+                   f'"space", {func_name}{args_str}'
+                   ', py::sig("def space(self) -> Space")'
+                   ');\n')
+
+    if meth.name in ["get_user", "get_name"]:
+        outf.write(f'wrap_{wrap_class}.def_prop_ro('
+                   f'"{meth.name[4:]}", {func_name}{args_str}'
+                   ');\n')
+
     if meth.name == "read_from_str":
         assert meth.is_static
         outf.write(f'wrap_{wrap_class}.def("__init__",'
