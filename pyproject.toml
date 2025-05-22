@@ -82,3 +82,30 @@ test-command = "pytest {project}/test"
 [tool.cibuildwheel.macos.environment]
 # Needed for full C++17 support
 MACOSX_DEPLOYMENT_TARGET = "10.14"
+
+
+[tool.basedpyright]
+reportImplicitStringConcatenation = "none"
+reportUnnecessaryIsInstance = "none"
+reportUnusedCallResult = "none"
+reportExplicitAny = "none"
+reportUnreachable = "none"
+
+# This reports even cycles that are qualified by 'if TYPE_CHECKING'. Not what
+# we care about at this moment.
+# https://github.com/microsoft/pyright/issues/746
+reportImportCycles = "none"
+pythonVersion = "3.10"
+pythonPlatform = "All"
+
+[[tool.basedpyright.executionEnvironments]]
+root = "islpy/_monkeypatch.py"
+reportUnknownArgumentType = "hint"
+reportAttributeAccessIssue = "none"
+reportPrivateUsage = "none"
+
+[[tool.basedpyright.executionEnvironments]]
+root = "islpy/_isl.pyi"
+reportUnannotatedClassAttribute = "none"
+reportImplicitOverride = "none"
+
