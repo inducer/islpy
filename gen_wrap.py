@@ -23,9 +23,10 @@ THE SOFTWARE.
 import os
 import re
 import sys
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from os.path import join
-from typing import ClassVar, List, Mapping, Sequence
+from typing import ClassVar, TextIO
 
 
 SEM_TAKE = "take"
@@ -110,7 +111,7 @@ class Argument:
 class CallbackArgument:
     name: str
     return_semantics: str
-    return_decl_words: List[str]
+    return_decl_words: list[str]
     return_base_type: str
     return_ptr: str
     args: Sequence[Argument]
