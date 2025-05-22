@@ -63,10 +63,10 @@ def plot_basic_set(bset, *args, **kwargs):
     codes[0] = Path.MOVETO
 
     pathdata = [
-        (code, tuple(coord)) for code, coord in zip(codes, vertex_pts)]
+        (code, tuple(coord)) for code, coord in zip(codes, vertex_pts, strict=True)]
     pathdata.append((Path.CLOSEPOLY, (0, 0)))
 
-    codes, verts = zip(*pathdata)
+    codes, verts = zip(*pathdata, strict=True)
     path = mpath.Path(verts, codes)
     patch = mpatches.PathPatch(path, **kwargs)
     pt.gca().add_patch(patch)

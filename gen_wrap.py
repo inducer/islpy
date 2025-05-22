@@ -20,12 +20,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import argparse
 import os
 import re
 import sys
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from os.path import join
-from typing import ClassVar, List, Mapping, Sequence
+from pathlib import Path
+from typing import ClassVar, TextIO
 
 
 SEM_TAKE = "take"
@@ -70,7 +73,7 @@ class SignatureNotSupported(ValueError):  # noqa: N818
     pass
 
 
-def to_py_class(cls):
+def to_py_class(cls: str):
     if cls.startswith("isl_"):
         cls = cls[4:]
 
@@ -101,7 +104,7 @@ def to_py_class(cls):
 class Argument:
     is_const: bool
     name: str
-    semantics: str
+    semantics: str | None
     base_type: str
     ptr: str
 
@@ -110,7 +113,7 @@ class Argument:
 class CallbackArgument:
     name: str
     return_semantics: str
-    return_decl_words: List[str]
+    return_decl_words: list[str]
     return_base_type: str
     return_ptr: str
     args: Sequence[Argument]
@@ -220,7 +223,7 @@ PART_TO_CLASSES = {
             "ast_build",
         ]
         }
-CLASSES = []
+CLASSES: list[str] = []
 for cls_list in PART_TO_CLASSES.values():
     CLASSES.extend(cls_list)
 
@@ -299,9 +302,9 @@ SUBCLASS_RE = re.compile(
         r"\s*\)")
 
 
-def filter_semantics(words):
-    semantics = []
-    other_words = []
+def filter_semantics(words: Sequence[str]):
+    semantics: list[str] = []
+    other_words: list[str] = []
     for w in words:
         if w in ISL_SEM_TO_SEM:
             semantics.append(ISL_SEM_TO_SEM[w])
@@ -315,7 +318,7 @@ def filter_semantics(words):
         return None, other_words
 
 
-def split_at_unparenthesized_commas(s):
+def split_at_unparenthesized_commas(s: str):
     paren_level = 0
     i = 0
     last_start = 0
@@ -335,7 +338,7 @@ def split_at_unparenthesized_commas(s):
     yield s[last_start:i]
 
 
-def parse_arg(arg):
+def parse_arg(arg: str) -> CallbackArgument | Argument:
     if "(*" in arg:
         arg_match = FUNC_PTR_RE.match(arg)
         assert arg_match is not None, f"fptr: {arg}"
@@ -428,7 +431,7 @@ class FunctionData:
         "2exp": "two_exp"
     }
 
-    def __init__(self, include_dirs):
+    def __init__(self, include_dirs: Sequence[str]):
         self.classes_to_methods = {}
         self.include_dirs = include_dirs
         self.seen_c_names = set()
@@ -453,7 +456,7 @@ class FunctionData:
         finally:
             inf.close()
 
-    def get_header_hashes(self, fnames):
+    def get_header_hashes(self, fnames: Sequence[str]):
         import hashlib
         h = hashlib.sha256()
         h.update(b"v1-")
@@ -464,7 +467,7 @@ class FunctionData:
     preprocessed_dir = "preproc-headers"
     macro_headers: ClassVar[Sequence[str]] = ["isl/multi.h", "isl/list.h"]
 
-    def get_preprocessed_header(self, fname):
+    def get_preprocessed_header(self, fname: str) -> str:
         header_hash = self.get_header_hashes(
                 [*self.macro_headers, fname])
 
@@ -501,11 +504,11 @@ class FunctionData:
 
     # {{{ read_header
 
-    def read_header(self, fname):
+    def read_header(self, fname: str):
         lines = self.get_preprocessed_header(fname).split("\n")
 
         # heed continuations, split at semicolons
-        new_lines = []
+        new_lines: list[str] = []
         i = 0
         while i < len(lines):
             my_line = lines[i].strip()
@@ -579,7 +582,7 @@ class FunctionData:
 
     # {{{ parse_decl
 
-    def parse_decl(self, decl):
+    def parse_decl(self, decl: str):
         decl_match = DECL_RE.match(decl)
         if decl_match is None:
             print(f"WARNING: func decl regexp not matched: {decl}")
@@ -867,19 +870,20 @@ def get_callback(cb_name, cb):
 
 # {{{ wrapper generator
 
-def write_wrapper(outf, meth):
-    body = []
-    checks = []
-    docs = []
+def write_wrapper(outf: TextIO, meth: Method):
+    body: list[str] = []
+    checks: list[str] = []
+    docs: list[str] = []
 
-    passed_args = []
-    input_args = []
-    post_call = []
-    extra_ret_vals = []
-    extra_ret_descrs = []
-    preamble = []
+    passed_args: list[str] = []
+    input_args: list[str] = []
+    post_call: list[str] = []
+    extra_ret_vals: list[str] = []
+    extra_ret_types: list[str] = []
+    preamble: list[str] = []
 
-    arg_names = []
+    arg_names: list[str] = []
+    arg_sigs: list[str] = []
 
     checks.append("isl_ctx *islpy_ctx = nullptr;")
 
@@ -906,8 +910,7 @@ def write_wrapper(outf, meth):
             if (meth.cls in ["ast_build", "ast_print_options"]
                     and meth.name.startswith("set_")):
                 extra_ret_vals.append(f"py_{arg.name}")
-                extra_ret_descrs.append("(opaque handle to "
-                        "manage callback lifetime)")
+                extra_ret_types.append("CallbackLifetimeHandle ")
 
             input_args.append(f"py::object py_{arg.name}")
             passed_args.append(cb_name)
@@ -915,6 +918,7 @@ def write_wrapper(outf, meth):
 
             preamble.append(get_callback(cb_name, arg))
 
+            arg_sigs.append(f"{arg.name}: Callable")
             docs.append(":param {name}: callback({args})".format(
                 name=arg.name,
                 args=", ".join(
@@ -931,10 +935,10 @@ def write_wrapper(outf, meth):
             doc_cls = arg.base_type
             if doc_cls.startswith("isl_"):
                 doc_cls = doc_cls[4:]
-            if doc_cls == "unsigned long":
+            else:
                 doc_cls = "int"
 
-            docs.append(f":param {arg.name}: :class:`{doc_cls}`")
+            arg_sigs.append(f"{arg.name}: {doc_cls}")
 
         elif arg.base_type in ["char", "const char"] and arg.ptr == "*":
             if arg.semantics is SEM_KEEP:
@@ -949,7 +953,7 @@ def write_wrapper(outf, meth):
 
             input_args.append(f"{_arg_to_const_str(arg)}{arg.base_type} *{arg.name}")
 
-            docs.append(f":param {arg.name}: string")
+            arg_sigs.append(f"{arg.name}: str")
 
         elif arg.base_type in ["int", "isl_bool"] and arg.ptr == "*":
             if arg.name in ["exact", "tight"]:
@@ -959,8 +963,7 @@ def write_wrapper(outf, meth):
                     extra_ret_vals.append(f"(bool) arg_{arg.name}")
                 else:
                     extra_ret_vals.append(f"arg_{arg.name}")
-                extra_ret_descrs.append(
-                        f"{arg.name} ({to_py_class(arg.base_type)})")
+                extra_ret_types.append(to_py_class(arg.base_type))
                 arg_names.pop()
             else:
                 raise SignatureNotSupported("int *")
@@ -968,7 +971,6 @@ def write_wrapper(outf, meth):
         elif arg.base_type == "isl_val" and arg.ptr == "*" and arg_idx > 0:
             # {{{ val input argument
 
-            arg_descr = f":param {arg.name}: :class:`Val`"
             input_args.append(f"py::object py_{arg.name}")
             checks.append("""
                 std::unique_ptr<val> unique_arg_%(name)s;
@@ -1013,7 +1015,7 @@ def write_wrapper(outf, meth):
                 post_call.append(f"unique_arg_{arg.name}.release();")
 
             passed_args.append(f"unique_arg_{arg.name}->m_data")
-            docs.append(arg_descr)
+            arg_sigs.append(f"{arg.name}: Val | int")
 
             # }}}
 
@@ -1021,10 +1023,8 @@ def write_wrapper(outf, meth):
             # {{{ isl types input arguments
 
             arg_cls = arg.base_type[4:]
-            arg_descr = f":param {arg.name}: :class:`{to_py_class(arg_cls)}`"
 
             if arg_idx == 0 and meth.is_mutator:
-                arg_descr += " (mutated in-place)"
                 input_args.append(f"py::object py_{arg.name}")
                 checks.append("""
                     isl::%(cls)s &arg_%(name)s(
@@ -1038,7 +1038,7 @@ def write_wrapper(outf, meth):
                         "cls": arg_cls})
                 passed_args.append(f"arg_{arg.name}.m_data")
                 post_call.append(f"arg_{arg.name}.invalidate();")
-                arg_descr += " (mutated in-place)"
+                docs.append("..note::\n  {arg.name} is mutated in-place.\n\n")
 
             else:
                 if arg.semantics is None and arg.base_type != "isl_ctx":
@@ -1077,7 +1077,9 @@ def write_wrapper(outf, meth):
                         input_args.append(f"{arg_cls} &arg_{arg.name}")
                         post_call.append(f"arg_{arg.name}.invalidate();")
                         passed_args.append(f"arg_{arg.name}.m_data")
-                        arg_descr += " (:ref:`becomes invalid <auto-invalidation>`)"
+                        docs.append(
+                            "..note::\n  {arg.name} "
+                            ":ref:`becomes invalid <auto-invalidation>`)\n\n")
                 else:
                     passed_args.append(f"arg_{arg.name}.m_data")
                     input_args.append(f"{arg_cls} const &arg_{arg.name}")
@@ -1092,7 +1094,7 @@ def write_wrapper(outf, meth):
                         islpy_ctx = {arg.base_type}_get_ctx(arg_{arg.name}.m_data);
                         """)
 
-            docs.append(arg_descr)
+            arg_sigs.append(f"{arg.name}: {to_py_class(arg_cls)}")
 
             # }}}
 
@@ -1118,8 +1120,7 @@ def write_wrapper(outf, meth):
                 """ % {"name": arg.name, "ret_cls": ret_cls})
 
             extra_ret_vals.append(f"py_ret_{arg.name}")
-            extra_ret_descrs.append(
-                    f"{arg.name} (:class:`{to_py_class(ret_cls)}`)")
+            extra_ret_types.append(to_py_class(ret_cls))
 
             # }}}
 
@@ -1142,7 +1143,7 @@ def write_wrapper(outf, meth):
 
         arg_idx += 1
 
-    processed_return_type = f"{meth.return_base_type} {meth.return_ptr}"
+    processed_return_type = f"{meth.return_base_type} {meth.return_ptr}".strip()
 
     if meth.return_base_type == "void" and not meth.return_ptr:
         result_capture = ""
@@ -1168,18 +1169,18 @@ def write_wrapper(outf, meth):
         if meth.name.startswith("is_") or meth.name.startswith("has_"):
             processed_return_type = "bool"
 
-        ret_descr = processed_return_type
+        ret_type = processed_return_type
 
         if extra_ret_vals:
             if len(extra_ret_vals) == 1:
                 processed_return_type = "py::object"
                 body.append(f"return py::object(result, {extra_ret_vals[0]});")
-                ret_descr = extra_ret_descrs[0]
+                ret_type, = extra_ret_types
             else:
                 processed_return_type = "py::object"
                 body.append("return py::make_tuple(result, {});".format(
                     ", ".join(extra_ret_vals)))
-                ret_descr = "tuple: ({})".format(", ".join(extra_ret_descrs))
+                ret_type = f"tuple[{', '.join(extra_ret_types)}]"
         else:
             body.append("return result;")
 
@@ -1195,18 +1196,18 @@ def write_wrapper(outf, meth):
 
         assert not (meth.name.startswith("is_") or meth.name.startswith("has_"))
 
-        ret_descr = processed_return_type
+        ret_type = "None"
 
         if extra_ret_vals:
             if len(extra_ret_vals) == 1:
                 processed_return_type = "py::object"
                 body.append(f"return py::object({extra_ret_vals[0]});")
-                ret_descr = extra_ret_descrs[0]
+                ret_type, = extra_ret_types
             else:
                 processed_return_type = "py::object"
                 body.append("return py::make_tuple({});".format(
                     ", ".join(extra_ret_vals)))
-                ret_descr = "tuple: ({})".format(", ".join(extra_ret_descrs))
+                ret_type = f"tuple[{', '.join(extra_ret_types)}]"
         else:
             body.append("return result;")
 
@@ -1221,18 +1222,18 @@ def write_wrapper(outf, meth):
             """)
 
         processed_return_type = "bool"
-        ret_descr = "bool"
+        ret_type = "bool"
 
         if extra_ret_vals:
             if len(extra_ret_vals) == 1:
                 processed_return_type = "py::object"
                 body.append(f"return py::object({extra_ret_vals[0]});")
-                ret_descr = extra_ret_descrs[0]
+                ret_type, = extra_ret_types
             else:
                 processed_return_type = "py::object"
                 body.append("return py::make_tuple({});".format(
                     ", ".join(extra_ret_vals)))
-                ret_descr = "tuple: ({})".format(", ".join(extra_ret_descrs))
+                ret_type = f"tuple[{', '.join(extra_ret_types)}]"
         else:
             body.append("return result;")
 
@@ -1245,7 +1246,7 @@ def write_wrapper(outf, meth):
             raise NotImplementedError("extra ret val with safe type")
 
         body.append("return result;")
-        ret_descr = processed_return_type
+        ret_type = "int"
 
         # }}}
 
@@ -1263,7 +1264,8 @@ def write_wrapper(outf, meth):
             body.append(f"arg_{meth.args[0].name}.take_possession_of(result);")
             body.append(f"return py_{meth.args[0].name};")
 
-            ret_descr = f":class:`{to_py_class(ret_cls)}` (self)"
+            ret_type = to_py_class(ret_cls)
+            docs.append("..note::\n  Returns *self*.\n\n")
         else:
             processed_return_type = "py::object"
             isl_obj_ret_val = \
@@ -1272,10 +1274,9 @@ def write_wrapper(outf, meth):
             if extra_ret_vals:
                 isl_obj_ret_val = "py::make_tuple({}, {})".format(
                         isl_obj_ret_val, ", ".join(extra_ret_vals))
-                ret_descr = "tuple: (:class:`{}`, {})".format(
-                        to_py_class(ret_cls), ", ".join(extra_ret_descrs))
+                ret_type = f"tuple[{', '.join(extra_ret_types)}]"
             else:
-                ret_descr = f":class:`{to_py_class(ret_cls)}`"
+                ret_type = to_py_class(ret_cls)
 
             if meth.return_semantics is None and ret_cls != "ctx":
                 raise Undocumented(meth)
@@ -1308,7 +1309,7 @@ def write_wrapper(outf, meth):
         if meth.return_semantics is SEM_GIVE:
             body.append("free(result);")
 
-        ret_descr = "string"
+        ret_type = "str"
 
     elif (meth.return_base_type == "void"
             and meth.return_ptr == "*"
@@ -1317,7 +1318,7 @@ def write_wrapper(outf, meth):
         body.append("""
             return py::borrow<py::object>((PyObject *) result);
             """)
-        ret_descr = "a user-specified python object"
+        ret_type = "object"
         processed_return_type = "py::object"
 
     elif meth.return_base_type == "void" and not meth.return_ptr:
@@ -1325,13 +1326,13 @@ def write_wrapper(outf, meth):
             processed_return_type = "py::object"
             if len(extra_ret_vals) == 1:
                 body.append(f"return {extra_ret_vals[0]};")
-                ret_descr = extra_ret_descrs[0]
+                ret_type, = extra_ret_types
             else:
                 body.append("return py::make_tuple({});".format(
                     ", ".join(extra_ret_vals)))
-                ret_descr = "tuple: {}".format(", ".join(extra_ret_descrs))
+                ret_type = f"tuple[{', '.join(extra_ret_types)}]"
         else:
-            ret_descr = "None"
+            ret_type = "None"
 
     else:
         raise SignatureNotSupported(
@@ -1351,17 +1352,16 @@ def write_wrapper(outf, meth):
             inputs=", ".join(input_args),
             body="\n".join(body)))
 
-    docs = (["{}({})".format(meth.name, ", ".join(arg_names)),
-            "", *docs, f":return: {ret_descr}"])
+    sig_str = f"({', '.join(arg_sigs)}) -> {ret_type}"
 
-    return arg_names, "\n".join(docs)
+    return arg_names, "\n".join(docs), sig_str
 
 # }}}
 
 
 # {{{ exposer generator
 
-def write_exposer(outf, meth, arg_names, doc_str):
+def write_exposer(outf: TextIO, meth: Method, arg_names, doc_str: str, sig_str: str):
     func_name = f"isl::{meth.cls}_{meth.name}"
     py_name = meth.name
 
@@ -1388,12 +1388,25 @@ def write_exposer(outf, meth, arg_names, doc_str):
                 "This function is not part of the officially public isl API. "
                 "Use at your own risk.")
 
-    doc_str_arg = ', "{}"'.format(doc_str.replace("\n", "\\n"))
-
     wrap_class = CLASS_MAP.get(meth.cls, meth.cls)
 
+    newline = "\n"
+    escaped_newline = "\\n"
     outf.write(f'wrap_{wrap_class}.def{"_static" if meth.is_static else ""}('
-               f'"{py_name}", {func_name}{args_str+doc_str_arg});\n')
+               f'"{py_name}", {func_name}{args_str}'
+               f', py::sig("def {py_name}{sig_str}")'
+               f', "{py_name}{sig_str}\\n{doc_str.replace(newline, escaped_newline)}"'
+               ');\n')
+
+    if meth.name == "get_space":
+        outf.write(f'wrap_{wrap_class}.def_prop_ro('
+                   f'"space", {func_name}{args_str}'
+                   ');\n')
+
+    if meth.name in ["get_user", "get_name"]:
+        outf.write(f'wrap_{wrap_class}.def_prop_ro('
+                   f'"{meth.name[4:]}", {func_name}{args_str}'
+                   ');\n')
 
     if meth.name == "read_from_str":
         assert meth.is_static
@@ -1420,7 +1433,7 @@ def write_exposer(outf, meth, arg_names, doc_str):
 wrapped_isl_functions = set()
 
 
-def write_wrappers(expf, wrapf, methods):
+def write_wrappers(expf, wrapf, methods: Sequence[Method]):
     undoc = []
 
     for meth in methods:
@@ -1443,13 +1456,13 @@ def write_wrappers(expf, wrapf, methods):
                 continue
 
         try:
-            arg_names, doc_str = write_wrapper(wrapf, meth)
-            write_exposer(expf, meth, arg_names, doc_str)
+            arg_names, doc_str, sig_str = write_wrapper(wrapf, meth)
+            write_exposer(expf, meth, arg_names, doc_str, sig_str)
         except Undocumented:
             undoc.append(str(meth))
         except Retry:
-            arg_names, doc_str = write_wrapper(wrapf, meth)
-            write_exposer(expf, meth, arg_names, doc_str)
+            arg_names, doc_str, sig_str = write_wrapper(wrapf, meth)
+            write_exposer(expf, meth, arg_names, doc_str, sig_str)
         except SignatureNotSupported:
             _, e, _ = sys.exc_info()
             print(f"SKIP (sig not supported: {e}): {meth}")
@@ -1519,8 +1532,19 @@ def add_upcasts(basic_class, special_class, fmap, expf):
     expf.write("\n// }}}\n\n")
 
 
-def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
-    fdata = FunctionData([".", *include_dirs])
+def gen_wrapper(include_dirs: Sequence[str],
+                *,
+                output_dir: str | None = None,
+                include_barvinok: bool = False,
+                isl_version: int | None = None
+            ):
+    if output_dir is None:
+        output_path = Path(".")
+    else:
+        output_path = Path(output_dir)
+    output_path.mkdir(exist_ok=True)
+
+    fdata = FunctionData(include_dirs)
     fdata.read_header("isl/ctx.h")
     fdata.read_header("isl/id.h")
     fdata.read_header("isl/space.h")
@@ -1553,8 +1577,8 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
         fdata.read_header("barvinok/isl.h")
 
     for part, classes in PART_TO_CLASSES.items():
-        expf = open(f"src/wrapper/gen-expose-{part}.inc", "w")
-        wrapf = open(f"src/wrapper/gen-wrap-{part}.inc", "w")
+        expf = open(output_path / f"gen-expose-{part}.inc", "w")
+        wrapf = open(output_path / f"gen-wrap-{part}.inc", "w")
 
         classes = [
                 cls
@@ -1605,8 +1629,23 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
         wrapf.close()
 
 
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-I", "--include-dir", nargs="*", default=[".", "isl/include"])
+    parser.add_argument("-o", "--output-dir", default=".")
+    parser.add_argument("--barvinok", action="store_true")
+    parser.add_argument("--isl-version", type=int)
+
+    args = parser.parse_args()
+
+    gen_wrapper(args.include_dir,
+                output_dir=args.output_dir,
+                include_barvinok=args.barvinok,
+                isl_version=args.isl_version,
+            )
+
+
 if __name__ == "__main__":
-    from os.path import expanduser
-    gen_wrapper([expanduser("isl/include")])
+    main()
 
 # vim: foldmethod=marker
