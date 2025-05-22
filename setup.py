@@ -208,6 +208,8 @@ def main():
     with open("README.rst") as readme_f:
         readme = readme_f.read()
 
+    # cmake_args.append("-DCMAKE_BUILD_TYPE=Debug")
+
     if conf["USE_SHIPPED_ISL"]:
         cmake_args.append("-DUSE_SHIPPED_ISL:bool=1")
         isl_inc_dirs = ["isl-supplementary", "isl/include", "isl"]
