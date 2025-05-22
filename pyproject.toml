@@ -68,7 +68,10 @@ known-local-folder = [
 lines-after-imports = 2
 
 [tool.ruff.lint.per-file-ignores]
-"islpy/*.pyi" = ["N801", "E501", "I001", "F401", "E202"]
+"islpy/*.pyi" = [
+    "N801", "N802", "E501", "I001", "F401", "E202", "E203", "Q000",
+    "RUF012"
+]
 
 [tool.cibuildwheel]
 # nanobind does not support Py<3.8
