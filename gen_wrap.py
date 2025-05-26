@@ -464,31 +464,9 @@ class FunctionData:
             h.update(self.get_header_contents(fname).encode())
         return h.hexdigest()
 
-    preprocessed_dir = "preproc-headers"
     macro_headers: ClassVar[Sequence[str]] = ["isl/multi.h", "isl/list.h"]
 
     def get_preprocessed_header(self, fname: str) -> str:
-        header_hash = self.get_header_hashes(
-                [*self.macro_headers, fname])
-
-        # cache preprocessed headers to avoid install-time
-        # dependency on pcpp
-        import errno
-        try:
-            os.mkdir(self.preprocessed_dir)
-        except OSError as err:
-            if err.errno == errno.EEXIST:
-                pass
-            else:
-                raise
-
-        prepro_fname = join(self.preprocessed_dir, header_hash)
-        try:
-            with open(prepro_fname) as inf:
-                return inf.read()
-        except OSError:
-            pass
-
         print(f"preprocessing {fname}...")
         macro_header_contents = [
                 self.get_header_contents(mh)
@@ -496,9 +474,6 @@ class FunctionData:
 
         prepro_header = preprocess_with_macros(
                 macro_header_contents, self.get_header_contents(fname))
-
-        with open(prepro_fname, "w") as outf:
-            outf.write(prepro_header)
 
         return prepro_header
 
