@@ -1271,7 +1271,8 @@ def write_wrapper(outf: TextIO, meth: Method):
             if extra_ret_vals:
                 isl_obj_ret_val = "py::make_tuple({}, {})".format(
                         isl_obj_ret_val, ", ".join(extra_ret_vals))
-                ret_type = f"tuple[{', '.join(extra_ret_types)}]"
+                ret_types = [to_py_class(ret_cls), * extra_ret_types]
+                ret_type = f"tuple[{', '.join(ret_types)}]"
             else:
                 ret_type = to_py_class(ret_cls)
 
