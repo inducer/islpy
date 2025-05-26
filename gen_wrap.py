@@ -80,6 +80,12 @@ class SignatureNotSupported(ValueError):  # noqa: N818
 
 
 def to_py_class(cls: str):
+    if cls == "isl_bool":
+        return "bool"
+
+    if cls == "int":
+        return cls
+
     if cls.startswith("isl_"):
         cls = cls[4:]
 
@@ -864,6 +870,24 @@ class TypeSignature:
         return f"({', '.join(self.arg_types)}) -> {self.ret_type}"
 
 
+def get_cb_type_sig(cb: CallbackArgument) -> str:
+    arg_types: list[str] = []
+
+    for arg in cb.args:
+        assert isinstance(arg, Argument)
+        if arg.name == "user":
+            continue
+
+        arg_types.append(to_py_class(arg.base_type))
+
+    if cb.return_base_type == "isl_stat":
+        ret_type = "None"
+    else:
+        ret_type = to_py_class(cb.return_base_type)
+
+    return f"Callable[[{', '.join(arg_types)}], {ret_type}]"
+
+
 def write_wrapper(outf: TextIO, meth: Method):
     body: list[str] = []
     checks: list[str] = []
@@ -912,7 +936,7 @@ def write_wrapper(outf: TextIO, meth: Method):
 
             preamble.append(get_callback(cb_name, arg))
 
-            arg_types.append(f"{arg.name}: Callable")
+            arg_types.append(f"{arg.name}: {get_cb_type_sig(arg)}")
             docs.append(":param {name}: callback({args})".format(
                 name=arg.name,
                 args=", ".join(
