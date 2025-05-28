@@ -171,6 +171,10 @@ class Method:
                 and not self.mutator_veto
                 and self.first_arg.base_type in NON_COPYABLE_WITH_ISL_PREFIX)
 
+    def arg_types(self) -> tuple[str, ...]:
+        return tuple(arg.base_type if isinstance(arg, Argument) else "callable"
+                     for arg in self.args)
+
 # }}}
 
 
@@ -247,6 +251,18 @@ CLASS_MAP = {
         "inequality": "constraint",
         "options": "ctx",
         }
+
+AUTO_UPCASTS: Mapping[str, tuple[str, ...]] = {
+    "pw_aff": ("aff", ),
+    "union_pw_aff": ("aff", "pw_aff", ),
+    "local_space": ("space", ),
+    "pw_multi_aff": ("multi_aff", ),
+    "union_pw_multi_aff": ("multi_aff", "pw_multi_aff", ),
+    "set": ("basic_set", ),
+    "union_set": ("basic_set", "set", ),
+    "map": ("basic_map", ),
+    "union_map": ("basic_map", "map", ),
+}
 
 # }}}
 
@@ -1387,7 +1403,7 @@ def write_exposer(
             arg_names: Sequence[str],
             doc_str: str,
             type_sig: TypeSignature,
-            class_to_methods: Mapping[str, Sequence[Method]],
+            meth_to_overloads: dict[tuple[str, str], list[Method]],
         ):
     func_name = f"isl::{meth.cls}_{meth.name}"
     py_name = meth.name
@@ -1450,6 +1466,32 @@ def write_exposer(
             f'       isl::handle_isl_error(ctx, "isl_{meth.cls}_read_from_str");'
             '}, py::arg("s"), py::arg("context").none(true)=py::none());\n')
 
+    if not meth.is_static:
+        for basic_cls in AUTO_UPCASTS.get(meth.cls, []):
+            basic_overloads = meth_to_overloads.setdefault((basic_cls, meth.name), [])
+            if any(basic_meth
+                   for basic_meth in basic_overloads
+                   if (basic_meth.is_static
+                       or meth.arg_types()[1:] == basic_meth.arg_types()[1:])
+                   ):
+                continue
+
+            basic_overloads.append(meth)
+
+            upcast_doc_str = (f"{doc_str}\n\nUpcast from "
+                f":class:`{to_py_class(basic_cls)}` to "
+                f":class:`{to_py_class(meth.cls)}`.")
+            escaped_doc_str = upcast_doc_str.replace(newline, escaped_newline)
+            outf.write(f"// automatic upcast to {meth.cls}\n")
+            outf.write(f'wrap_{basic_cls}.def('
+                       # Do not be tempted to pass 'arg_str' here, it will
+                       # prevent implicit conversion.
+                       # https://github.com/wjakob/nanobind/issues/1061
+                       f'"{py_name}", {func_name}'
+                       f', py::sig("def {py_name}{type_sig}")'
+                       f', "{py_name}{type_sig}\\n{escaped_doc_str}"'
+                       ');\n')
+
 # }}}
 
 
@@ -1460,7 +1502,7 @@ def wrap_and_expose(
             meth: Method,
             wrapf: TextIO,
             expf: TextIO,
-            class_to_methods: Mapping[str, Sequence[Method]],
+            meth_to_overloads: dict[tuple[str, str], list[Method]],
         ):
     arg_names, doc_str, sig_str = write_wrapper(wrapf, meth)
 
@@ -1471,7 +1513,7 @@ def wrap_and_expose(
                 "Use at your own risk.")
 
     write_exposer(expf, meth, arg_names, doc_str, sig_str,
-                  class_to_methods=class_to_methods)
+                  meth_to_overloads=meth_to_overloads)
 
 
 def write_wrappers(
@@ -1487,6 +1529,9 @@ def write_wrappers(
         for cls in classes
         for m in classes_to_methods.get(cls, [])
     ]
+    meth_to_overloads = {
+        (m.cls, m.name): [m] for m in methods
+    }
     for meth in methods:
         # print "TRY_WRAP:", meth
         if meth.name.endswith("_si") or meth.name.endswith("_ui"):
@@ -1508,12 +1553,12 @@ def write_wrappers(
 
         try:
             wrap_and_expose(meth,
-                    wrapf=wrapf, expf=expf, class_to_methods=classes_to_methods)
+                    wrapf=wrapf, expf=expf, meth_to_overloads=meth_to_overloads)
         except Undocumented:
             undoc.append(meth)
         except Retry:
             wrap_and_expose(meth,
-                    wrapf=wrapf, expf=expf, class_to_methods=classes_to_methods)
+                    wrapf=wrapf, expf=expf, meth_to_overloads=meth_to_overloads)
         except SignatureNotSupported:
             _, e, _ = sys.exc_info()
             print(f"SKIP (sig not supported: {e}): {meth.c_name}")
@@ -1531,56 +1576,6 @@ ADD_VERSIONS = {
         "map_list": 15,
         "union_set_list": 15,
         }
-
-
-upcasts = {}
-
-
-def add_upcasts(basic_class, special_class, fmap, expf):
-
-    def my_ismethod(method):
-        if method.name.endswith("_si") or method.name.endswith("_ui"):
-            return False
-
-        if method.name not in wrapped_isl_functions:
-            return False
-
-        if method.is_static:
-            return False
-
-        return True
-
-    expf.write(f"\n// {{{{{{ Upcasts from {basic_class} to {special_class}\n\n")
-
-    for special_method in fmap[special_class]:
-        if not my_ismethod(special_method):
-            continue
-
-        found = False
-
-        for basic_method in fmap[basic_class]:
-            if basic_method.name == special_method.name:
-                found = True
-                break
-
-        if found:
-            if not my_ismethod(basic_method):
-                continue
-
-        else:
-            if (basic_class in upcasts
-                    and special_method.name in upcasts[basic_class]):
-                continue
-
-            upcasts.setdefault(basic_class, []).append(special_method.name)
-
-        doc_str = (f'"\\n\\nUpcast from :class:`{to_py_class(basic_class)}`'
-                   + f' to :class:`{to_py_class(special_class)}`\\n"')
-
-        expf.write(f'wrap_{basic_class}.def("{special_method.name}", '
-                   f"isl::{special_class}_{special_method.name}, {doc_str});\n")
-
-    expf.write("\n// }}}\n\n")
 
 
 def gen_wrapper(include_dirs: Sequence[str],
@@ -1638,40 +1633,6 @@ def gen_wrapper(include_dirs: Sequence[str],
                 or ADD_VERSIONS.get(cls) is None
                 or ADD_VERSIONS.get(cls) <= isl_version]
         write_wrappers(expf, wrapf, fdata.classes_to_methods, classes)
-
-
-        # {{{ add automatic 'self' upcasts
-
-        # note: automatic upcasts for method arguments are provided through
-        # 'implicitly_convertible'.
-
-        if part == "part1":
-            add_upcasts("aff", "pw_aff", fdata.classes_to_methods, expf)
-            add_upcasts("pw_aff", "union_pw_aff", fdata.classes_to_methods, expf)
-            add_upcasts("aff", "union_pw_aff", fdata.classes_to_methods, expf)
-
-            add_upcasts("space", "local_space", fdata.classes_to_methods, expf)
-
-            add_upcasts("multi_aff", "pw_multi_aff", fdata.classes_to_methods, expf)
-            add_upcasts("pw_multi_aff", "union_pw_multi_aff",
-                        fdata.classes_to_methods, expf)
-            add_upcasts("multi_aff", "union_pw_multi_aff",
-                        fdata.classes_to_methods, expf)
-
-        elif part == "part2":
-            add_upcasts("basic_set", "set", fdata.classes_to_methods, expf)
-            add_upcasts("set", "union_set", fdata.classes_to_methods, expf)
-            add_upcasts("basic_set", "union_set", fdata.classes_to_methods, expf)
-
-            add_upcasts("basic_map", "map", fdata.classes_to_methods, expf)
-            add_upcasts("map", "union_map", fdata.classes_to_methods, expf)
-            add_upcasts("basic_map", "union_map", fdata.classes_to_methods, expf)
-
-        elif part == "part3":
-            # empty
-            pass
-
-        # }}}
 
         expf.close()
         wrapf.close()
