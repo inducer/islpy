@@ -39,12 +39,6 @@ append a `.copy()` to that argument. (Note that you will notice if an object
 got deleted for you accidentally, as the next operation on it will simply fail
 with an exception.)
 
-Integers
---------
-
-Whenever an integer argument is required, :mod:`islpy` supports regular Python
-integers and Python :class:`long` integers. It will return Python long integers.
-
 .. _automatic-casts:
 
 Automatic Casts
