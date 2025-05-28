@@ -44,8 +44,6 @@ Value
 .. autoclass:: Val
     :members:
 
-    .. automethod:: to_python
-
 Multi-Value
 -----------
 

@@ -23,11 +23,7 @@ intersphinx_mapping = {
         }
 
 
-def autodoc_process_docstring(app, what, name, obj, options, lines):
-    # clear out redundant pybind-generated member list
-    if any("Members" in ln for ln in lines):
-        del lines[:]
-
+def autodoc_process_docstring(app, what, name, obj, options, lines: list[str]):
     arg_list_re = re.compile(r"^([a-zA-Z0-9_]+)\((.*?)\)")
 
     from inspect import isclass, isroutine
@@ -37,9 +33,9 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
                 if isroutine(getattr(obj, nm))
                 and (not nm.startswith("_") or nm in UNDERSCORE_WHITELIST)]
 
-        def gen_method_string(meth_name):
+        def gen_method_string(meth_name: str):
             try:
-                result = ":meth:`%s`" % meth_name
+                result: str = ":meth:`%s`" % meth_name
                 meth_obj = getattr(obj, meth_name)
                 if meth_obj.__doc__ is None:
                     return result
@@ -66,13 +62,18 @@ def autodoc_process_docstring(app, what, name, obj, options, lines):
                     for meth_name in methods] + lines
 
             for nm in methods:
-                underscore_autodoc = []
+                underscore_autodoc: list[str] = []
                 if nm in UNDERSCORE_WHITELIST:
                     underscore_autodoc.append(".. automethod:: %s" % nm)
 
                 if underscore_autodoc:
                     lines.append("")
                     lines.extend(underscore_autodoc)
+
+
+autodoc_default_options = {
+    "undoc-members": True,
+}
 
 
 def setup(app):
