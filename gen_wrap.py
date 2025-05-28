@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+
 __copyright__ = "Copyright (C) 2011-20 Andreas Kloeckner"
 
 __license__ = """
@@ -21,14 +24,17 @@ THE SOFTWARE.
 """
 
 import argparse
-import os
 import re
 import sys
-from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
-from os.path import join
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import ClassVar, TextIO
+from typing import TYPE_CHECKING, ClassVar, TextIO
+
+from typing_extensions import override
+
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
 
 
 SEM_TAKE = "take"
@@ -112,11 +118,11 @@ class Argument:
 @dataclass
 class CallbackArgument:
     name: str
-    return_semantics: str
+    return_semantics: str | None
     return_decl_words: list[str]
     return_base_type: str
     return_ptr: str
-    args: Sequence[Argument]
+    args: Sequence[Argument | CallbackArgument]
 
 
 @dataclass
@@ -124,10 +130,10 @@ class Method:
     cls: str
     name: str
     c_name: str
-    return_semantics: str
+    return_semantics: str | None
     return_base_type: str
     return_ptr: str
-    args: Sequence[Argument]
+    args: Sequence[Argument | CallbackArgument]
     is_exported: bool
     is_constructor: bool
     mutator_veto: bool = False
@@ -139,22 +145,25 @@ class Method:
             self.args[0].name = "self"
 
     @property
+    def first_arg(self) -> Argument:
+        first_arg = self.args[0]
+        assert isinstance(first_arg, Argument)
+        return first_arg
+
+    @property
     def is_static(self):
         return not (self.args
-                and self.args[0].base_type.startswith(f"isl_{self.cls}"))
+                and self.first_arg.base_type.startswith(f"isl_{self.cls}"))
 
     @property
     def is_mutator(self):
         return (not self.is_static
-                and self.args[0].semantics is SEM_TAKE
-                and self.return_ptr == "*" == self.args[0].ptr
-                and self.return_base_type == self.args[0].base_type
+                and self.first_arg.semantics is SEM_TAKE
+                and self.return_ptr == "*" == self.first_arg.ptr
+                and self.return_base_type == self.first_arg.base_type
                 and self.return_semantics is SEM_GIVE
                 and not self.mutator_veto
-                and self.args[0].base_type in NON_COPYABLE_WITH_ISL_PREFIX)
-
-    def __repr__(self):
-        return f"<method {self.c_name}>"
+                and self.first_arg.base_type in NON_COPYABLE_WITH_ISL_PREFIX)
 
 # }}}
 
@@ -425,18 +434,18 @@ def preprocess_with_macros(macro_header_contents, code):
 
 # {{{ FunctionData (includes parser)
 
+@dataclass
 class FunctionData:
 
     INVALID_PY_IDENTIFIER_RENAMING_MAP: ClassVar[Mapping[str, str]] = {
         "2exp": "two_exp"
     }
 
-    def __init__(self, include_dirs: Sequence[str]):
-        self.classes_to_methods = {}
-        self.include_dirs = include_dirs
-        self.seen_c_names = set()
+    include_dirs: Sequence[str]
+    classes_to_methods: dict[str, list[Method]] = field(default_factory=dict)
+    seen_c_names: set[str] = field(default_factory=set)
 
-    def get_header_contents(self, fname):
+    def get_header_contents(self, fname: str):
         from os.path import join
         success = False
         for inc_dir in self.include_dirs:
@@ -702,10 +711,10 @@ class FunctionData:
 
 # {{{ get_callback
 
-def get_callback(cb_name, cb):
-    pre_call = []
-    passed_args = []
-    post_call = []
+def get_callback(cb_name: str, cb: CallbackArgument):
+    pre_call: list[str] = []
+    passed_args: list[str] = []
+    post_call: list[str] = []
 
     assert cb.args[-1].name == "user"
 
@@ -845,6 +854,16 @@ def get_callback(cb_name, cb):
 
 # {{{ wrapper generator
 
+@dataclass(frozen=True)
+class TypeSignature:
+    arg_types: Sequence[str]
+    ret_type: str
+
+    @override
+    def __str__(self) -> str:
+        return f"({', '.join(self.arg_types)}) -> {self.ret_type}"
+
+
 def write_wrapper(outf: TextIO, meth: Method):
     body: list[str] = []
     checks: list[str] = []
@@ -858,7 +877,7 @@ def write_wrapper(outf: TextIO, meth: Method):
     preamble: list[str] = []
 
     arg_names: list[str] = []
-    arg_sigs: list[str] = []
+    arg_types: list[str] = []
 
     checks.append("isl_ctx *islpy_ctx = nullptr;")
 
@@ -893,7 +912,7 @@ def write_wrapper(outf: TextIO, meth: Method):
 
             preamble.append(get_callback(cb_name, arg))
 
-            arg_sigs.append(f"{arg.name}: Callable")
+            arg_types.append(f"{arg.name}: Callable")
             docs.append(":param {name}: callback({args})".format(
                 name=arg.name,
                 args=", ".join(
@@ -913,7 +932,7 @@ def write_wrapper(outf: TextIO, meth: Method):
             else:
                 doc_cls = "int"
 
-            arg_sigs.append(f"{arg.name}: {doc_cls}")
+            arg_types.append(f"{arg.name}: {doc_cls}")
 
         elif arg.base_type in ["char", "const char"] and arg.ptr == "*":
             if arg.semantics is SEM_KEEP:
@@ -928,7 +947,7 @@ def write_wrapper(outf: TextIO, meth: Method):
 
             input_args.append(f"{_arg_to_const_str(arg)}{arg.base_type} *{arg.name}")
 
-            arg_sigs.append(f"{arg.name}: str")
+            arg_types.append(f"{arg.name}: str")
 
         elif arg.base_type in ["int", "isl_bool"] and arg.ptr == "*":
             if arg.name in ["exact", "tight"]:
@@ -990,7 +1009,7 @@ def write_wrapper(outf: TextIO, meth: Method):
                 post_call.append(f"unique_arg_{arg.name}.release();")
 
             passed_args.append(f"unique_arg_{arg.name}->m_data")
-            arg_sigs.append(f"{arg.name}: Val | int")
+            arg_types.append(f"{arg.name}: Val | int")
 
             # }}}
 
@@ -1069,7 +1088,10 @@ def write_wrapper(outf: TextIO, meth: Method):
                         islpy_ctx = {arg.base_type}_get_ctx(arg_{arg.name}.m_data);
                         """)
 
-            arg_sigs.append(f"{arg.name}: {to_py_class(arg_cls)}")
+            if arg.name == "self":
+                arg_types.append(f"{arg.name}")
+            else:
+                arg_types.append(f"{arg.name}: {to_py_class(arg_cls)}")
 
             # }}}
 
@@ -1327,9 +1349,7 @@ def write_wrapper(outf: TextIO, meth: Method):
             inputs=", ".join(input_args),
             body="\n".join(body)))
 
-    sig_str = f"({', '.join(arg_sigs)}) -> {ret_type}"
-
-    return arg_names, "\n".join(docs), sig_str
+    return arg_names, "\n".join(docs), TypeSignature(arg_types, ret_type)
 
 # }}}
 
@@ -1428,25 +1448,25 @@ def write_wrappers(expf, wrapf, methods: Sequence[Method]):
             if val_versions:
                 # no need to expose C integer versions of things
                 print("SKIP (val version available): {} -> {}".format(
-                    meth, ", ".join(str(s) for s in val_versions)))
+                    meth.c_name, ", ".join(m.c_name for m in val_versions)))
                 continue
 
         try:
             arg_names, doc_str, sig_str = write_wrapper(wrapf, meth)
             write_exposer(expf, meth, arg_names, doc_str, sig_str)
         except Undocumented:
-            undoc.append(str(meth))
+            undoc.append(meth)
         except Retry:
             arg_names, doc_str, sig_str = write_wrapper(wrapf, meth)
             write_exposer(expf, meth, arg_names, doc_str, sig_str)
         except SignatureNotSupported:
             _, e, _ = sys.exc_info()
-            print(f"SKIP (sig not supported: {e}): {meth}")
+            print(f"SKIP (sig not supported: {e}): {meth.c_name}")
         else:
             wrapped_isl_functions.add(meth.name)
-            pass
 
-    print("SKIP ({} undocumented methods): {}".format(len(undoc), ", ".join(undoc)))
+    print("SKIP ({} undocumented methods): {}"
+          .format(len(undoc), ", ".join(m.c_name for m in undoc)))
 
 
 ADD_VERSIONS = {
