@@ -1381,7 +1381,14 @@ def write_wrapper(outf: TextIO, meth: Method):
 
 # {{{ exposer generator
 
-def write_exposer(outf: TextIO, meth: Method, arg_names, doc_str: str, sig_str: str):
+def write_exposer(
+            outf: TextIO,
+            meth: Method,
+            arg_names: Sequence[str],
+            doc_str: str,
+            type_sig: TypeSignature,
+            class_to_methods: Mapping[str, Sequence[Method]],
+        ):
     func_name = f"isl::{meth.cls}_{meth.name}"
     py_name = meth.name
 
@@ -1402,20 +1409,15 @@ def write_exposer(outf: TextIO, meth: Method, arg_names, doc_str: str, sig_str: 
     # if meth.is_static:
     #    doc_str = "(static method)\n" + doc_str
 
-    if not meth.is_exported:
-        doc_str = doc_str + (
-                "\n\n.. warning::\n\n    "
-                "This function is not part of the officially public isl API. "
-                "Use at your own risk.")
-
     wrap_class = CLASS_MAP.get(meth.cls, meth.cls)
 
     newline = "\n"
     escaped_newline = "\\n"
+    escaped_doc_str = doc_str.replace(newline, escaped_newline)
     outf.write(f'wrap_{wrap_class}.def{"_static" if meth.is_static else ""}('
                f'"{py_name}", {func_name}{args_str}'
-               f', py::sig("def {py_name}{sig_str}")'
-               f', "{py_name}{sig_str}\\n{doc_str.replace(newline, escaped_newline)}"'
+               f', py::sig("def {py_name}{type_sig}")'
+               f', "{py_name}{type_sig}\\n{escaped_doc_str}"'
                ');\n')
 
     if meth.name == "get_space":
@@ -1451,12 +1453,40 @@ def write_exposer(outf: TextIO, meth: Method, arg_names, doc_str: str, sig_str: 
 # }}}
 
 
-wrapped_isl_functions = set()
+wrapped_isl_functions: set[str] = set()
 
 
-def write_wrappers(expf, wrapf, methods: Sequence[Method]):
-    undoc = []
+def wrap_and_expose(
+            meth: Method,
+            wrapf: TextIO,
+            expf: TextIO,
+            class_to_methods: Mapping[str, Sequence[Method]],
+        ):
+    arg_names, doc_str, sig_str = write_wrapper(wrapf, meth)
 
+    if not meth.is_exported:
+        doc_str = doc_str + (
+                "\n\n.. warning::\n\n    "
+                "This function is not part of the officially public isl API. "
+                "Use at your own risk.")
+
+    write_exposer(expf, meth, arg_names, doc_str, sig_str,
+                  class_to_methods=class_to_methods)
+
+
+def write_wrappers(
+            expf: TextIO,
+            wrapf: TextIO,
+            classes_to_methods: Mapping[str, Sequence[Method]],
+            classes: Sequence[str],
+        ):
+    undoc: list[Method] = []
+
+    methods = [
+        m
+        for cls in classes
+        for m in classes_to_methods.get(cls, [])
+    ]
     for meth in methods:
         # print "TRY_WRAP:", meth
         if meth.name.endswith("_si") or meth.name.endswith("_ui"):
@@ -1477,13 +1507,13 @@ def write_wrappers(expf, wrapf, methods: Sequence[Method]):
                 continue
 
         try:
-            arg_names, doc_str, sig_str = write_wrapper(wrapf, meth)
-            write_exposer(expf, meth, arg_names, doc_str, sig_str)
+            wrap_and_expose(meth,
+                    wrapf=wrapf, expf=expf, class_to_methods=classes_to_methods)
         except Undocumented:
             undoc.append(meth)
         except Retry:
-            arg_names, doc_str, sig_str = write_wrapper(wrapf, meth)
-            write_exposer(expf, meth, arg_names, doc_str, sig_str)
+            wrap_and_expose(meth,
+                    wrapf=wrapf, expf=expf, class_to_methods=classes_to_methods)
         except SignatureNotSupported:
             _, e, _ = sys.exc_info()
             print(f"SKIP (sig not supported: {e}): {meth.c_name}")
@@ -1607,11 +1637,8 @@ def gen_wrapper(include_dirs: Sequence[str],
                 if isl_version is None
                 or ADD_VERSIONS.get(cls) is None
                 or ADD_VERSIONS.get(cls) <= isl_version]
+        write_wrappers(expf, wrapf, fdata.classes_to_methods, classes)
 
-        write_wrappers(expf, wrapf, [
-            meth
-            for cls in classes
-            for meth in fdata.classes_to_methods.get(cls, [])])
 
         # {{{ add automatic 'self' upcasts
 
