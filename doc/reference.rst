@@ -177,4 +177,18 @@ Canonical Names for Internal Module
 
     See :class:`islpy.Printer`.
 
+.. currentmodule:: islpy._monkeypatch
+
+.. class:: SetLikeT
+
+    A type variable with an upper bound of :class:`islpy.BasicSet` | :class:`islpy.Set`.
+
+.. class:: AffOrConstraintT
+
+    A type variable with an upper bound of :class:`islpy.Aff` | :class:`islpy.Constraint`.
+
+.. class:: BasicT
+
+    A type variable with an upper bound of :class:`islpy.BasicSet` | :class:`islpy.BasicMap`.
+
 .. vim: sw=4
