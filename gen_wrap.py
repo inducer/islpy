@@ -1131,7 +1131,12 @@ def write_wrapper(outf: TextIO, meth: Method):
             if arg.name == "self":
                 arg_types.append(f"{arg.name}")
             else:
-                arg_types.append(f"{arg.name}: {to_py_class(arg_cls)}")
+                acceptable_arg_classes = (
+                    arg_cls,
+                    *AUTO_UPCASTS.get(arg_cls, ()))
+                arg_annotation = " | ".join(
+                    to_py_class(ac) for ac in acceptable_arg_classes)
+                arg_types.append(f"{arg.name}: {arg_annotation}")
 
             # }}}
 
