@@ -1,25 +1,62 @@
 [build-system]
+build-backend = "scikit_build_core.build"
 requires = [
-    # setuptools >= 64 breaks editable builds:
-    # https://github.com/scikit-build/scikit-build/pull/737#issuecomment-1215573830
-    # setuptools < 64 is incompatible with Python 3.12.
-    # So: no editable builds on Python 3.12, for now.
-    "setuptools>=42,<64;python_version<'3.12'",
-    "setuptools>=64;python_version>='3.12'",
-
-    "wheel>=0.34.2",
-    "scikit-build",
-    "nanobind>=1.3",
+    "scikit-build-core >=0.9.3",
+    "nanobind >=1.9.2",
     "pcpp",
 
-    # Added dynamically in setup.py if needed
-    # "cmake>=3.18",
-    # "ninja",
+    # stubgen uses @override :/
+    "typing_extensions>=4.5",
 ]
-build-backend = "setuptools.build_meta"
+
+[project]
+name = "islpy"
+version = "2025.2"
+description = "Wrapper around isl, an integer set library"
+readme = "README.rst"
+license = "MIT"
+authors = [
+    { name = "Andreas Kloeckner", email = "inform@tiker.net" },
+]
+requires-python = "~=3.10"
+
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Other Audience",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: C++",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Mathematics",
+  "Topic :: Scientific/Engineering :: Physics",
+  "Topic :: Scientific/Engineering :: Visualization",
+  "Topic :: Software Development :: Libraries",
+]
+
+[project.urls]
+Documentation = "https://documen.tician.de/islpy"
+Repository = "https://github.com/inducer/islpy"
+
+
+[dependency-groups]
+dev = [
+    "pytest>=2",
+]
 
 [tool.inducer-ci-support]
 disable-editable-pip-install = true
+
+[tool.scikit-build]
+sdist.exclude = [
+    ".github",
+    "run-*.sh",
+]
+
+# FIXME: Comment out before committing
+# Use with --no-build-isolation for fast development builds
+# build-dir = "build/{wheel_tag}"
 
 [tool.ruff]
 preview = true

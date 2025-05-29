@@ -14,6 +14,7 @@ GMP_PREFIX="${2:-$PREFIX}"
 NTL_VER="10.5.0"
 BARVINOK_GIT_REV="barvinok-0.41.8"
 NPROCS=6
+ISLPY_SOURCE="$(pwd)"
 
 function with_echo()
 {
@@ -28,13 +29,7 @@ if true; then
   cd "$BUILD_DIR"
 
   rm -Rf  islpy
-  if test "$GITHUB_HEAD_REF" != "" && test "$GITHUB_HEAD_REPOSITORY" != ""; then
-    with_echo git clone --recursive https://github.com/$GITHUB_HEAD_REPOSITORY.git -b "$GITHUB_HEAD_REF"
-  elif test "$CI_SERVER_NAME" = "GitLab" && test "$CI_COMMIT_REF_NAME" != ""; then
-    with_echo git clone --recursive https://gitlab.tiker.net/inducer/islpy.git -b "$CI_COMMIT_REF_NAME"
-  else
-    with_echo git clone --recursive https://github.com/inducer/islpy.git
-  fi
+  git clone "$ISLPY_SOURCE" --no-local
 
   curl -L -O --insecure http://shoup.net/ntl/ntl-"$NTL_VER".tar.gz
   tar xfz ntl-"$NTL_VER".tar.gz
@@ -77,12 +72,12 @@ fi
 
 cd "$BUILD_DIR"
 cd islpy
-./configure.py \
-  --no-use-shipped-isl \
-  --no-use-shipped-imath \
-  --isl-inc-dir=$PREFIX/include \
-  --isl-lib-dir=$PREFIX/lib \
-  --use-barvinok
-python -m pip install .
+export LD_LIBRARY_PATH="$PREFIX/lib:$LD_LIBRARY_PATH"
+python -m pip install . \
+    --config-settings=cmake.define.USE_SHIPPED_ISL=OFF \
+    --config-settings=cmake.define.USE_SHIPPED_IMATH=OFF \
+    --config-settings=cmake.define.USE_BARVINOK=ON \
+    --config-settings=cmake.define.ISL_INC_DIRS:LIST="$PREFIX/include " \
+    --config-settings=cmake.define.ISL_LIB_DIRS:LIST="$PREFIX/lib"
 
 # vim: sw=2

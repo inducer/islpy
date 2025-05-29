@@ -20,12 +20,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
+import argparse
 import os
 import re
 import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from os.path import join
+from pathlib import Path
 from typing import ClassVar, TextIO
 
 
@@ -1531,8 +1533,19 @@ def add_upcasts(basic_class, special_class, fmap, expf):
     expf.write("\n// }}}\n\n")
 
 
-def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
-    fdata = FunctionData([".", *include_dirs])
+def gen_wrapper(include_dirs: Sequence[str],
+                *,
+                output_dir: str | None = None,
+                include_barvinok: bool = False,
+                isl_version: int | None = None
+            ):
+    if output_dir is None:
+        output_path = Path(".")
+    else:
+        output_path = Path(output_dir)
+    output_path.mkdir(exist_ok=True)
+
+    fdata = FunctionData(include_dirs)
     fdata.read_header("isl/ctx.h")
     fdata.read_header("isl/id.h")
     fdata.read_header("isl/space.h")
@@ -1565,8 +1578,8 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
         fdata.read_header("barvinok/isl.h")
 
     for part, classes in PART_TO_CLASSES.items():
-        expf = open(f"src/wrapper/gen-expose-{part}.inc", "w")
-        wrapf = open(f"src/wrapper/gen-wrap-{part}.inc", "w")
+        expf = open(output_path / f"gen-expose-{part}.inc", "w")
+        wrapf = open(output_path / f"gen-wrap-{part}.inc", "w")
 
         classes = [
                 cls
@@ -1617,8 +1630,23 @@ def gen_wrapper(include_dirs, include_barvinok=False, isl_version=None):
         wrapf.close()
 
 
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-I", "--include-dir", nargs="*", default=[".", "isl/include"])
+    parser.add_argument("-o", "--output-dir", default="generated")
+    parser.add_argument("--barvinok", action="store_true")
+    parser.add_argument("--isl-version", type=int)
+
+    args = parser.parse_args()
+
+    gen_wrapper(args.include_dir,
+                output_dir=args.output_dir,
+                include_barvinok=args.barvinok,
+                isl_version=args.isl_version,
+            )
+
+
 if __name__ == "__main__":
-    from os.path import expanduser
-    gen_wrapper([expanduser("isl/include")])
+    main()
 
 # vim: foldmethod=marker
