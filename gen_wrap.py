@@ -1359,7 +1359,10 @@ def write_wrapper(outf: TextIO, meth: Method):
         if meth.return_semantics is SEM_GIVE:
             body.append("free(result);")
 
-        ret_type = "str"
+        if meth.name == "get_dim_name":
+            ret_type = "str | None"
+        else:
+            ret_type = "str"
 
     elif (meth.return_base_type == "void"
             and meth.return_ptr == "*"
