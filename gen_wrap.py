@@ -926,6 +926,13 @@ def write_wrapper(outf: TextIO, meth: Method):
         arg = meth.args[arg_idx]
         arg_names.append(arg.name)
 
+        if (arg_idx == 0
+                and not meth.is_static
+                and isinstance(arg, Argument)
+                and arg.base_type.startswith("isl_")
+                and arg.base_type[4:] != meth.cls):
+            raise Undocumented(f"unexpected self class: {meth.c_name}")
+
         if isinstance(arg, CallbackArgument):
             has_userptr = (
                     arg_idx + 1 < len(meth.args)
