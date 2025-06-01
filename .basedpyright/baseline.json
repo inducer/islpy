@@ -1,0 +1,214 @@
+{
+    "files": {
+        "./islpy/_isl.pyi": [
+            {
+                "code": "reportAssignmentType",
+                "range": {
+                    "startColumn": 13,
+                    "endColumn": 15,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportAssignmentType",
+                "range": {
+                    "startColumn": 13,
+                    "endColumn": 15,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 12,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 12,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 12,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportIncompatibleMethodOverride",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 14,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportIncompatibleMethodOverride",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 14,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 12,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 12,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 19,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 12,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 12,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 38,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 37,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 37,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 36,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 23,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 22,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 12,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 38,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 37,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 37,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 36,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 23,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 22,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportOverlappingOverload",
+                "range": {
+                    "startColumn": 8,
+                    "endColumn": 12,
+                    "lineCount": 1
+                }
+            }
+        ]
+    }
+}
