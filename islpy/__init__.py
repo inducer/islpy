@@ -20,10 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-from typing import Literal
+from collections.abc import Collection, Sequence
+from typing import Literal, TypeAlias, TypeVar
 
-import islpy._isl as _isl  # noqa: F401
-from islpy.version import VERSION, VERSION_TEXT  # noqa
+from islpy.version import VERSION, VERSION_TEXT
 
 
 __version__ = VERSION_TEXT
@@ -126,6 +126,19 @@ from islpy._monkeypatch import _CHECK_DIM_TYPES, EXPR_CLASSES
 # }}}
 
 
+# {{{ typing helpers
+
+Alignable: TypeAlias = (
+    Space
+    | Set | Map
+    | BasicSet | BasicMap
+    | Aff | PwAff
+)
+AlignableT = TypeVar("AlignableT", bound=Alignable)
+
+# }}}
+
+
 DEFAULT_CONTEXT = Context()
 
 
@@ -165,8 +178,14 @@ def _set_dim_id(obj, dt, idx, id):
     return _back_to_basic(obj.set_dim_id(dt, idx, id), obj)
 
 
-def _align_dim_type(template_dt, obj, template, obj_bigger_ok, obj_names,
-        template_names):
+def _align_dim_type(
+            template_dt: dim_type,
+            obj: AlignableT,
+            template: AlignableT,
+            obj_bigger_ok: bool,
+            obj_names: Collection[str],
+            template_names: Collection[str],
+        ) -> AlignableT:
 
     # {{{ deal with Aff, PwAff
 
@@ -246,7 +265,11 @@ def _align_dim_type(template_dt, obj, template, obj_bigger_ok, obj_names,
     return obj
 
 
-def align_spaces(obj, template, obj_bigger_ok=False, across_dim_types=None):
+def align_spaces(
+             obj: AlignableT,
+             template: Alignable,
+             obj_bigger_ok: bool = False,
+         ) -> AlignableT:
     """
     Try to make the space in which *obj* lives the same as that of *template* by
     adding/matching named dimensions.
@@ -254,12 +277,6 @@ def align_spaces(obj, template, obj_bigger_ok=False, across_dim_types=None):
     :param obj_bigger_ok: If *True*, no error is raised if the resulting *obj*
         has more dimensions than *template*.
     """
-
-    if across_dim_types is not None:
-        from warnings import warn
-        warn("across_dim_types is deprecated and should no longer be used. "
-                "It never had any effect anyway.",
-                DeprecationWarning, stacklevel=2)
 
     have_any_param_domains = (
             isinstance(obj, (Set, BasicSet))
@@ -295,24 +312,25 @@ def align_spaces(obj, template, obj_bigger_ok=False, across_dim_types=None):
     return obj
 
 
-def align_two(obj1, obj2, across_dim_types=None):
+def align_two(
+            obj1: AlignableT,
+            obj2: AlignableT,
+        ) -> tuple[AlignableT, AlignableT]:
     """Align the spaces of two objects, potentially modifying both of them.
 
     See also :func:`align_spaces`.
     """
-
-    if across_dim_types is not None:
-        from warnings import warn
-        warn("across_dim_types is deprecated and should no longer be used. "
-                "It never had any effect anyway.",
-                DeprecationWarning, stacklevel=2)
 
     obj1 = align_spaces(obj1, obj2, obj_bigger_ok=True)
     obj2 = align_spaces(obj2, obj1, obj_bigger_ok=True)
     return (obj1, obj2)
 
 
-def make_zero_and_vars(set_vars, params=(), ctx=None):
+def make_zero_and_vars(
+           set_vars: Sequence[str],
+           params: Sequence[str] = (),
+           ctx: Context | None = None
+       )  -> dict[str | Literal[0], PwAff]:
     """
     :arg set_vars: an iterable of variable names, or a comma-separated string
     :arg params: an iterable of variable names, or a comma-separated string
@@ -394,6 +412,8 @@ def affs_from_space(space: Space) -> dict[Literal[0] | str, PwAff]:
 
 
 __all__ = (
+    "VERSION",
+    "VERSION_TEXT",
     "AccessInfo",
     "Aff",
     "AffList",

@@ -136,6 +136,7 @@ Output
 
 Helper functions
 ^^^^^^^^^^^^^^^^
+.. autoclass:: AlignableT
 
 .. autofunction:: align_spaces
 .. autofunction:: align_two
