@@ -26,7 +26,7 @@ Examples:
 Python 3 without small-integer opt:
   script: |
     curl -L -O -k https://gitlab.tiker.net/inducer/ci-support/raw/main/build-and-test-py-project.sh
-    ./configure.py --no-use-imath-sio
+    export PROJECT_INSTALL_FLAGS="--config-settings=cmake.define.USE_IMATH_SIO=OFF"
     . ./build-and-test-py-project.sh
   tags:
   - python3

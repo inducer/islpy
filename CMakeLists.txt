@@ -18,12 +18,12 @@ execute_process(
 list(APPEND CMAKE_PREFIX_PATH "${NB_DIR}")
 find_package(nanobind CONFIG REQUIRED)
 
-option(USE_SHIPPED_ISL "Use shipped ISL" 1)
-option(USE_SHIPPED_IMATH "Use shipped IMATH" 1)
-option(USE_IMATH_FOR_MP "Use IMATH for multiprecision arithmetic" 1)
-option(USE_IMATH_SIO "Use IMATH small-integer optimization" 1)
-option(USE_GMP_FOR_MP "Use GMP" 0)
-option(USE_BARVINOK "Use Barvinok (beware of GPL license)" 0)
+option(USE_SHIPPED_ISL "Use shipped ISL" ON)
+option(USE_SHIPPED_IMATH "Use shipped IMATH" ON)
+option(USE_IMATH_FOR_MP "Use IMATH for multiprecision arithmetic" ON)
+option(USE_IMATH_SIO "Use IMATH small-integer optimization" ON)
+option(USE_GMP_FOR_MP "Use GMP" OFF)
+option(USE_BARVINOK "Use Barvinok (beware of GPL license)" OFF)
 
 if(USE_SHIPPED_ISL)
     if(USE_BARVINOK)
@@ -123,7 +123,11 @@ if(USE_SHIPPED_ISL)
         ${CMAKE_SOURCE_DIR}/isl/include
         ${CMAKE_SOURCE_DIR}/isl
     )
-    if(USE_IMATH_FOR_MP)
+    if(USE_GMP_FOR_MP)
+        list(APPEND ISL_SOURCES
+            isl/isl_val_gmp.c
+        )
+    elseif(USE_IMATH_FOR_MP)
         if(USE_SHIPPED_IMATH)
             list(APPEND ISL_SOURCES
                 isl/isl_imath.c
@@ -131,12 +135,16 @@ if(USE_SHIPPED_ISL)
                 isl/imath/imrat.c
                 isl/imath/gmp_compat.c
             )
-            list(APPEND ISL_INC_DIRS isl/imath)
+            list(APPEND ISL_INC_DIRS ${CMAKE_SOURCE_DIR}/isl/imath)
         endif()
         if(USE_IMATH_SIO)
             list(APPEND ISL_SOURCES
                 isl/isl_int_sioimath.c
                 isl/isl_val_sioimath.c
+            )
+        else()
+            list(APPEND ISL_SOURCES
+                isl/isl_val_imath.c
             )
         endif()
     endif()
