@@ -25,6 +25,8 @@ option(USE_IMATH_SIO "Use IMATH small-integer optimization" ON)
 option(USE_GMP_FOR_MP "Use GMP" OFF)
 option(USE_BARVINOK "Use Barvinok (beware of GPL license)" OFF)
 
+option(BUILD_STUB "Build stub file for islpy (turn OFF when cross-compiling)" ON)
+
 if(USE_SHIPPED_ISL)
     if(USE_BARVINOK)
         message(FATAL_ERROR "Using barvinok is not compatible with shipped ISL")
@@ -230,20 +232,22 @@ endif()
 
 install(TARGETS _isl LIBRARY DESTINATION islpy)
 
-set(ISLPY_STUB_FILE ${CMAKE_BINARY_DIR}/_isl.pyi)
-add_custom_command(
-    OUTPUT ${ISLPY_STUB_FILE}
-    COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/stubgen/stubgen.py
-        -o ${CMAKE_BINARY_DIR}
-        --exec ${CMAKE_SOURCE_DIR}/islpy/_monkeypatch.py
-        --python-path ${CMAKE_BINARY_DIR}
-        -m _isl
-    DEPENDS _isl
-)
-add_custom_target(
-    _isl_stub
-    ALL DEPENDS ${CMAKE_BINARY_DIR}/_isl.pyi
-)
-install(FILES ${ISLPY_STUB_FILE} DESTINATION islpy)
 
+if(BUILD_STUB)
+    set(ISLPY_STUB_FILE ${CMAKE_BINARY_DIR}/_isl.pyi)
+    add_custom_command(
+        OUTPUT ${ISLPY_STUB_FILE}
+        COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/stubgen/stubgen.py
+            -o ${CMAKE_BINARY_DIR}
+            --exec ${CMAKE_SOURCE_DIR}/islpy/_monkeypatch.py
+            --python-path ${CMAKE_BINARY_DIR}
+            -m _isl
+        DEPENDS _isl
+    )
+    add_custom_target(
+        _isl_stub
+        ALL DEPENDS ${CMAKE_BINARY_DIR}/_isl.pyi
+    )
+    install(FILES ${ISLPY_STUB_FILE} DESTINATION islpy)
+endif()
 # vim: sw=2
