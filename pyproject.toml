@@ -2,7 +2,7 @@
 build-backend = "scikit_build_core.build"
 requires = [
     "scikit-build-core >=0.9.3",
-    "nanobind >=1.9.2",
+    "nanobind >=2",
     "pcpp",
 
     # stubgen uses @override :/
@@ -42,7 +42,7 @@ Repository = "https://github.com/inducer/islpy"
 
 [dependency-groups]
 dev = [
-    "pytest>=2",
+    "pytest",
 ]
 
 [tool.inducer-ci-support]
