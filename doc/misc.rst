@@ -3,22 +3,23 @@ Installation
 
 This command should install :mod:`islpy`::
 
-    pip install islpy
+    $ pip install islpy
 
 For a more manual installation from source, `download the source
 <http://pypi.org/project/islpy>`__, unpack it, and say::
 
-	pip install -v .
+	$ pip install -v .
 
 You may also clone its git repository::
 
-    git clone --recursive https://github.com/inducer/islpy.git
+    $ git clone --recursive https://github.com/inducer/islpy.git
 
 The following attempts an editable installation, however note
 that this may run into various issues and is not well-supported
-by the build tools::
+by the build tools. In particular, build isolation must be turned off::
 
-    $ pip install --no-build-isolation -e .
+    $ pip install cmake scikit_build_core nanobind pcpp  # prerequisites
+    $ pip install --no-build-isolation -ve .
 
 Support
 =======
