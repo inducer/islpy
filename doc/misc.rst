@@ -19,7 +19,7 @@ that this may run into various issues and is not well-supported
 by the build tools. In particular, build isolation must be turned off::
 
     pip install cmake scikit_build_core nanobind pcpp  # prerequisites
-    pip install --no-build-isolation -ve .
+    pip install --no-build-isolation --config-settings=build-dir=build -ve .
 
 Support
 =======
