@@ -1481,6 +1481,7 @@ def write_exposer(
             f'       isl::handle_isl_error(ctx, "isl_{meth.cls}_read_from_str");'
             '}, py::arg("s"), py::arg("context").none(true)=py::none());\n')
 
+    # Handle auto-self-downcasts. These are deprecated.
     if not meth.is_static:
         for basic_cls in AUTO_DOWNCASTS.get(meth.cls, []):
             basic_overloads = meth_to_overloads.setdefault((basic_cls, meth.name), [])
@@ -1490,6 +1491,15 @@ def write_exposer(
                        or meth.arg_types()[1:] == basic_meth.arg_types()[1:])
                    ):
                 continue
+
+            # These are high-traffic APIs that are manually implemented
+            # and not subject to deprecation.
+            if basic_cls == "basic_set":
+                if meth.name in ["is_params", "get_hash"]:
+                    continue
+            elif basic_cls == "basic_map":
+                if meth.name in ["get_hash"]:
+                    continue
 
             basic_overloads.append(meth)
 
