@@ -45,7 +45,7 @@ def test_basics():
             context=ctx)
 
     points = []
-    bset.foreach_point(points.append)
+    bset.to_set().foreach_point(points.append)
 
     for pt in points:
         print(pt)
@@ -160,12 +160,14 @@ def test_get_coefficients_by_name():
 def test_count_brick_ish():
     a = isl.BasicSet("[n] -> {[i,j]: 0<= i < n and 0<= j < n and j<= i}")
 
-    def count(bset):
+    def count(set):
+        if isinstance(set, isl.BasicSet):
+            set = set.to_set()
         result = 1
 
-        for i in range(bset.dim(isl.dim_type.set)):
-            dmax = bset.dim_max(i)
-            dmin = bset.dim_min(i)
+        for i in range(set.dim(isl.dim_type.set)):
+            dmax = set.dim_max(i)
+            dmin = set.dim_min(i)
 
             length = isl.PwQPolynomial.from_pw_aff(dmax - dmin + 1)
 
