@@ -252,7 +252,7 @@ CLASS_MAP = {
         "options": "ctx",
         }
 
-AUTO_UPCASTS: Mapping[str, tuple[str, ...]] = {
+AUTO_DOWNCASTS: Mapping[str, tuple[str, ...]] = {
     "pw_aff": ("aff", ),
     "union_pw_aff": ("aff", "pw_aff", ),
     "local_space": ("space", ),
@@ -1140,7 +1140,7 @@ def write_wrapper(outf: TextIO, meth: Method):
             else:
                 acceptable_arg_classes = (
                     arg_cls,
-                    *AUTO_UPCASTS.get(arg_cls, ()))
+                    *AUTO_DOWNCASTS.get(arg_cls, ()))
                 arg_annotation = " | ".join(
                     to_py_class(ac) for ac in acceptable_arg_classes)
                 arg_types.append(f"{arg.name}: {arg_annotation}")
@@ -1482,7 +1482,7 @@ def write_exposer(
             '}, py::arg("s"), py::arg("context").none(true)=py::none());\n')
 
     if not meth.is_static:
-        for basic_cls in AUTO_UPCASTS.get(meth.cls, []):
+        for basic_cls in AUTO_DOWNCASTS.get(meth.cls, []):
             basic_overloads = meth_to_overloads.setdefault((basic_cls, meth.name), [])
             if any(basic_meth
                    for basic_meth in basic_overloads
@@ -1493,11 +1493,11 @@ def write_exposer(
 
             basic_overloads.append(meth)
 
-            upcast_doc_str = (f"{doc_str}\n\nUpcast from "
+            downcast_doc_str = (f"{doc_str}\n\nDowncast from "
                 f":class:`{to_py_class(basic_cls)}` to "
                 f":class:`{to_py_class(meth.cls)}`.")
-            escaped_doc_str = upcast_doc_str.replace(newline, escaped_newline)
-            outf.write(f"// automatic upcast to {meth.cls}\n")
+            escaped_doc_str = downcast_doc_str.replace(newline, escaped_newline)
+            outf.write(f"// automatic downcast to {meth.cls}\n")
             outf.write(f'wrap_{basic_cls}.def('
                        # Do not be tempted to pass 'arg_str' here, it will
                        # prevent implicit conversion.
