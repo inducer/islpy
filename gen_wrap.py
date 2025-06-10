@@ -1313,7 +1313,7 @@ def write_wrapper(outf: TextIO, meth: Method):
             body.append(f"arg_{meth.args[0].name}.take_possession_of(result);")
             body.append(f"return py_{meth.args[0].name};")
 
-            ret_type = to_py_class(ret_cls)
+            ret_type = "Self"
             docs.append("..note::\n  Returns *self*.\n\n")
         else:
             processed_return_type = "py::object"
