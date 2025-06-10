@@ -113,6 +113,7 @@ void islpy_expose_part1(py::module_ &m)
 
   MAKE_WRAP(pw_aff, PwAff);
   MAKE_INIT_CONVERTIBLE(aff, pw_aff);
+  MAKE_TO_METHOD(aff, pw_aff);
 
   MAKE_WRAP(union_pw_aff, UnionPwAff);
   MAKE_INIT_CONVERTIBLE(pw_aff, union_pw_aff);
