@@ -24,6 +24,7 @@ option(USE_IMATH_FOR_MP "Use IMATH for multiprecision arithmetic" ON)
 option(USE_IMATH_SIO "Use IMATH small-integer optimization" ON)
 option(USE_GMP_FOR_MP "Use GMP" OFF)
 option(USE_BARVINOK "Use Barvinok (beware of GPL license)" OFF)
+option(GENERATE_STUBS "Generate stubs as part of build" ON)
 
 if(USE_SHIPPED_ISL)
     if(USE_BARVINOK)
@@ -230,20 +231,26 @@ endif()
 
 install(TARGETS _isl LIBRARY DESTINATION islpy)
 
-set(ISLPY_STUB_FILE ${CMAKE_BINARY_DIR}/_isl.pyi)
-add_custom_command(
-    OUTPUT ${ISLPY_STUB_FILE}
-    COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/stubgen/stubgen.py
-        -o ${CMAKE_BINARY_DIR}
-        --exec ${CMAKE_SOURCE_DIR}/islpy/_monkeypatch.py
-        --python-path ${CMAKE_BINARY_DIR}
-        -m _isl
-    DEPENDS _isl
-)
-add_custom_target(
-    _isl_stub
-    ALL DEPENDS ${CMAKE_BINARY_DIR}/_isl.pyi
-)
-install(FILES ${ISLPY_STUB_FILE} DESTINATION islpy)
+if(GENERATE_STUBS)
+    set(ISLPY_STUB_FILE ${CMAKE_BINARY_DIR}/_isl.pyi)
+    add_custom_command(
+        OUTPUT ${ISLPY_STUB_FILE}
+        COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/stubgen/stubgen.py
+            -o ${CMAKE_BINARY_DIR}
+            --exec ${CMAKE_SOURCE_DIR}/islpy/_monkeypatch.py
+            --python-path ${CMAKE_BINARY_DIR}
+            -m _isl
+        DEPENDS _isl
+    )
+    add_custom_target(
+        _isl_stub
+        ALL DEPENDS ${CMAKE_BINARY_DIR}/_isl.pyi
+    )
+    install(FILES ${ISLPY_STUB_FILE} DESTINATION islpy)
+else()
+    if(NOT EXISTS "${CMAKE_SOURCE_DIR}/islpy/_isl.pyi")
+        message(FATAL_ERROR "Disabled stub generation requires pregenerated stubs")
+    endif()
+endif()
 
 # vim: sw=2
