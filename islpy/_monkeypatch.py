@@ -1,14 +1,21 @@
+import os
+import re
 from collections.abc import Callable, Collection, Iterable, Mapping, Sequence
+from functools import update_wrapper
+from sys import intern
 from typing import (
     TYPE_CHECKING,
     Any,
     ClassVar,
+    Concatenate,
     Literal,
+    ParamSpec,
     Protocol,
     TypeAlias,
     TypeVar,
     cast,
 )
+from warnings import warn
 
 
 if TYPE_CHECKING:
@@ -1013,3 +1020,78 @@ for cls in ALL_CLASSES:
 
 
 _add_functionality()
+
+
+P = ParamSpec("P")
+ResultT = TypeVar("ResultT")
+
+
+_DOWNCAST_RE = re.compile(
+          r"Downcast from :class:`([A-Za-z]+)` to :class:`([A-Za-z]+)`.")
+
+
+_TO_METHODS = {
+    "PwAff": "to_pw_aff",
+    "PwMultiAff": "to_pw_multi_aff",
+    "UnionPwAff": "to_union_pw_aff",
+    "UnionPwMultiAff": "to_union_pw_multi_aff",
+    "LocalSpace": "to_local_space",
+    "Set": "to_set",
+    "UnionSet": "to_union_set",
+    "Map": "to_map",
+    "UnionMap": "to_union_map",
+}
+
+
+def _depr_downcast_wrapper(
+            f: Callable[Concatenate[object, P], ResultT],
+        ) -> Callable[Concatenate[object, P], ResultT]:
+    doc = f.__doc__
+    assert doc is not None
+    m = _DOWNCAST_RE.search(doc)
+    assert m, doc
+    basic_cls_name = intern(m.group(1))
+    tgt_cls_name = m.group(2)
+
+    tgt_cls = cast("type", getattr(_isl, tgt_cls_name))
+    is_overload = "Overloaded function" in doc
+    msg = (f"{basic_cls_name}.{f.__name__} "
+            f"with implicit conversion of self to {tgt_cls_name} is deprecated "
+            "and will stop working in 2026. "
+            f"Explicitly convert to {tgt_cls_name}, "
+            f"using .{_TO_METHODS[tgt_cls_name]}().")
+
+    if is_overload:
+        def wrapper(self: object, *args: P.args, **kwargs: P.kwargs) -> ResultT:
+            # "Try to" detect bad invocations of, e.g., Set.union, which is
+            # an overload of normal union and UnionSet.union.
+            if (
+                    any(isinstance(arg, tgt_cls) for arg in args)
+                    or
+                    any(isinstance(arg, tgt_cls) for arg in kwargs.values())
+                    ):
+                warn(msg, DeprecationWarning, stacklevel=2)
+
+            return f(self, *args, **kwargs)
+    else:
+        def wrapper(self: object, *args: P.args, **kwargs: P.kwargs) -> ResultT:
+            warn(msg, DeprecationWarning, stacklevel=2)
+
+            return f(self, *args, **kwargs)
+    update_wrapper(wrapper, f)
+    return wrapper
+
+
+def _monkeypatch_self_downcast_deprecation():
+    for cls in ALL_CLASSES:
+        for attr_name in dir(cls):
+            val = cast("object", getattr(cls, attr_name))
+            doc = getattr(val, "__doc__", None)
+            if doc and "\nDowncast from " in doc:
+                setattr(cls, attr_name, _depr_downcast_wrapper(
+                        cast("Callable", val),  # pyright: ignore[reportMissingTypeArgument]
+                        ))
+
+
+if not os.environ.get("ISLPY_NO_DOWNCAST_DEPRECATION", None):
+    _monkeypatch_self_downcast_deprecation()
