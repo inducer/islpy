@@ -551,6 +551,8 @@ def obj_get_var_names(self: HasSpace, dimtype: _isl.dim_type) -> Sequence[str]:
 
 
 def pwaff_get_pieces(self: _isl.PwAff | _isl.Aff) -> list[tuple[_isl.Set, _isl.Aff]]:
+    if isinstance(self, _isl.Aff):
+        self = self.to_pw_aff()
     result: list[tuple[_isl.Set, _isl.Aff]] = []
 
     def append_tuple(s: _isl.Set, v: _isl.Aff):

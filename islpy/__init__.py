@@ -21,7 +21,7 @@ THE SOFTWARE.
 """
 
 from collections.abc import Collection, Sequence
-from typing import Literal, TypeAlias, TypeVar
+from typing import Literal, TypeAlias, TypeVar, cast
 
 from islpy.version import VERSION, VERSION_TEXT
 
@@ -149,43 +149,33 @@ def _get_default_context() -> Context:
     return DEFAULT_CONTEXT
 
 
-def _back_to_basic(new_obj, old_obj):
-    # Work around set_dim_id not being available for Basic{Set,Map}
-    if isinstance(old_obj, BasicSet) and isinstance(new_obj, Set):
-        bsets = new_obj.get_basic_sets()
+def _set_dim_id(obj: AlignableT, dt: dim_type, idx: int, id: Id) -> AlignableT:
+    if isinstance(obj, BasicSet):
+        p, = obj.to_set().set_dim_id(dt, idx, id).get_basic_sets()
+        return cast("AlignableT", p)
+    elif isinstance(obj, BasicMap):
+        p, = obj.to_map().set_dim_id(dt, idx, id).get_basic_maps()
+        return cast("AlignableT", p)
 
-        if len(bsets) == 0:
-            bset = BasicSet.universe(new_obj.space).complement()
-        else:
-            bset, = bsets
-
-        return bset
-
-    if isinstance(old_obj, BasicMap) and isinstance(new_obj, Map):
-        bmaps = new_obj.get_basic_maps()
-
-        if len(bmaps) == 0:
-            bmap = BasicMap.universe(new_obj.space).complement()
-        else:
-            bmap, = bmaps
-
-        return bmap
-
-    return new_obj
-
-
-def _set_dim_id(obj, dt, idx, id):
-    return _back_to_basic(obj.set_dim_id(dt, idx, id), obj)
+    return cast("AlignableT", obj.set_dim_id(dt, idx, id))
 
 
 def _align_dim_type(
             template_dt: dim_type,
             obj: AlignableT,
-            template: AlignableT,
+            template: Alignable,
             obj_bigger_ok: bool,
             obj_names: Collection[str],
             template_names: Collection[str],
         ) -> AlignableT:
+
+    # convert to a type that has get_dim_id
+    if isinstance(template, BasicSet):
+        template = template.to_set()
+    elif isinstance(template, BasicMap):
+        template = template.to_map()
+    elif isinstance(template, Aff):
+        template = template.to_pw_aff()
 
     # {{{ deal with Aff, PwAff
 
