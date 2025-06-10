@@ -74,6 +74,7 @@ def main():
     )
     sg.put(mod)
     prefix_lines = "\n".join([
+        "from typing_extensions import Self",
         "from collections.abc import Callable",
     ])
     with open(output_path / "_isl.pyi", "w") as outf:
