@@ -2,7 +2,7 @@
 build-backend = "scikit_build_core.build"
 requires = [
     "scikit-build-core >=0.9.3",
-    "nanobind >=1.9.2",
+    "nanobind >=2.7",
     "pcpp",
 
     # stubgen uses @override :/
