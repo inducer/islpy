@@ -8,8 +8,21 @@ namespace isl
 void islpy_expose_part2(py::module_ &m)
 {
   MAKE_WRAP(basic_set, BasicSet);
+  wrap_basic_set.def("__hash__", [](isl::basic_set const &self) {
+                       isl::set set_self(self);
+                       return isl_set_get_hash(set_self.m_data);
+                     });
+  // used in align_dims
+  wrap_basic_set.def("is_params", [](isl::basic_set const &self) {
+                       isl::set set_self(self);
+                       return bool(isl_set_is_params(set_self.m_data));
+                     });
 
   MAKE_WRAP(basic_map, BasicMap);
+  wrap_basic_map.def("__hash__", [](isl::basic_map const &self) {
+                       isl::map map_self(self);
+                       return isl_map_get_hash(map_self.m_data);
+                     });
 
   MAKE_WRAP(set, Set);
   MAKE_INIT_CONVERTIBLE(basic_set, set);
