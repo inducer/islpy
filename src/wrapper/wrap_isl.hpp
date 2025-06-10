@@ -343,4 +343,10 @@ namespace isl
   wrap_##name.attr("_base_name") = #name; \
   wrap_##name.attr("_isl_name") = "isl_"#name; \
 
+#define MAKE_TO_METHOD(from, to) \
+  wrap_##from.def("to_" #to, [](isl::from const &s) { return new isl::to(s); });
+#define MAKE_INIT_CONVERTIBLE(from, to) \
+  wrap_##to.def(py::init_implicit<isl::from const &>());
+
+
 // vim: foldmethod=marker

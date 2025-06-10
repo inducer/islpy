@@ -112,21 +112,20 @@ void islpy_expose_part1(py::module_ &m)
   MAKE_WRAP(aff, Aff);
 
   MAKE_WRAP(pw_aff, PwAff);
-  wrap_pw_aff.def(py::init_implicit<isl::aff const &>());
+  MAKE_INIT_CONVERTIBLE(aff, pw_aff);
 
   MAKE_WRAP(union_pw_aff, UnionPwAff);
-  wrap_union_pw_aff.def(py::init_implicit<isl::aff const &>());
-  wrap_union_pw_aff.def(py::init_implicit<isl::pw_aff const &>());
+  MAKE_INIT_CONVERTIBLE(pw_aff, union_pw_aff);
 
   MAKE_WRAP(multi_id, MultiId);
 
   MAKE_WRAP(multi_aff, MultiAff);
 
   MAKE_WRAP(pw_multi_aff, PwMultiAff);
-  wrap_pw_multi_aff.def(py::init_implicit<isl::multi_aff const &>());
+  MAKE_INIT_CONVERTIBLE(multi_aff, pw_multi_aff)
 
   MAKE_WRAP(union_pw_multi_aff, UnionPwMultiAff);
-  wrap_union_pw_multi_aff.def(py::init_implicit<isl::pw_multi_aff const &>());
+  MAKE_INIT_CONVERTIBLE(pw_multi_aff, union_pw_multi_aff)
 
   MAKE_WRAP(multi_pw_aff, MultiPwAff);
 
@@ -169,7 +168,8 @@ void islpy_expose_part1(py::module_ &m)
 
   MAKE_WRAP(space, Space);
   MAKE_WRAP(local_space, LocalSpace);
-  wrap_local_space.def(py::init_implicit<isl::space const &>());
+  MAKE_INIT_CONVERTIBLE(space, local_space);
+  MAKE_TO_METHOD(space, local_space);
 
 #include "gen-expose-part1.inc"
 }
