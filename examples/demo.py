@@ -13,39 +13,36 @@ print("set 1 %s:" % bset)
 bset2 = isl.BasicSet("{[x, y] : x >= 0 and x < 5 and y >= 0 and y < x+4 }")
 print("set 2: %s" % bset2)
 
-bsets_in_union = []
-bset.union(bset2).convex_hull().foreach_basic_set(bsets_in_union.append)
-print(bsets_in_union)
-union, = bsets_in_union
-print("union: %s" % union)
+union_ch = (bset.to_set() | bset2).convex_hull()
+print("convex hull of union: %s" % union_ch)
 # ENDEXAMPLE
 
 import matplotlib.pyplot as pt
 
 
-def plot_basic_set(bset, *args, **kwargs):
+def plot_basic_set(bset: isl.BasicSet, *args, **kwargs):
     # This is a total hack. But it works for what it needs to do. :)
 
     plot_vert = kwargs.pop("plot_vert", False)
 
-    vertices = []
+    vertices: list[isl.Vertex] = []
     bset.compute_vertices().foreach_vertex(vertices.append)
 
-    vertex_pts = []
+    vertex_pts: list[list[int]] = []
 
     for v in vertices:
-        points = []
+        points: list[isl.Point] = []
         myset = isl.BasicSet.from_multi_aff(v.get_expr())
-        myset.foreach_point(points.append)
+        myset.to_set().foreach_point(points.append)
         point, = points
         vertex_pts.append([
             point.get_coordinate_val(isl.dim_type.set, i).to_python()
             for i in range(2)])
 
     import numpy as np
-    vertex_pts = np.array(vertex_pts)
+    vertex_pts_ary = np.array(vertex_pts)
 
-    center = np.average(vertex_pts, axis=0)
+    center = np.average(vertex_pts_ary, axis=0)
 
     from math import atan2
     vertex_pts = np.array(
@@ -80,6 +77,6 @@ pt.ylim([-1, 8])
 # pt.show()
 pt.savefig("before-union.png", dpi=50)
 
-plot_basic_set(union, facecolor="blue", edgecolor="yellow",
+plot_basic_set(union_ch, facecolor="blue", edgecolor="yellow",
         alpha=0.5, plot_vert=True)
 pt.savefig("after-union.png", dpi=50)
