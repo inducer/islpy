@@ -151,11 +151,21 @@ def _get_default_context() -> Context:
 
 def _set_dim_id(obj: AlignableT, dt: dim_type, idx: int, id: Id) -> AlignableT:
     if isinstance(obj, BasicSet):
-        p, = obj.to_set().set_dim_id(dt, idx, id).get_basic_sets()
-        return cast("AlignableT", p)
+        s = obj.to_set().set_dim_id(dt, idx, id)
+        basicsets = s.get_basic_sets()
+        if not basicsets:
+            result = BasicSet.empty(s.space)
+        else:
+            result, = basicsets
+        return cast("AlignableT", result)
     elif isinstance(obj, BasicMap):
-        p, = obj.to_map().set_dim_id(dt, idx, id).get_basic_maps()
-        return cast("AlignableT", p)
+        m = obj.to_map().set_dim_id(dt, idx, id)
+        basicmaps = m.get_basic_maps()
+        if not basicmaps:
+            result = BasicMap.empty(m.space)
+        else:
+            result, = basicmaps
+        return cast("AlignableT", result)
 
     return cast("AlignableT", obj.set_dim_id(dt, idx, id))
 
