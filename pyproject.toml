@@ -52,6 +52,18 @@ disable-editable-pip-install = true
 sdist.exclude = [
     ".github",
     "run-*.sh",
+    "isl/test_inputs",
+    "isl/testsets",
+    "isl/m4",
+    ".basedpyright",
+    "isl/include/isl/typed_cpp.h",
+    "isl/include/isl/cpp.h",
+    "isl/include/isl/cpp-checked.h",
+    "isl/imath/tests",
+    "isl/interface/isl.py.core",
+]
+sdist.include = [
+    "isl-supplementary"
 ]
 
 # FIXME: Comment out before committing
