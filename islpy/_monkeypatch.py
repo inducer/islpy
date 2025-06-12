@@ -723,7 +723,7 @@ def expr_like_add(self: ExprLikeT, other: ExprLikeT | int | _isl.Val) -> ExprLik
         return NotImplemented
 
 
-def expr_like_sub(self: ExprLikeT, other: ExprLikeT | int | _isl.Val):
+def expr_like_sub(self: ExprLikeT, other: ExprLikeT | int | _isl.Val) -> ExprLikeT:
     if not isinstance(other, ExprLike):
         other = _number_to_expr_like(self, other)
 
