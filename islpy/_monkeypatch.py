@@ -339,7 +339,7 @@ def space_create_from_names(
 
 
 def set_or(
-            self: _isl.Set | _isl.BasicSet,
+            self: _isl.Set,
             other: _isl.Set | _isl.BasicSet,
         ) -> _isl.Set:
     try:
@@ -352,16 +352,24 @@ def bset_and(
             self: _isl.BasicSet,
             other: SetOrBasicT,
         ) -> SetOrBasicT:
-    try:
-        return self.intersect(other)
-    except TypeError:
-        return NotImplemented
+    if isinstance(other, _isl.Set):
+        try:
+            return self.to_set().intersect(other)
+        except TypeError:
+            return NotImplemented
+    else:
+        try:
+            return self.intersect(other)
+        except TypeError:
+            return NotImplemented
 
 
 def set_and(
             self: _isl.Set,
             other: _isl.Set | _isl.BasicSet,
         ) -> _isl.Set:
+    if isinstance(self, _isl.BasicSet):
+        self = self.to_set()
     try:
         return self.intersect(other)
     except TypeError:
@@ -372,6 +380,8 @@ def set_sub(
             self: _isl.Set | _isl.BasicSet,
             other: _isl.Set | _isl.BasicSet,
         ) -> _isl.Set:
+    if isinstance(self, _isl.BasicSet):
+        self = self.to_set()
     try:
         return self.subtract(other)
     except TypeError:
@@ -382,6 +392,8 @@ def map_or(
             self: _isl.Map | _isl.BasicMap,
             other: _isl.Map | _isl.BasicMap,
         ) -> _isl.Map:
+    if isinstance(self, _isl.BasicMap):
+        self = self.to_map()
     try:
         return self.union(other)
     except TypeError:
@@ -392,10 +404,16 @@ def bmap_and(
             self: _isl.BasicMap,
             other: MapOrBasicT,
         ) -> MapOrBasicT:
-    try:
-        return cast("MapOrBasicT", self.intersect(other))
-    except TypeError:
-        return NotImplemented
+    if isinstance(other, _isl.Map):
+        try:
+            return self.to_map().intersect(other)
+        except TypeError:
+            return NotImplemented
+    else:
+        try:
+            return self.intersect(other)
+        except TypeError:
+            return NotImplemented
 
 
 def map_and(
@@ -412,6 +430,8 @@ def map_sub(
             self: _isl.Map | _isl.BasicMap,
             other: _isl.Map | _isl.BasicMap,
         ) -> _isl.Map:
+    if isinstance(self, _isl.BasicMap):
+        self = self.to_map()
     try:
         return self.subtract(other)
     except TypeError:
