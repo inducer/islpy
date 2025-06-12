@@ -135,6 +135,7 @@ Alignable: TypeAlias = (
     | Aff | PwAff
 )
 AlignableT = TypeVar("AlignableT", bound=Alignable)
+AlignableT2 = TypeVar("AlignableT2", bound=Alignable)
 
 # }}}
 
@@ -314,8 +315,8 @@ def align_spaces(
 
 def align_two(
             obj1: AlignableT,
-            obj2: AlignableT,
-        ) -> tuple[AlignableT, AlignableT]:
+            obj2: AlignableT2,
+        ) -> tuple[AlignableT, AlignableT2]:
     """Align the spaces of two objects, potentially modifying both of them.
 
     See also :func:`align_spaces`.
