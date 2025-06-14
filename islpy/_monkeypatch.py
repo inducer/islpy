@@ -5,7 +5,6 @@ from functools import update_wrapper
 from sys import intern
 from typing import (
     TYPE_CHECKING,
-    Any,
     ClassVar,
     Concatenate,
     Literal,
@@ -42,6 +41,10 @@ _CHECK_DIM_TYPES: tuple[_isl.dim_type, ...] = (
 
 
 # {{{ typing helpers
+
+T = TypeVar("T")
+P = ParamSpec("P")
+ResultT = TypeVar("ResultT")
 
 SelfT = TypeVar("SelfT")
 
@@ -93,34 +96,30 @@ class IslObject(Protocol):
 
 # {{{ copied verbatim from pytools to avoid numpy/pytools dependency
 
-F = TypeVar("F", bound=Callable[..., Any])
-
-
 class _HasKwargs:
     pass
 
 
-def _memoize_on_first_arg(function: F, cache_dict_name: str | None = None) -> F:
+def _memoize_on_first_arg(
+        function: Callable[Concatenate[T, P], ResultT], *,
+        cache_dict_name: str | None = None) -> Callable[Concatenate[T, P], ResultT]:
     """Like :func:`memoize_method`, but for functions that take the object
     in which do memoization information is stored as first argument.
 
     Supports cache deletion via ``function_name.clear_cache(self)``.
     """
-    from sys import intern
 
     if cache_dict_name is None:
         cache_dict_name = intern(
                 f"_memoize_dic_{function.__module__}{function.__name__}"
                 )
 
-    def wrapper(obj, *args, **kwargs):
-        if kwargs:
-            key = (_HasKwargs, frozenset(kwargs.items()), *args)
-        else:
-            key = args
+    def wrapper(obj: T, *args: P.args, **kwargs: P.kwargs) -> ResultT:
+        key = (_HasKwargs, frozenset(kwargs.items()), *args) if kwargs else args
 
+        assert cache_dict_name is not None
         try:
-            return getattr(obj, cache_dict_name)[key]
+            return cast("ResultT", getattr(obj, cache_dict_name)[key])
         except AttributeError:
             attribute_error = True
         except KeyError:
@@ -130,11 +129,10 @@ def _memoize_on_first_arg(function: F, cache_dict_name: str | None = None) -> F:
         if attribute_error:
             object.__setattr__(obj, cache_dict_name, {key: result})
             return result
-        else:
-            getattr(obj, cache_dict_name)[key] = result
-            return result
+        getattr(obj, cache_dict_name)[key] = result
+        return result
 
-    def clear_cache(obj):
+    def clear_cache(obj: object):
         object.__delattr__(obj, cache_dict_name)
 
     from functools import update_wrapper
@@ -144,7 +142,8 @@ def _memoize_on_first_arg(function: F, cache_dict_name: str | None = None) -> F:
     # into the function's dict is moderately sketchy.
     new_wrapper.clear_cache = clear_cache  # type: ignore[attr-defined]
 
-    return cast("F", new_wrapper)
+    return new_wrapper
+
 
 # }}}
 
@@ -1126,10 +1125,6 @@ for cls in ALL_CLASSES:
 
 
 _add_functionality()
-
-
-P = ParamSpec("P")
-ResultT = TypeVar("ResultT")
 
 
 _DOWNCAST_RE = re.compile(
