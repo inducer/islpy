@@ -66,31 +66,16 @@ SetOrMapT = TypeVar("SetOrMapT", bound=SetOrMap)
 
 HasSpace: TypeAlias = (
     _isl.Space
-    | _isl.Aff
-    | _isl.BasicMap
-    | _isl.BasicSet
     | _isl.Constraint
     | _isl.LocalSpace
-    | _isl.Map
+    | _isl.Aff
     | _isl.MultiAff
-    | _isl.MultiId
-    | _isl.MultiPwAff
-    | _isl.MultiUnionPwAff
-    | _isl.MultiVal
-    | _isl.Point
     | _isl.PwAff
     | _isl.PwMultiAff
-    | _isl.PwQPolynomial
-    | _isl.PwQPolynomialFold
-    | _isl.QPolynomial
-    | _isl.QPolynomialFold
+    | _isl.BasicMap
+    | _isl.BasicSet
     | _isl.Set
-    | _isl.UnionMap
-    | _isl.UnionPwAff
-    | _isl.UnionPwMultiAff
-    | _isl.UnionPwQPolynomial
-    | _isl.UnionPwQPolynomialFold
-    | _isl.UnionSet
+    | _isl.Map
     )
 
 
@@ -197,7 +182,7 @@ def context_ne(self: object, other: object) -> bool:
     return not self.__eq__(other)
 
 
-def generic_reduce(self: IslObject):
+def generic_reduce(self: HasSpace):
     ctx = self.get_ctx()
     prn = _isl.Printer.to_str(ctx)
     prn = getattr(prn, f"print_{self._base_name}")(self)
@@ -671,7 +656,7 @@ def pw_get_aggregate_domain(self: _isl.PwAff | _isl.PwQPolynomial) -> _isl.Set:
 
     result = _isl.Set.empty(self.get_domain_space())
     for dom, _ in self.get_pieces():
-        result = result.union(cast("_isl.Set", dom))
+        result = result.union(dom)
 
     return result
 
