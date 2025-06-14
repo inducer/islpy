@@ -193,4 +193,9 @@ Canonical Names for Internal Module
 
     A type variable with an upper bound of :class:`islpy.BasicSet` | :class:`islpy.BasicMap`.
 
+.. class:: SetOrMapT
+
+    A type variable with comprising :class:`islpy.BasicSet` | :class:`islpy.Set` |
+    :class:`islpy.BasicMap` | :class:`islpy.Map`.
+
 .. vim: sw=4
