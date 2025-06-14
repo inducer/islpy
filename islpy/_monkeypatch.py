@@ -608,13 +608,15 @@ def obj_get_var_dict(
 def obj_get_var_ids(
             self: HasSpace,
             dimtype: _isl.dim_type
-        ) -> Sequence[str]:
+        ) -> Sequence[str | None]:
     """Return a list of :class:`Id` instances for :class:`dim_type` *dimtype*."""
-    return [self.get_dim_name(dimtype, i) for i in range(self.dim(dimtype))]
+    return [
+        self.get_dim_name(dimtype, i)
+        for i in range(self.dim(dimtype))]
 
 
 @_memoize_on_first_arg
-def obj_get_var_names(self: HasSpace, dimtype: _isl.dim_type) -> Sequence[str]:
+def obj_get_var_names(self: HasSpace, dimtype: _isl.dim_type) -> Sequence[str | None]:
     """Return a list of dim names (in order) for :class:`dim_type` *dimtype*."""
     return [self.get_dim_name(dimtype, i)
         for i in range(self.dim(dimtype))]
