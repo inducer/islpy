@@ -65,7 +65,7 @@ MapOrBasic: TypeAlias = _isl.BasicMap | _isl.Map
 MapOrBasicT = TypeVar("MapOrBasicT", bound=MapOrBasic)
 
 SetOrMap: TypeAlias = _isl.BasicSet | _isl.Set | _isl.BasicMap | _isl.Map
-SetOrMapT = TypeVar("SetOrMapT", bound=SetOrMap)
+SetOrMapT = TypeVar("SetOrMapT", _isl.BasicSet, _isl.Set, _isl.BasicMap, _isl.Map)
 
 HasSpace: TypeAlias = (
     _isl.Space
@@ -834,10 +834,10 @@ def map_ge(self: _isl.BasicMap | _isl.Map, other: _isl.BasicMap | _isl.Map) -> b
 # {{{ project_out_except
 
 def obj_project_out_except(
-            obj: SetLikeT,
+            obj: SetOrMapT,
             names: Collection[str],
             types: Collection[_isl.dim_type]
-        ) -> SetLikeT:
+        ) -> SetOrMapT:
     """
     :param types: list of :class:`dim_type` determining
         the types of axes to project out
@@ -874,10 +874,10 @@ def obj_project_out_except(
 # {{{ eliminate_except
 
 def obj_eliminate_except(
-            obj: SetLikeT,
+            obj: SetOrMapT,
             names: Collection[str],
             types: Collection[_isl.dim_type]
-        ) -> SetLikeT:
+        ) -> SetOrMapT:
     """
     :param types: list of :class:`dim_type` determining
         the types of axes to eliminate
