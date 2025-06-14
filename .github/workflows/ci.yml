@@ -55,7 +55,7 @@ jobs:
                 build_py_project_in_venv
                 pip install nanobind typing-extensions basedpyright
                 (cd stubgen; python stubgen.py)
-                basedpyright islpy/_isl.pyi
+                basedpyright islpy/_isl.pyi islpy/_monkeypatch.py islpy/__init__.py
 
     examples:
         name: Examples Linux on Py${{ matrix.python-version }}
