@@ -566,6 +566,8 @@ def basic_obj_get_constraints(
 def set_get_basic_sets(self: _isl.Set | _isl.BasicSet) -> list[_isl.BasicSet]:
     """Get the list of :class:`BasicSet` instances in this :class:`Set`."""
     result: list[_isl.BasicSet] = []
+    if isinstance(self, _isl.BasicSet):
+        self = self.to_set()
     self.foreach_basic_set(result.append)
     return result
 
