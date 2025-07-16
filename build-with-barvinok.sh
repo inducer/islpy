@@ -8,6 +8,7 @@ echo "BUILDING IN $BUILD_DIR"
 
 if test "$1" = ""; then
   echo "usage: $0 PREFIX_DIR [GMP_PREFIX_DIR]"
+  exit 1
 fi
 PREFIX="$1"
 GMP_PREFIX="${2:-$PREFIX}"
