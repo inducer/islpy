@@ -125,7 +125,7 @@ lines-after-imports = 2
 [tool.cibuildwheel]
 # nanobind does not support Py<3.8
 # i686 does not have enough memory for LTO to complete
-skip = ["pp*", "cp3[6789]-*", "*_i686"]
+skip = ["*_i686", 'cp31?t-*']
 
 test-requires = "pytest"
 test-command = "pytest {project}/test"
