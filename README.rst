@@ -44,3 +44,12 @@ documented, public API (marked by ``__isl_export``). These (technically)
 undocumented functions are marked in the islpy documentation. Many of them are useful
 and essential for certain operations, but isl's API stability guarantees do not
 apply to them. Use them at your own risk.
+
+Islpy can optionally be built with support for `barvinok <https://repo.or.cz/barvinok.git>`__,
+a library for counting the number of integer points in parametric and non-parametric
+polytopes. Notably, unlike isl, barvinok is GPL-licensed, so doing so changes
+islpy's effective license as well. In addition to islpy's `regular PyPI source
+and binary wheel downloads <https://pypi.org/project/islpy/>`__, `Cambridge Yang
+<https://github.com/thisiscam>`__ has made available a `package with wheels that
+include Barvinok <https://pypi.org/project/islpy-barvinok/>`__.
+
