@@ -123,9 +123,9 @@ lines-after-imports = 2
 ]
 
 [tool.cibuildwheel]
-# nanobind does not support Py<3.8
 # i686 does not have enough memory for LTO to complete
-skip = ["*_i686", 'cp31?t-*']
+# 3.14 on musl has a hard-to-debug test crash
+skip = ["*_i686", 'cp31?t-*', "cp314-musllinux_x86_64"]
 
 test-requires = "pytest"
 test-command = "pytest {project}/test"
