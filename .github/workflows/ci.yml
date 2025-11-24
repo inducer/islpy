@@ -16,7 +16,7 @@ jobs:
         name: Ruff
         runs-on: ubuntu-latest
         steps:
-        -   uses: actions/checkout@v5
+        -   uses: actions/checkout@v6
         -   uses: actions/setup-python@v6
         -   name: "Main Script"
             run: |
@@ -30,7 +30,7 @@ jobs:
             matrix:
                 python-version: ['3.10', '3.12', '3.x']
         steps:
-        -   uses: actions/checkout@v5
+        -   uses: actions/checkout@v6
         -
             uses: actions/setup-python@v6
             with:
@@ -44,7 +44,7 @@ jobs:
     basdedpyright:
         runs-on: ubuntu-latest
         steps:
-        -   uses: actions/checkout@v5
+        -   uses: actions/checkout@v6
         -   uses: actions/setup-python@v6
             with:
                 python-version: '3.x'
@@ -64,7 +64,7 @@ jobs:
             matrix:
                 python-version: ['3.10', '3.12', '3.x']
         steps:
-        -   uses: actions/checkout@v5
+        -   uses: actions/checkout@v6
         -
             uses: actions/setup-python@v6
             with:
@@ -81,7 +81,7 @@ jobs:
         name: Pytest macOS
         runs-on: macos-latest
         steps:
-        -   uses: actions/checkout@v5
+        -   uses: actions/checkout@v6
         -
             uses: actions/setup-python@v6
             with:
@@ -96,7 +96,7 @@ jobs:
         name: Documentation
         runs-on: ubuntu-latest
         steps:
-        -   uses: actions/checkout@v5
+        -   uses: actions/checkout@v6
         -
             uses: actions/setup-python@v6
             with:
@@ -117,7 +117,7 @@ jobs:
         name: Tests for downstream project ${{ matrix.downstream_project }}
         runs-on: ubuntu-latest
         steps:
-        -   uses: actions/checkout@v5
+        -   uses: actions/checkout@v6
         -   name: "Main Script"
             env:
                 DOWNSTREAM_PROJECT: ${{ matrix.downstream_project }}
@@ -146,7 +146,7 @@ jobs:
         env:
             GITHUB_HEAD_REPOSITORY: ${{github.event.pull_request.head.repo.full_name}}
         steps:
-        -   uses: actions/checkout@v5
+        -   uses: actions/checkout@v6
         -
             uses: actions/setup-python@v6
             with:
