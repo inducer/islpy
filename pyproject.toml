@@ -102,6 +102,7 @@ extend-ignore = [
     "E402", # module-level import not at top of file
     "UP031", # use f-strings instead of %
     "UP032", # use f-strings instead of .format
+    "RUF067", # no code in __init__ *shrug*
 ]
 
 [tool.ruff.lint.flake8-quotes]
