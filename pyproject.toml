@@ -131,6 +131,11 @@ skip = ["*_i686", 'cp31?t-*', "cp314-musllinux_x86_64"]
 test-requires = "pytest"
 test-command = "pytest {project}/test"
 
+[tool.cibuildwheel.windows]
+before-all = [
+    "curl -o isl-supplementary/strings.h https://raw.githubusercontent.com/win32ports/strings_h/822de6e8c368abb986b403792082189f3c602c45/strings.h",
+]
+
 [tool.cibuildwheel.macos.environment]
 # Needed for full C++17 support
 MACOSX_DEPLOYMENT_TARGET = "10.14"
