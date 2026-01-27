@@ -485,6 +485,14 @@ def test_sched_constraints_set_validity():
     assert str(validity) == str(validity2)
 
 
+def test_polynomial_var_names():
+    pw_qpoly = isl.PwQPolynomial("[n] -> { [i] -> 2 * i + n }")
+    (_s, qpoly), = pw_qpoly.get_pieces()
+
+    for poly in [pw_qpoly, qpoly]:
+        poly.get_var_names(isl.dim_type.param)
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
