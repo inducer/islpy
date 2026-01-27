@@ -67,7 +67,7 @@ MapOrBasicT = TypeVar("MapOrBasicT", bound=MapOrBasic)
 SetOrMap: TypeAlias = _isl.BasicSet | _isl.Set | _isl.BasicMap | _isl.Map
 SetOrMapT = TypeVar("SetOrMapT", _isl.BasicSet, _isl.Set, _isl.BasicMap, _isl.Map)
 
-HasSpace: TypeAlias = (
+HasDimNames: TypeAlias = (
     _isl.Space
     | _isl.Constraint
     | _isl.LocalSpace
@@ -79,6 +79,12 @@ HasSpace: TypeAlias = (
     | _isl.BasicSet
     | _isl.Set
     | _isl.Map
+    )
+
+HasSpace: TypeAlias = (
+    HasDimNames
+    | _isl.QPolynomial
+    | _isl.PwQPolynomial
     )
 
 
@@ -608,7 +614,7 @@ def obj_get_var_dict(
 
 
 def obj_get_var_ids(
-            self: HasSpace,
+            self: HasDimNames,
             dimtype: _isl.dim_type
         ) -> Sequence[str | None]:
     """Return a list of :class:`Id` instances for :class:`dim_type` *dimtype*."""
@@ -619,7 +625,7 @@ def obj_get_var_ids(
 
 @_memoize_on_first_arg
 def obj_get_var_names_not_none(
-            self: HasSpace,
+            self: HasDimNames,
             dimtype: _isl.dim_type,
         ) -> Sequence[str]:
     """Return a list of dim names (in order) for :class:`dim_type` *dimtype*.
@@ -639,13 +645,46 @@ def obj_get_var_names_not_none(
 
 @_memoize_on_first_arg
 def obj_get_var_names(
-            self: HasSpace,
+            self: HasDimNames,
             dimtype: _isl.dim_type,
         ) -> Sequence[str | None]:
     """Return a list of dim names (in order) for :class:`dim_type` *dimtype*.
     """
     return [self.get_dim_name(dimtype, i)
             for i in range(self.dim(dimtype))]
+
+
+@_memoize_on_first_arg
+def obj_get_var_names_not_none_via_space(
+            self: HasSpace,
+            dimtype: _isl.dim_type,
+        ) -> Sequence[str]:
+    """Return a list of dim names (in order) for :class:`dim_type` *dimtype*.
+
+    Raise :exc:`ValueError` if any of the names is *None*.
+
+    .. versionadded:: 2025.2.5
+    """
+    space = self.get_space()
+    ndim = space.dim(dimtype)
+    res = [n
+        for i in range(ndim)
+        if (n := space.get_dim_name(dimtype, i)) is not None]
+    if len(res) != ndim:
+        raise ValueError("None encountered in dim names")
+    return res
+
+
+@_memoize_on_first_arg
+def obj_get_var_names_via_space(
+            self: HasSpace,
+            dimtype: _isl.dim_type,
+        ) -> Sequence[str | None]:
+    """Return a list of dim names (in order) for :class:`dim_type` *dimtype*.
+    """
+    space = self.get_space()
+    return [space.get_dim_name(dimtype, i)
+            for i in range(space.dim(dimtype))]
 
 
 def pwaff_get_pieces(self: _isl.PwAff | _isl.Aff) -> list[tuple[_isl.Set, _isl.Aff]]:
@@ -1058,12 +1097,18 @@ def _add_functionality() -> None:
 # {{{ common functionality
 
 for cls in ALL_CLASSES:
-    if hasattr(cls, "get_space") and cls is not _isl.Space:
+    if hasattr(cls, "get_space"):
         cls.get_id_dict = obj_get_id_dict
         cls.get_var_dict = obj_get_var_dict
         cls.get_var_ids = obj_get_var_ids
+
+    # NB: This will include 'Space'
+    if hasattr(cls, "dim") and hasattr(cls, "get_dim_name"):
         cls.get_var_names = obj_get_var_names
         cls.get_var_names_not_none = obj_get_var_names_not_none
+    elif hasattr(cls, "get_space"):
+        cls.get_var_names = obj_get_var_names_via_space
+        cls.get_var_names_not_none = obj_get_var_names_not_none_via_space
 
     # }}}
 
