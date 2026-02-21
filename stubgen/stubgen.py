@@ -66,7 +66,7 @@ def main():
     for fname in cast("list[str]", args.exec or []):
         execdict = {"__name__": "islpy._monkeypatch"}
         with open(fname) as inf:
-            exec(compile(inf.read(), fname, "exec"), execdict)
+            exec(compile(inf.read(), fname, "exec"), execdict)  # noqa: S102
 
     sg = StubGen(
         module=mod,
@@ -75,10 +75,9 @@ def main():
         include_docstrings=False,
     )
     sg.put(mod)
-    prefix_lines = "\n".join([
-        "from typing_extensions import Self",
-        "from collections.abc import Callable",
-    ])
+    prefix_lines = (
+        "from typing_extensions import Self\n"
+        "from collections.abc import Callable")
     with open(output_path / "_isl.pyi", "w") as outf:
         outf.write(f"{prefix_lines}\n{sg.get()}")
 

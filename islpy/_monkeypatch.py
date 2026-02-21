@@ -18,11 +18,11 @@ from warnings import warn
 
 
 if TYPE_CHECKING:
-    import islpy._isl as _isl
+    from islpy import _isl
 else:
     import sys
     if "_isl" not in sys.modules:
-        import islpy._isl as _isl
+        from islpy import _isl
     else:
         # This is used for monkeypatching during stub generation.
         # See stubgen/stubgen.py and CMakeLists for orchestration details.
