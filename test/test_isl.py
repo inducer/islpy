@@ -220,13 +220,11 @@ def test_schedule():
 
     def cb_print_user(printer, options, node):
         print("Callback user called")
-        printer = printer.print_str("Callback user")
-        return printer
+        return printer.print_str("Callback user")
 
     def cb_print_for(printer, options, node):
         print("Callback for called")
-        printer = printer.print_str("Callback For")
-        return printer
+        return printer.print_str("Callback For")
 
     opts = isl.AstPrintOptions.alloc(isl.DEFAULT_CONTEXT)
     opts, _cb_print_user_handle = opts.set_print_user(cb_print_user)

@@ -52,15 +52,10 @@ ISL_SEM_TO_SEM = {
 NON_COPYABLE = ["ctx", "printer", "access_info"]
 NON_COPYABLE_WITH_ISL_PREFIX = [f"isl_{i}" for i in NON_COPYABLE]
 
-PYTHON_RESERVED_WORDS = """
-and       del       from      not       while
-as        elif      global    or        with
-assert    else      if        pass      yield
-break     except    import    print
-class     exec      in        raise
-continue  finally   is        return
-def       for       lambda    try
-""".split()
+PYTHON_RESERVED_WORDS = ["and", "del", "from", "not", "while", "as", "elif", "global",
+"or", "with", "assert", "else", "if", "pass", "yield", "break", "except", "import",
+"print", "class", "exec", "in", "raise", "continue", "finally", "is", "return", "def",
+"for", "lambda", "try"]
 
 
 class Retry(RuntimeError):  # noqa: N818
@@ -86,8 +81,7 @@ def to_py_class(cls: str):
     if cls == "int":
         return cls
 
-    if cls.startswith("isl_"):
-        cls = cls[4:]
+    cls = cls.removeprefix("isl_")
 
     if cls == "ctx":
         return "Context"
@@ -105,9 +99,7 @@ def to_py_class(cls: str):
             else:
                 result += c
 
-    result = result.replace("Qpoly", "QPoly")
-
-    return result
+    return result.replace("Qpoly", "QPoly")
 
 
 # {{{ data model
@@ -503,10 +495,8 @@ class FunctionData:
                 self.get_header_contents(mh)
                 for mh in self.macro_headers]
 
-        prepro_header = preprocess_with_macros(
+        return preprocess_with_macros(
                 macro_header_contents, self.get_header_contents(fname))
-
-        return prepro_header
 
     # {{{ read_header
 
@@ -536,11 +526,8 @@ class FunctionData:
         while i < len(lines):
             line = lines[i].strip()
 
-            if (not line
-                    or line.startswith("extern")
-                    or STRUCT_DECL_RE.search(line)
-                    or line.startswith("typedef")
-                    or line == "}"):
+            if (not line or line.startswith(("extern", "typedef"))
+                    or STRUCT_DECL_RE.search(line) or line == "}"):
                 i += 1
             elif "/*" in line:
                 while True:
@@ -661,7 +648,7 @@ class FunctionData:
             if name.startswith("options_"):
                 class_name = "ctx"
                 name = name[len("options_"):]
-            elif name.startswith("equality_") or name.startswith("inequality_"):
+            elif name.startswith(("equality_", "inequality_")):
                 class_name = "constraint"
             elif name == "ast_op_type_set_print_name":
                 class_name = "printer"
@@ -697,7 +684,7 @@ class FunctionData:
             return
 
         if class_name == "options":
-            assert name.startswith("set_") or name.startswith("get_"), (name, c_name)
+            assert name.startswith(("set_", "get_")), (name, c_name)
             name = f"{name[:4]}option_{name[4:]}"
 
         words = return_base_type.split()
@@ -1497,9 +1484,8 @@ def write_exposer(
             if basic_cls == "basic_set":
                 if meth.name in ["is_params", "get_hash"]:
                     continue
-            elif basic_cls == "basic_map":
-                if meth.name in ["get_hash"]:
-                    continue
+            elif basic_cls == "basic_map" and meth.name in ["get_hash"]:
+                continue
 
             basic_overloads.append(meth)
 

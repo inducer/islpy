@@ -103,6 +103,8 @@ extend-ignore = [
     "UP031", # use f-strings instead of %
     "UP032", # use f-strings instead of .format
     "RUF067", # no code in __init__ *shrug*
+    "TRY300",
+    "SIM102",
 ]
 
 [tool.ruff.lint.flake8-quotes]
@@ -122,6 +124,10 @@ lines-after-imports = 2
     "N801", "N802", "E501", "I001", "F401", "E202", "E203", "Q000",
     "RUF012"
 ]
+
+"test/test_*.py" = ["S102"]
+"doc/conf.py" = ["S102"]
+"gen_wrap.py" = ["SIM115"]
 
 [tool.cibuildwheel]
 # i686 does not have enough memory for LTO to complete
