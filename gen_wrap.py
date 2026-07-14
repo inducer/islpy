@@ -1468,41 +1468,6 @@ def write_exposer(
             f'       isl::handle_isl_error(ctx, "isl_{meth.cls}_read_from_str");'
             '}, py::arg("s"), py::arg("context").none(true)=py::none());\n')
 
-    # Handle auto-self-downcasts. These are deprecated.
-    if not meth.is_static:
-        for basic_cls in AUTO_DOWNCASTS.get(meth.cls, []):
-            basic_overloads = meth_to_overloads.setdefault((basic_cls, meth.name), [])
-            if any(basic_meth
-                   for basic_meth in basic_overloads
-                   if (basic_meth.is_static
-                       or meth.arg_types()[1:] == basic_meth.arg_types()[1:])
-                   ):
-                continue
-
-            # These are high-traffic APIs that are manually implemented
-            # and not subject to deprecation.
-            if basic_cls == "basic_set":
-                if meth.name in ["is_params", "get_hash"]:
-                    continue
-            elif basic_cls == "basic_map" and meth.name in ["get_hash"]:
-                continue
-
-            basic_overloads.append(meth)
-
-            downcast_doc_str = (f"{doc_str}\n\nDowncast from "
-                f":class:`{to_py_class(basic_cls)}` to "
-                f":class:`{to_py_class(meth.cls)}`.")
-            escaped_doc_str = downcast_doc_str.replace(newline, escaped_newline)
-            outf.write(f"// automatic downcast to {meth.cls}\n")
-            outf.write(f'wrap_{basic_cls}.def('
-                       # Do not be tempted to pass 'arg_str' here, it will
-                       # prevent implicit conversion.
-                       # https://github.com/wjakob/nanobind/issues/1061
-                       f'"{py_name}", {func_name}'
-                       f', py::sig("def {py_name}{type_sig}")'
-                       f', "{py_name}{type_sig}\\n{escaped_doc_str}"'
-                       ');\n')
-
 # }}}
 
 

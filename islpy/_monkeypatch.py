@@ -1,4 +1,3 @@
-import os
 import re
 from collections.abc import Callable, Collection, Iterable, Mapping, Sequence
 from functools import update_wrapper
@@ -14,7 +13,6 @@ from typing import (
     TypeVar,
     cast,
 )
-from warnings import warn
 
 
 if TYPE_CHECKING:
@@ -68,13 +66,10 @@ SetOrMap: TypeAlias = _isl.BasicSet | _isl.Set | _isl.BasicMap | _isl.Map
 SetOrMapT = TypeVar("SetOrMapT", _isl.BasicSet, _isl.Set, _isl.BasicMap, _isl.Map)
 
 HasDimNames: TypeAlias = (
-    _isl.Space
-    | _isl.Constraint
+    _isl.Constraint
     | _isl.LocalSpace
     | _isl.Aff
-    | _isl.MultiAff
     | _isl.PwAff
-    | _isl.PwMultiAff
     | _isl.BasicMap
     | _isl.BasicSet
     | _isl.Set
@@ -141,7 +136,6 @@ def _memoize_on_first_arg(
     def clear_cache(obj: object):
         object.__delattr__(obj, cache_dict_name)
 
-    from functools import update_wrapper
     new_wrapper = update_wrapper(wrapper, function)
 
     # type-ignore because mypy has a point here, stuffing random attributes
@@ -854,45 +848,62 @@ def obj_eq(self: IslObject, other: object) -> bool:
     return self.is_equal(other)
 
 
-def obj_ne(self: object, other: object) -> bool:
-    return not self.__eq__(other)
+def no_eq(_self: IslObject, _other: object) -> bool:
+    raise TypeError("equality not available; use manual downcast or try plain_is_equal")
 
 
 for cls in ALL_CLASSES:
     if hasattr(cls, "is_equal"):
         cls.__eq__ = obj_eq
-        cls.__ne__ = obj_ne
+    else:
+        cls.__eq__ = no_eq
 
 
 def set_lt(self: _isl.BasicSet | _isl.Set, other: _isl.BasicSet | _isl.Set) -> bool:
+    if isinstance(self, _isl.BasicSet):
+        self = self.to_set()
     return self.is_strict_subset(other)
 
 
 def set_le(self: _isl.BasicSet | _isl.Set, other: _isl.BasicSet | _isl.Set) -> bool:
+    if isinstance(self, _isl.BasicSet):
+        self = self.to_set()
     return self.is_subset(other)
 
 
 def set_gt(self: _isl.BasicSet | _isl.Set, other: _isl.BasicSet | _isl.Set) -> bool:
+    if isinstance(other, _isl.BasicSet):
+        other = other.to_set()
     return other.is_strict_subset(self)
 
 
 def set_ge(self: _isl.BasicSet | _isl.Set, other: _isl.BasicSet | _isl.Set) -> bool:
+    if isinstance(other, _isl.BasicSet):
+        other = other.to_set()
     return other.is_subset(self)
 
 
 def map_lt(self: _isl.BasicMap | _isl.Map, other: _isl.BasicMap | _isl.Map) -> bool:
+    if isinstance(self, _isl.BasicMap):
+        self = self.to_map()
     return self.is_strict_subset(other)
 
 
 def map_le(self: _isl.BasicMap | _isl.Map, other: _isl.BasicMap | _isl.Map) -> bool:
+    if isinstance(self, _isl.BasicMap):
+        self = self.to_map()
     return self.is_subset(other)
 
 
 def map_gt(self: _isl.BasicMap | _isl.Map, other: _isl.BasicMap | _isl.Map) -> bool:
+    if isinstance(other, _isl.BasicMap):
+        other = other.to_map()
     return other.is_strict_subset(self)
 
 
 def map_ge(self: _isl.BasicMap | _isl.Map, other: _isl.BasicMap | _isl.Map) -> bool:
+    if isinstance(other, _isl.BasicMap):
+        other = other.to_map()
     return other.is_subset(self)
 
 
@@ -1216,57 +1227,3 @@ _TO_METHODS = {
     "Map": "to_map",
     "UnionMap": "to_union_map",
 }
-
-
-def _depr_downcast_wrapper(
-            f: Callable[Concatenate[object, P], ResultT],
-        ) -> Callable[Concatenate[object, P], ResultT]:
-    doc = f.__doc__
-    assert doc is not None
-    m = _DOWNCAST_RE.search(doc)
-    assert m, doc
-    basic_cls_name = intern(m.group(1))
-    tgt_cls_name = m.group(2)
-
-    tgt_cls = cast("type", getattr(_isl, tgt_cls_name))
-    is_overload = "Overloaded function" in doc
-    msg = (f"{basic_cls_name}.{f.__name__} "
-            f"with implicit conversion of self to {tgt_cls_name} is deprecated "
-            "and will stop working in 2026. "
-            f"Explicitly convert to {tgt_cls_name}, "
-            f"using .{_TO_METHODS[tgt_cls_name]}().")
-
-    if is_overload:
-        def wrapper(self: object, *args: P.args, **kwargs: P.kwargs) -> ResultT:
-            # "Try to" detect bad invocations of, e.g., Set.union, which is
-            # an overload of normal union and UnionSet.union.
-            if (
-                    any(isinstance(arg, tgt_cls) for arg in args)
-                    or
-                    any(isinstance(arg, tgt_cls) for arg in kwargs.values())
-                    ):
-                warn(msg, DeprecationWarning, stacklevel=2)
-
-            return f(self, *args, **kwargs)
-    else:
-        def wrapper(self: object, *args: P.args, **kwargs: P.kwargs) -> ResultT:
-            warn(msg, DeprecationWarning, stacklevel=2)
-
-            return f(self, *args, **kwargs)
-    update_wrapper(wrapper, f)
-    return wrapper
-
-
-def _monkeypatch_self_downcast_deprecation():
-    for cls in ALL_CLASSES:
-        for attr_name in dir(cls):
-            val = cast("object", getattr(cls, attr_name))
-            doc = getattr(val, "__doc__", None)
-            if doc and "\nDowncast from " in doc:
-                setattr(cls, attr_name, _depr_downcast_wrapper(
-                        cast("Callable", val),  # pyright: ignore[reportMissingTypeArgument]
-                        ))
-
-
-if not os.environ.get("ISLPY_NO_DOWNCAST_DEPRECATION", None):
-    _monkeypatch_self_downcast_deprecation()
