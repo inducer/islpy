@@ -57,6 +57,7 @@ gmp-*
 isl-*
 wheelhouse
 venv
+.venv
 
 _skbuild/
 libnanobind-static.a
