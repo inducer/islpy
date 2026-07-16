@@ -54,7 +54,7 @@ def plot_basic_set(bset: isl.BasicSet, *args, **kwargs):
     import matplotlib.patches as mpatches
     import matplotlib.path as mpath
 
-    Path = mpath.Path  # noqa
+    Path = mpath.Path  # ruff:ignore[non-lowercase-variable-in-function]
 
     codes = [Path.LINETO] * len(vertex_pts)
     codes[0] = Path.MOVETO
