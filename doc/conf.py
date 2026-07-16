@@ -6,7 +6,7 @@ _conf_url = "https://tiker.net/sphinxconfig-v0.py"
 with urlopen(_conf_url) as _inf:
     exec(compile(_inf.read(), _conf_url, "exec"), globals())
 
-extensions.remove("sphinx.ext.linkcode")  # noqa: F821
+extensions.remove("sphinx.ext.linkcode")  # ruff:ignore[undefined-name]
 
 copyright = "2011-21, Andreas Kloeckner"
 
@@ -27,7 +27,7 @@ def autodoc_process_docstring(app, what, name, obj, options, lines: list[str]):
     arg_list_re = re.compile(r"^([a-zA-Z0-9_]+)\((.*?)\)")
 
     from inspect import isclass, isroutine
-    UNDERSCORE_WHITELIST = ["__len__", "__hash__", "__eq__", "__ne__"]  # noqa: N806
+    UNDERSCORE_WHITELIST = ["__len__", "__hash__", "__eq__", "__ne__"]  # ruff:ignore[non-lowercase-variable-in-function]
     if isclass(obj) and obj.__name__[0].isupper():
         methods = [nm for nm in dir(obj)
                 if isroutine(getattr(obj, nm))

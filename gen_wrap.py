@@ -58,19 +58,19 @@ PYTHON_RESERVED_WORDS = ["and", "del", "from", "not", "while", "as", "elif", "gl
 "for", "lambda", "try"]
 
 
-class Retry(RuntimeError):  # noqa: N818
+class Retry(RuntimeError):  # ruff:ignore[error-suffix-on-exception-name]
     pass
 
 
-class BadArg(ValueError):  # noqa: N818
+class BadArg(ValueError):  # ruff:ignore[error-suffix-on-exception-name]
     pass
 
 
-class Undocumented(ValueError):  # noqa: N818
+class Undocumented(ValueError):  # ruff:ignore[error-suffix-on-exception-name]
     pass
 
 
-class SignatureNotSupported(ValueError):  # noqa: N818
+class SignatureNotSupported(ValueError):  # ruff:ignore[error-suffix-on-exception-name]
     pass
 
 

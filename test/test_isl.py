@@ -40,7 +40,7 @@ def test_basics():
                 space, {"a": -1, 1: 42}))
             .project_out(dt.set, 1, 1))
 
-    bset2 = isl.BasicSet(  # noqa
+    bset2 = isl.BasicSet(  # ruff:ignore[unused-variable]
             "{[i] : exists (a : i = 2a and i >= 10 and i <= 42)}",
             context=ctx)
 
@@ -75,7 +75,7 @@ def test_pwqpoly():
 
 def no_test_id_user():
     ctx = isl.Context()
-    foo = isl.Id("foo", context=ctx)  # noqa
+    foo = isl.Id("foo", context=ctx)  # ruff:ignore[unused-variable]
     t = (1, 2)
     bar = isl.Id("bar", t, context=ctx)
 
@@ -279,7 +279,7 @@ def test_get_schedule_map():
 def test_codegen():
     # courtesy of Marek Pałkowski
 
-    def isl_ast_codegen(S):  # noqa: N803
+    def isl_ast_codegen(S):  # ruff:ignore[invalid-argument-name]
         b = isl.AstBuild.from_context(isl.Set("{:}"))
         m = isl.Map.from_domain_and_range(S, S)
         m = isl.Map.identity(m.get_space())
