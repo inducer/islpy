@@ -1,6 +1,5 @@
 import argparse
 import importlib
-import os
 import sys
 from collections.abc import Callable
 from pathlib import Path
@@ -61,7 +60,6 @@ def main():
 
     sys.path.extend(cast("list[str]", args.python_path or []))
 
-    os.environ["ISLPY_NO_DOWNCAST_DEPRECATION"] = "1"
     mod = importlib.import_module(cast("str", args.module))
     for fname in cast("list[str]", args.exec or []):
         execdict = {"__name__": "islpy._monkeypatch"}
