@@ -27,7 +27,7 @@ class StubGen(StubGenBase):
         if (name and fn_module
                 and fn_module != self.module.__name__
                 and parent is not None):
-            self.import_object(fn_module, name=None)
+            self.bind(fn_module, name=None)
             rhs = f"{fn_module}.{fn.__qualname__}"
             if type(fn) is staticmethod:
                 rhs = f"staticmethod({rhs})"
