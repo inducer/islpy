@@ -1466,7 +1466,7 @@ def write_exposer(
             f"       new (t) isl::{wrap_class}(result);"
             "    else"
             f'       isl::handle_isl_error(ctx, "isl_{meth.cls}_read_from_str");'
-            '}, py::arg("s"), py::arg("context").none(true)=py::none());\n')
+            '}, py::arg("s"), py::arg("context").none()=py::none());\n')
 
 # }}}
 

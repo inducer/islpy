@@ -101,7 +101,7 @@ void islpy_expose_part1(py::module_ &m)
           new (t) isl::val(result);
         else
           isl::handle_isl_error(ctx, "isl_val_from_si");
-      }, py::arg("i"), py::arg("context").none(true)=py::none()
+      }, py::arg("i"), py::arg("context").none()=py::none()
       );
 
   MAKE_WRAP(multi_val, MultiVal);
@@ -151,8 +151,8 @@ void islpy_expose_part1(py::module_ &m)
         else
           isl::handle_isl_error(ctx, "isl_id_alloc");
       }, py::arg("name"),
-      py::arg("user").none(true)=py::none(),
-      py::arg("context").none(true)=py::none()
+      py::arg("user").none()=py::none(),
+      py::arg("context").none()=py::none()
       );
   wrap_id.def("__eq__", islpy::id_eq, py::arg("other"),
       "__eq__(self, other)\n\n"
