@@ -128,13 +128,13 @@ def _memoize_on_first_arg(
 
         result = function(obj, *args, **kwargs)
         if attribute_error:
-            object.__setattr__(obj, cache_dict_name, {key: result})
+            object.__setattr__(obj, cache_dict_name, {key: result})  # ruff: ignore[unnecessary-dunder-call]
             return result
         getattr(obj, cache_dict_name)[key] = result
         return result
 
     def clear_cache(obj: object):
-        object.__delattr__(obj, cache_dict_name)
+        object.__delattr__(obj, cache_dict_name)  # ruff: ignore[unnecessary-dunder-call]
 
     new_wrapper = update_wrapper(wrapper, function)
 
@@ -175,10 +175,6 @@ def context_reduce(self: _isl.Context):
 
 def context_eq(self: IslObject, other: object):
     return isinstance(other, _isl.Context) and self._wraps_same_instance_as(other)
-
-
-def context_ne(self: object, other: object) -> bool:
-    return not self.__eq__(other)
 
 
 def generic_reduce(self: HasSpace):
@@ -261,7 +257,7 @@ def space_get_var_dict(
     if dimtype is None:
         types = list(_CHECK_DIM_TYPES)
         if ignore_out:
-            types = types[:]
+            types = types.copy()
             types.remove(_isl.dim_type.out)
     else:
         types = [dimtype]
@@ -1008,7 +1004,6 @@ def _add_functionality() -> None:
 
     _isl.Context.__reduce__ = context_reduce
     _isl.Context.__eq__ = context_eq
-    _isl.Context.__ne__ = context_ne
 
     # }}}
 
