@@ -466,8 +466,7 @@ def test_remove_map_if_callback_exc():
         raise AssertionError()
 
     with pytest.raises(isl.Error):
-        umap3 = umap.remove_map_if(callback_throws_exception)
-        del umap3
+        umap.remove_map_if(callback_throws_exception)
 
 
 def test_sched_constraints_set_validity():

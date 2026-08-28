@@ -941,8 +941,7 @@ def write_wrapper(outf: TextIO, meth: Method):
                 extra_ret_types.append("CallbackLifetimeHandle ")
 
             input_args.append(f"py::object py_{arg.name}")
-            passed_args.append(cb_name)
-            passed_args.append(f"py_{arg.name}.ptr()")
+            passed_args.extend((cb_name, f"py_{arg.name}.ptr()"))
 
             preamble.append(get_callback(cb_name, arg))
 

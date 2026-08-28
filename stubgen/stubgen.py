@@ -64,7 +64,7 @@ def main():
     for fname in cast("list[str]", args.exec or []):
         execdict = {"__name__": "islpy._monkeypatch"}
         with open(fname) as inf:
-            exec(compile(inf.read(), fname, "exec"), execdict)  # ruff:ignore[exec-builtin]
+            exec(compile(inf.read(), fname, "exec"), execdict)
 
     sg = StubGen(
         module=mod,
