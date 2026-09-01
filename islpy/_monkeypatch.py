@@ -853,6 +853,7 @@ for cls in ALL_CLASSES:
         cls.__eq__ = obj_eq
     else:
         cls.__eq__ = no_eq
+        cls.__ne__ = no_eq
 
 
 def set_lt(self: _isl.BasicSet | _isl.Set, other: _isl.BasicSet | _isl.Set) -> bool:
