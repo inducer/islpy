@@ -11259,6 +11259,24 @@
                 }
             }
         ],
+        "./islpy/_isl.pyi": [
+            {
+                "code": "reportAssignmentType",
+                "range": {
+                    "startColumn": 13,
+                    "endColumn": 15,
+                    "lineCount": 1
+                }
+            },
+            {
+                "code": "reportAssignmentType",
+                "range": {
+                    "startColumn": 13,
+                    "endColumn": 15,
+                    "lineCount": 1
+                }
+            }
+        ],
         "./islpy/_monkeypatch.py": [
             {
                 "code": "reportUnknownParameterType",
