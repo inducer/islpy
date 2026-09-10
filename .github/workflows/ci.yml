@@ -111,7 +111,7 @@ jobs:
     downstream_tests:
         strategy:
             matrix:
-                downstream_project: [loopy]
+                downstream_project: [loopy, namedisl]
         name: Tests for downstream project ${{ matrix.downstream_project }}
         runs-on: ubuntu-latest
         steps:
@@ -128,14 +128,19 @@ jobs:
                 echo "*** $DOWNSTREAM_PROJECT version: $(git rev-parse --short HEAD)"
 
                 edit_requirements_txt_for_downstream_in_subdir
-                sed -i '/islpy/ d' .test-conda-env-py3.yml
-
-                export CONDA_ENVIRONMENT=.test-conda-env-py3.yml
 
                 # Avoid slow or complicated tests in downstream projects
                 export PYTEST_ADDOPTS="-k 'not (slowtest or octave or mpi)'"
 
-                build_py_project_in_conda_env
+                if test -f .test-conda-env-py3.yml; then
+                  sed -i '/islpy/ d' .test-conda-env-py3.yml
+                  export CONDA_ENVIRONMENT=.test-conda-env-py3.yml
+                  build_py_project_in_conda_env
+                else
+                  EXTRA_INSTALL="sphinx"
+                  build_py_project_in_venv
+                fi
+
                 test_py_project
 
     barvinok:
